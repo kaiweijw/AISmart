@@ -1,6 +1,6 @@
 # AI Agent Framework based on ABP + Orleans and others
 
-Template project for ABP Framework and Orleans backend.
+AI Smart project for ABP Framework and Orleans backend.
 
 - [About The Project](#about-the-project)
 - [Getting Started](#getting-started)
@@ -12,7 +12,7 @@ Template project for ABP Framework and Orleans backend.
 
 ## About The Project
 
-A template project for ABP 8 Framework and Orleans 7 backend.
+AI Smart project for ABP 8 Framework and Orleans 7 backend.
 ## Getting Started
 
 ### Prerequisites
