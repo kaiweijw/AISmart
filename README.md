@@ -1,4 +1,4 @@
-# ABP Framework + Orleans Backend Template
+# AI Agent Framework based on ABP + Orleans and others
 
 Template project for ABP Framework and Orleans backend.
 
