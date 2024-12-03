@@ -21,7 +21,7 @@ public class DaprController
     }
     [HttpGet("token")]
     [Topic(DaprConstants.PubSubName, DaprConstants.TestGroup)]
-    public Task<string> GetToken([FromBody] AuthorDto authorDto)
+    public Task<string> GetToken( AuthorDto authorDto)
     {
         _logger.LogInformation("GetToken {Name}",authorDto.Name);
         return Task.FromResult(authorDto.Name);

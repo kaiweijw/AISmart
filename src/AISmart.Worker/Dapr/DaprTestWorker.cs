@@ -28,7 +28,8 @@ public class DaprTestWorker : AsyncPeriodicBackgroundWorkerBase
         await  _daprProvider.PublishEventAsync(DaprConstants.PubSubName, DaprConstants.TestGroup, new AuthorDto
         {
             Id = default,
-            Name = "Test"
+            Name = "Test",
+            ShortBio = "123"
         });
     }
 }
