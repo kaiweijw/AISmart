@@ -4,6 +4,11 @@ namespace AISmart.Agents.Service;
 
 public interface IAgentService
 {
+
+    Task<Agent> CreateAgent();
+    
+    Task<Agent> CreateAgent(AgentGoal agentGoal);
+    
     Task<Agent> CreateAgent(Agent agent);
     
     /// <summary>

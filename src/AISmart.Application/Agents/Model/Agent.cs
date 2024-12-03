@@ -17,6 +17,9 @@ public class Agent
     public DateTime UpdatedDateTime { get; set; }
     
     public AgentLlmConfig LlmConfig { get; set; } = new();
-    
-    
+
+
+    public Agent()
+    {
+    }
 }

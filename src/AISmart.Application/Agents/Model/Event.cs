@@ -30,6 +30,11 @@ public class Event
         Source = source;
     }
 
+    public Event()
+    {
+        
+    }
+
     // Method to output event information
     public override string ToString()
     {
