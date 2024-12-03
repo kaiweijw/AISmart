@@ -8,8 +8,8 @@ public class RoutingService : IRoutingService
     
     
     
-    public Task<bool> InvokeAgent(string agentId, List<RoleDialogModel> dialogs)
-    {
+    public async Task<bool> InvokeAgent(string agentId, List<RoleDialogModel> dialogs)
+    {/*
         var agent = await agentService.LoadAgent(agentId);
         
         var provider = agent.LlmConfig.Provider;
@@ -17,7 +17,7 @@ public class RoutingService : IRoutingService
         
         // call open api; 
         var response = await openai.chatCompeltion(agent, dialogs);
-        dialogs.Add(response);
+        dialogs.Add(response);*/
 
         return true;
     }
