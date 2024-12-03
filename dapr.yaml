@@ -1,0 +1,10 @@
+version: 1
+common:
+  resourcesPath: ./components/
+apps:
+  - appID: AISmart.HttpApi.Host
+    appDirPath: ./src/AISmart.HttpApi.Host/
+    command: ["dotnet", "run"]
+  - appID: AISmart.Worker
+    appDirPath: ./src/AISmart.Worker/
+    command: [ "dotnet", "run" ]
