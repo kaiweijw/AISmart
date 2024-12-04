@@ -20,10 +20,6 @@ public class AISmartApplicationTestModule : AbpModule
         context.Services.AddSingleton<IDaprProvider , MockDaprProvider>();
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
         var configuration = context.Services.GetConfiguration();
-        Configure<ChatConfigOptions>(o =>
-        {
-            o.Model = "gpt-4o-mini";
-            o.APIKey = "";
-        });   
+       
     }
 }
