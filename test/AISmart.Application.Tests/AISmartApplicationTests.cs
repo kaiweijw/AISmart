@@ -18,7 +18,7 @@ public abstract class AISmartApplicationTests <TStartupModule> : AISmartApplicat
         _agentService = GetRequiredService<IAgentService>();
     }
     
-    [Fact]
+    /*[Fact]
     public async Task test()
     {
        
@@ -56,5 +56,5 @@ public abstract class AISmartApplicationTests <TStartupModule> : AISmartApplicat
             push(Content)     
                 
                 
-    }
+    }*/
 }

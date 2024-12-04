@@ -3,6 +3,7 @@ using Orleans;
 using Volo.Abp;
 using Volo.Abp.Authorization;
 using Volo.Abp.Autofac;
+using Volo.Abp.AutoMapper;
 using Volo.Abp.Modularity;
 
 
@@ -19,5 +20,7 @@ public class AISmartOrleansTestBaseModule : AbpModule
     {
         context.Services.AddSingleton<ClusterFixture>();
         context.Services.AddSingleton<IClusterClient>(sp => context.Services.GetRequiredService<ClusterFixture>().Cluster.Client);
+        Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
+
     }
 }

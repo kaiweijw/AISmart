@@ -20,7 +20,7 @@ namespace AISmart.Worker;
     typeof(AISmartMongoDbModule),
     typeof(AbpAutofacModule)
 )]
-public class AISmartWorkerModule : AbpModule, IDomainGrainsModule, IApplicationGrainsModule
+public class AISmartWorkerModule : AIApplicationGrainsModule, IDomainGrainsModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {

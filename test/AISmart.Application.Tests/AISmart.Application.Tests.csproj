@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\AISmart.Application\AISmart.Application.csproj" />
     <ProjectReference Include="..\AISmart.Domain.Tests\AISmart.Domain.Tests.csproj" />
+    <ProjectReference Include="..\AISmart.Orleans.TestBase\AISmart.Orleans.TestBase.csproj" />
   </ItemGroup>
 
   <ItemGroup>
