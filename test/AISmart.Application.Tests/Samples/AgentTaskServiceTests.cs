@@ -36,7 +36,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         });
 
       var taskId = await _agentTaskService.CreateAgentTaskAsync(templateId, "send Telegram Message");
-      TaskDto taskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
+      AgentTaskDto agentTaskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
     }
     
     [Fact]
@@ -74,6 +74,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         });
 
         var taskId = await _agentTaskService.CreateAgentTaskAsync(gptTemplateId, "send Telegram Message");
-        TaskDto taskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
+        AgentTaskDto agentTaskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
     }
 }

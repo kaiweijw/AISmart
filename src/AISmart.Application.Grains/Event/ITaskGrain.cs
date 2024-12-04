@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 public interface ITaskGrain : IGrainWithGuidKey
 {
-    Task<List<CreatedEvent>> CreateTask(Guid templateId, string param);
+    Task<List<CreatedAgentEvent>> CreateTask(Guid templateId, string param);
     
-    Task<List<CreatedEvent>> CompleteEvent(Guid eventId,bool isSuccess, string failReason = null, string result = null);
-    Task<TaskDto> GetTask();
+    Task<List<CreatedAgentEvent>> CompleteEvent(Guid eventId,bool isSuccess, string failReason = null, string result = null);
+    Task<AgentTaskDto> GetTask();
 }

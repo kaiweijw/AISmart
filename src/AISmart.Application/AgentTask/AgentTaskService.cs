@@ -49,7 +49,7 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
         return taskId;
     }
 
-    public Task<TaskDto> GetAgentTaskDetailAsync(Guid taskId)
+    public Task<AgentTaskDto> GetAgentTaskDetailAsync(Guid taskId)
     {
         return _clusterClient.GetGrain<ITaskGrain>(taskId).GetTask();
     }

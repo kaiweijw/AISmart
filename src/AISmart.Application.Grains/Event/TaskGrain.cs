@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans.EventSourcing;
 
-public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
+public class TaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent>, ITaskGrain
 {
     private readonly IObjectMapper _objectMapper;
 
@@ -17,10 +17,10 @@ public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
         _objectMapper = objectMapper;
     }
 
-    public async Task<List<CreatedEvent>> CreateTask(Guid templateId, string param)
+    public async Task<List<CreatedAgentEvent>> CreateTask(Guid templateId, string param)
     {
         var eventNodeDto = await GrainFactory.GetGrain<IEventFlowTemplateGrain>(templateId).GetEventNode();
-        var createTaskEvent = new CreatedEvent
+        var createTaskEvent = new CreatedAgentEvent
         {
             TaskId = this.GetPrimaryKey(),
             TemplateId = eventNodeDto.Id,
@@ -30,15 +30,15 @@ public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
         };
         base.RaiseEvent(createTaskEvent);
         await ConfirmEvents();
-        List<CreatedEvent> taskEvents = new List<CreatedEvent>();
+        List<CreatedAgentEvent> taskEvents = new List<CreatedAgentEvent>();
         taskEvents.Add(createTaskEvent);
         return taskEvents;
     }
 
-    public async Task<List<CreatedEvent>> CompleteEvent(Guid eventId,bool isSuccess, string failReason = null, string result = null)
+    public async Task<List<CreatedAgentEvent>> CompleteEvent(Guid eventId,bool isSuccess, string failReason = null, string result = null)
     {
-        List<TaskEvent> events = new List<TaskEvent>();
-        var completedTaskEvent = new CompletedTaskEvent
+        List<AgentTaskEvent> events = new List<AgentTaskEvent>();
+        var completedTaskEvent = new CompletedAgentEvent
         {
             CreatedEventId = eventId,
             TaskId = this.GetPrimaryKey(),
@@ -58,24 +58,24 @@ public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
         return  taskEvents;
     }
 
-    public Task<TaskDto> GetTask()
+    public Task<AgentTaskDto> GetTask()
     {
-        return Task.FromResult(_objectMapper.Map<TaskState,TaskDto>(State));
+        return Task.FromResult(_objectMapper.Map<AgentTaskState,AgentTaskDto>(State));
     }
 
 
     protected override void TransitionState(
-        TaskState state, TaskEvent @event)
+        AgentTaskState state, AgentTaskEvent @event)
     {
         switch (@event)
         {
-            case CreatedEvent createEvent:
+            case CreatedAgentEvent createEvent:
                 State.Id = createEvent.TaskId;
                 State.ProcessingEvents ??= new List<Guid>();
                 State.ProcessingEvents.Add(createEvent.Id);
                 break;
 
-            case CompletedTaskEvent completeEvent:
+            case CompletedAgentEvent completeEvent:
                 if (completeEvent.IsSuccess)
                 {
                     State.EventResultDictionary ??= new Dictionary<Guid, EventResult>();
@@ -96,15 +96,15 @@ public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
         }
     }
 
-    private async Task<List<CreatedEvent>> GetSubTaskEventsAsync(TaskState state, CompletedTaskEvent completeEvent)
+    private async Task<List<CreatedAgentEvent>> GetSubTaskEventsAsync(AgentTaskState state, CompletedAgentEvent completeEvent)
     {
-        List<CreatedEvent> taskEvents = new List<CreatedEvent>();
+        List<CreatedAgentEvent> taskEvents = new List<CreatedAgentEvent>();
         var eventNodeDto = await GrainFactory.GetGrain<IEventFlowTemplateGrain>(completeEvent.TemplateId).GetEventNode();
         if (!eventNodeDto.Downstreams.IsNullOrEmpty())
         {
             foreach (var guid in eventNodeDto.Downstreams)
             {
-               var taskEvent =  new CreatedEvent
+               var taskEvent =  new CreatedAgentEvent
                 {
                     Id = Guid.NewGuid(),
                     TemplateId = guid,

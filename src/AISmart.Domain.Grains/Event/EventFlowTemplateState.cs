@@ -1,10 +1,10 @@
 namespace AISmart.Domain.Grains.Event;
-
+[GenerateSerializer]
 public class EventFlowTemplateState
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public string Description { get; set; }
-    public string AgentTopic { get; set; }
-    public Guid? Upstream { get; set; }
-    public List<Guid> Downstreams { get; set; } = new List<Guid>();
+    [Id(0)] public Guid Id { get; set; } = Guid.NewGuid();
+    [Id(1)] public string Description { get; set; }
+    [Id(2)] public string AgentTopic { get; set; }
+    [Id(3)] public Guid? Upstream { get; set; }
+    [Id(4)]public List<Guid> Downstreams { get; set; } = new List<Guid>();
 }

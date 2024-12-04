@@ -1,4 +1,5 @@
 using System;
+using AISmart.Application.Grains;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Orleans.Hosting;
@@ -31,8 +32,11 @@ public class ClusterFixture: IDisposable, ISingletonDependency
     {
         public void Configure(ISiloBuilder hostBuilder)
         {
+           
             hostBuilder.ConfigureServices(services =>
                 {
+                   
+
                     services.OnExposing(onServiceExposingContext =>
                     {
                         //Register types for IObjectMapper<TSource, TDestination> if implements
@@ -40,7 +44,14 @@ public class ClusterFixture: IDisposable, ISingletonDependency
                             onServiceExposingContext.ImplementationType,
                             typeof(IObjectMapper<,>)
                         );
-
+                        services.AddTransient(
+                            typeof(IObjectMapper<>),
+                            typeof(DefaultObjectMapper<>)
+                        );
+                        services.AddTransient(
+                            typeof(IObjectMapper),
+                            typeof(DefaultObjectMapper)
+                        );
                         foreach (var type in implementedTypes)
                         {
                             onServiceExposingContext.ExposedTypes.Add(new ServiceIdentifier(type));
