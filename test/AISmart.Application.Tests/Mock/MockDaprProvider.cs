@@ -31,16 +31,14 @@ public class MockDaprProvider :  IDaprProvider
     }
     public async Task PublishEventAsync<T>(string pubsubName, string topicName, T message)
     {
-        if (message is CreatedAgentEvent agentEvent)
+        if (message is CreatedEvent agentEvent)
         {
             if (topicName == _telegramTopic)
             {
-                var task =  await _serviceProvider.GetRequiredService<AgentTaskService>().GetAgentTaskDetailAsync(agentEvent.TaskId);
                 // telegram execute
                 await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent,true, null,"send Telegram success");
             }else if (topicName == _twitterTopic)
             {
-                var task =  await _serviceProvider.GetRequiredService<AgentTaskService>().GetAgentTaskDetailAsync(agentEvent.TaskId);
                 // telegram execute
                 await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent, true, null,"send Twitter success");
             }else if (topicName == _gptTopic)
@@ -49,15 +47,14 @@ public class MockDaprProvider :  IDaprProvider
                 var assistantAgent = new OpenAIChatAgent(
                         chatClient: new OpenAIClient(_chatConfigOptions.APIKey).GetChatClient(_chatConfigOptions.Model),
                         name: "assistant",
-                        systemMessage: "You convert what user said to all uppercase.")
+                        systemMessage: "Generate feedback based on input, and the content includes GPT.")
                     .RegisterMessageConnector()
                     .RegisterPrintMessage();
                 
                 // talk to the assistant agent
-                var reply = await assistantAgent.SendAsync(message.ToString()); 
+                var reply = await assistantAgent.SendAsync(agentEvent.Param); 
                 // telegram execute
-                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent, true, null,"send GPT success");
-                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,reply.GetContent());
+                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent, true, null,reply.GetContent());
             }
         }
     }

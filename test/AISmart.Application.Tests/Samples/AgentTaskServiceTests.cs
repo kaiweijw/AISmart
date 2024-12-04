@@ -12,6 +12,7 @@ using Orleans;
 using Shouldly;
 using Volo.Abp.Modularity;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace AISmart.Samples;
 
@@ -23,16 +24,16 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     private readonly string _twitterTopic = "twitter";
     private readonly string _telegramTopic = "Telegram";
     private readonly string _gptTopic = "GPT";
-
-    public AgentTaskServiceTests()
+    private readonly ITestOutputHelper _output;
+    public AgentTaskServiceTests(ITestOutputHelper output)
     {
         _agentTaskService = GetRequiredService<AgentTaskService>();
         _clusterClient = GetRequiredService<IClusterClient>();
-       
+        _output = output;
     }
     
     [Fact]
-    public async Task Telegram_Template()
+    public async Task Telegram_Test()
     {
         var templateId = Guid.NewGuid();
          await _clusterClient.GetGrain<IEventFlowTemplateGrain>(templateId).CreateEventNode(new EventFlowTemplateDto
@@ -51,7 +52,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     }
     
     [Fact]
-    public async Task Initial_Task_Template()
+    public async Task muti_Task_Test()
     {
         var telegramTemplateId = Guid.NewGuid();
         await _clusterClient.GetGrain<IEventFlowTemplateGrain>(telegramTemplateId).CreateEventNode(new EventFlowTemplateDto
@@ -84,13 +85,50 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
             }
         });
 
-        var taskId = await _agentTaskService.CreateAgentTaskAsync(gptTemplateId, "send Telegram Message");
+        var taskId = await _agentTaskService.CreateAgentTaskAsync(gptTemplateId, "send GPT Message");
         AgentTaskDto agentTaskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
        
         agentTaskDto.EventResultDictionary.ShouldNotBeEmpty();
-        agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send GPT success");
+        foreach (var value in agentTaskDto.EventResultDictionary.Values)
+        {
+            _output.WriteLine(value.AgentTopic +"  " + value.Result);
+        }
         agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Twitter success");
         agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Telegram success");
     }
-    
+    [Fact]
+    public async Task _Task_Test()
+    {
+        var twitterTemplateId = Guid.NewGuid();
+        await _clusterClient.GetGrain<IEventFlowTemplateGrain>(twitterTemplateId).CreateEventNode(new EventFlowTemplateDto
+        {
+            Id = twitterTemplateId,
+            Description = _twitterTopic,
+            AgentTopic = _twitterTopic,
+            Upstream = null,
+            Downstreams = null
+        });
+        var gptTemplateId = Guid.NewGuid();
+        await _clusterClient.GetGrain<IEventFlowTemplateGrain>(gptTemplateId).CreateEventNode(new EventFlowTemplateDto
+        {
+            Id = gptTemplateId,
+            Description = _gptTopic,
+            AgentTopic = _gptTopic,
+            Upstream = null,
+            Downstreams = new List<Guid>()
+            {
+                twitterTemplateId
+            }
+        });
+
+        var taskId = await _agentTaskService.CreateAgentTaskAsync(gptTemplateId, "比特币突破 10 万美金大关了");
+        AgentTaskDto agentTaskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
+       
+        agentTaskDto.EventResultDictionary.ShouldNotBeEmpty();
+        foreach (var value in agentTaskDto.EventResultDictionary.Values)
+        {
+            _output.WriteLine(value.AgentTopic +"  " + value.Result);
+        }
+        agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Twitter success");
+    }
 }

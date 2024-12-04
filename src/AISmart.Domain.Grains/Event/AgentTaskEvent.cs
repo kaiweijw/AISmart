@@ -14,14 +14,14 @@ public abstract class AgentTaskEvent
     [Id(4)] public string agentTopic { get; set; }
 }
 [GenerateSerializer]
-public  class CreatedAgentEvent : AgentTaskEvent
+public  class CreatedEvent : AgentTaskEvent
 {
     [Id(5)] public bool IsCompleted { get; set; } = false;
     [Id(6)] public string Param { get; set; } 
 }
 
 [GenerateSerializer]
-public  class CompletedAgentEvent : AgentTaskEvent
+public  class CompletedEvent : AgentTaskEvent
 {
     [Id(7)] public Guid  CreatedEventId{ get; set; }
     [Id(8)] public bool IsSuccess { get; set; }

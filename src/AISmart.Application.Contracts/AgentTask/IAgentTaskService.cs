@@ -8,7 +8,7 @@ public interface IAgentTaskService
 {
       Task<Guid> CreateAgentTaskAsync(Guid TaskTemplateId,string param);
 
-      Task<Guid> CompletedEventAsync(CreatedAgentEvent createdAgentEvent, bool isSuccess,
+      Task<Guid> CompletedEventAsync(CreatedEvent createdEvent, bool isSuccess,
             string failReason, string result);
       Task<AgentTaskDto> GetAgentTaskDetailAsync(Guid guid);
 }

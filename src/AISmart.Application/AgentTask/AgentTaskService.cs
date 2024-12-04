@@ -22,7 +22,7 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
     public async Task<Guid> CreateAgentTaskAsync(Guid TaskTemplateId,string param)
     {
        var taskId =  Guid.NewGuid();
-       var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(taskId).CreateTask(TaskTemplateId,param);
+       var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(taskId).CreateAgentTaskAsync(TaskTemplateId,param);
        if (!eventList.IsNullOrEmpty())
        {
            foreach (var taskEvent in eventList)
@@ -34,10 +34,10 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
        return taskId;
     }
     
-    public async Task<Guid> CompletedEventAsync(CreatedAgentEvent createdAgentEvent, bool isSuccess,
+    public async Task<Guid> CompletedEventAsync(CreatedEvent createdEvent, bool isSuccess,
         string failReason, string result)
     {
-        var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(createdAgentEvent.TaskId).CompleteEvent( createdAgentEvent,isSuccess,failReason,result);
+        var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(createdEvent.TaskId).CompletedEventAsync( createdEvent,isSuccess,failReason,result);
         if (!eventList.IsNullOrEmpty())
         {
             foreach (var taskEvent in eventList)
@@ -46,11 +46,11 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
             }
         }
 
-        return createdAgentEvent.TaskId;
+        return createdEvent.TaskId;
     }
 
     public Task<AgentTaskDto> GetAgentTaskDetailAsync(Guid taskId)
     {
-        return _clusterClient.GetGrain<IAgentTaskGrain>(taskId).GetTask();
+        return _clusterClient.GetGrain<IAgentTaskGrain>(taskId).GetAgentTaskDetailAsync();
     }
 }

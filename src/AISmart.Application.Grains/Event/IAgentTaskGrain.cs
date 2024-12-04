@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 public interface IAgentTaskGrain : IGrainWithGuidKey
 {
-    Task<List<CreatedAgentEvent>> CreateTask(Guid templateId, string param);
+    Task<List<CreatedEvent>> CreateAgentTaskAsync(Guid templateId, string param);
     
-    Task<List<CreatedAgentEvent>> CompleteEvent(CreatedAgentEvent agentEvent,  bool isSuccess,
+    Task<List<CreatedEvent>> CompletedEventAsync(CreatedEvent @event,  bool isSuccess,
         string failReason = null, string result = null);
-    Task<AgentTaskDto> GetTask();
+    Task<AgentTaskDto> GetAgentTaskDetailAsync();
 }
