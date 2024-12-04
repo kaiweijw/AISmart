@@ -55,6 +55,8 @@ public class MockDaprProvider : IDaprProvider
                 await _serviceProvider.GetRequiredService<AgentTaskService>()
                     .CompletedEventAsync(agentEvent, true, "", reply.GetContent());
                 break;
+            default:
+                break;
         }
     }
 }
