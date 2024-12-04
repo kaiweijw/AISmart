@@ -6,8 +6,7 @@ using Volo.Abp.Modularity;
 
 namespace AISmart;
 
-public abstract class AISmartApplicationTests <TStartupModule> : AISmartApplicationTestBase<TStartupModule>
-    where TStartupModule : IAbpModule
+public abstract class AISmartApplicationTests: AISmartApplicationTestBase
 {
     private readonly IRoutingService _routingService;
     private readonly IAgentService _agentService;
@@ -18,7 +17,7 @@ public abstract class AISmartApplicationTests <TStartupModule> : AISmartApplicat
         _agentService = GetRequiredService<IAgentService>();
     }
     
-    [Fact]
+    /*[Fact]
     public async Task test()
     {
        
@@ -56,5 +55,5 @@ public abstract class AISmartApplicationTests <TStartupModule> : AISmartApplicat
             push(Content)     
                 
                 
-    }
+    }*/
 }

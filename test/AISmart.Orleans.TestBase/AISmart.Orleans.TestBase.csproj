@@ -13,7 +13,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\AISmart.TestBase\AISmart.TestBase.csproj" />
-        <ProjectReference Include="..\src\AISmart.Application\AISmart.Application.csproj" />
+        <ProjectReference Include="..\..\src\AISmart.Application\AISmart.Application.csproj" />
+        <ProjectReference Include="..\..\src\AISmart.Application\AISmart.Application.csproj" />
     </ItemGroup>
 
 </Project>

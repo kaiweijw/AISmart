@@ -11,7 +11,7 @@ public abstract class AISmartOrleansTestBase<TStartupModule> :
 
     protected readonly TestCluster Cluster;
 
-    protected AISmartOrleansTestBase(ITestOutputHelper output) : base()
+    protected AISmartOrleansTestBase() 
     {
         Cluster = GetRequiredService<ClusterFixture>().Cluster;
     }

@@ -1,5 +1,6 @@
 ﻿using Volo.Abp.Account;
 using Volo.Abp.AspNetCore.Mvc.Dapr;
+using Volo.Abp.AspNetCore.Mvc.Dapr.EventBus;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.Dapr;
 using Volo.Abp.Identity;
@@ -15,7 +16,8 @@ namespace AISmart;
     typeof(AbpIdentityApplicationModule),
     typeof(AbpPermissionManagementApplicationModule),
     typeof(AbpDaprModule),
-    typeof(AbpAspNetCoreMvcDaprModule)
+    typeof(AbpAspNetCoreMvcDaprModule),
+    typeof(AbpAspNetCoreMvcDaprEventBusModule)
     )]
 public class AISmartApplicationModule : AbpModule
 {

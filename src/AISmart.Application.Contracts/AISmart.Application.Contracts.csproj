@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AISmart.Domain.Grains\AISmart.Domain.Grains.csproj" />
     <ProjectReference Include="..\AISmart.Domain.Shared\AISmart.Domain.Shared.csproj" />
   </ItemGroup>
 
