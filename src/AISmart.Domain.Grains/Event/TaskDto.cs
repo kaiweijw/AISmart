@@ -1,6 +1,6 @@
 namespace AISmart.Domain.Grains.Event;
 
-public class TaskState
+public class TaskDto
 {
     public Guid Id { get; set; }
     
@@ -9,11 +9,5 @@ public class TaskState
     public List<Guid> FailedEvents { get; set; }
     
     public Dictionary<Guid,EventResult> EventResultDictionary { get; set; }
-}
-
-public class EventResult
-{
-    public string AgentTopic { get; set; }
-    public string Result { get; set; }
 }
 

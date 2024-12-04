@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AISmart.Application.Grains.Event;
 using AISmart.Dapr;
+using AISmart.Domain.Grains.Event;
 using Orleans;
 using Volo.Abp.Application.Services;
 
@@ -48,8 +49,8 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
         return taskId;
     }
 
-    public Task<string> GetAgentTaskDetailAsync(Guid taskId)
+    public Task<TaskDto> GetAgentTaskDetailAsync(Guid taskId)
     {
-        return _clusterClient.GetGrain<ITaskGrain>(taskId).GetState();
+        return _clusterClient.GetGrain<ITaskGrain>(taskId).GetTask();
     }
 }

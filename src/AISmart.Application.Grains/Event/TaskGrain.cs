@@ -1,4 +1,5 @@
 using AISmart.Domain.Grains.Event;
+using Volo.Abp.ObjectMapping;
 
 namespace AISmart.Application.Grains.Event;
 
@@ -9,6 +10,13 @@ using Orleans.EventSourcing;
 
 public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
 {
+    private readonly IObjectMapper _objectMapper;
+
+    public TaskGrain(IObjectMapper objectMapper)
+    {
+        _objectMapper = objectMapper;
+    }
+
     public async Task<List<CreatedEvent>> CreateTask(Guid templateId, string param)
     {
         var eventNodeDto = await GrainFactory.GetGrain<IEventNodeGrain>(templateId).GetEventNode();
@@ -50,7 +58,12 @@ public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
         return  taskEvents;
     }
 
-   
+    public Task<TaskDto> GetTask()
+    {
+        return Task.FromResult(_objectMapper.Map<TaskState,TaskDto>(State));
+    }
+
+
     protected override void TransitionState(
         TaskState state, TaskEvent @event)
     {
@@ -75,7 +88,6 @@ public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
                 }
                 else
                 {
-                    State.State = $"{completeEvent.Name} Failed: {completeEvent.FailReason}";
                     State.FailedEvents ??= new List<Guid>();
                     State.FailedEvents.Add(completeEvent.CreatedEventId);
                 }
@@ -106,10 +118,5 @@ public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
         }
 
         return taskEvents;
-    }
-
-    public Task<string> GetState()
-    {
-        return Task.FromResult(State.State);
     }
 }

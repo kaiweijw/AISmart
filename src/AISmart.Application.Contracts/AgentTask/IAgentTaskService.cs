@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using AISmart.Domain.Grains.Event;
 
 namespace AISmart.AgentTask;
 
@@ -9,5 +10,5 @@ public interface IAgentTaskService
 
       Task<Guid> CompletedEventAsync(Guid taskId, Guid eventId, bool isSuccess,
             string failReason, string result);
-      Task<string> GetAgentTaskDetailAsync(Guid guid);
+      Task<TaskDto> GetAgentTaskDetailAsync(Guid guid);
 }

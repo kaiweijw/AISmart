@@ -10,5 +10,5 @@ public interface ITaskGrain : IGrainWithGuidKey
     Task<List<CreatedEvent>> CreateTask(Guid templateId, string param);
     
     Task<List<CreatedEvent>> CompleteEvent(Guid eventId,bool isSuccess, string failReason = null, string result = null);
-    Task<string> GetState();
+    Task<TaskDto> GetTask();
 }
