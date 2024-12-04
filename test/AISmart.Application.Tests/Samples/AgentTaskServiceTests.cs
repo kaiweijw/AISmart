@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AISmart.AgentTask;
 using AISmart.Application.Grains.Event;
@@ -22,10 +23,10 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     }
     
     [Fact]
-    public async Task Initial_Task_Template()
+    public async Task Telegram_Template()
     {
         var templateId = Guid.NewGuid();
-         await _clusterClient.GetGrain<IEventNodeGrain>(templateId).CreateEventNode(new EventNodeDto
+         await _clusterClient.GetGrain<IEventFlowTemplateGrain>(templateId).CreateEventNode(new EventFlowTemplateDto
         {
             Id = templateId,
             Description = "Telegram",
@@ -34,6 +35,45 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
             Downstreams = null
         });
 
-       await _agentTaskService.CreateAgentTaskAsync(templateId, "send Telegram Message");
+      var taskId = await _agentTaskService.CreateAgentTaskAsync(templateId, "send Telegram Message");
+      TaskDto taskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
+    }
+    
+    [Fact]
+    public async Task Initial_Task_Template()
+    {
+        var telegramTemplateId = Guid.NewGuid();
+        await _clusterClient.GetGrain<IEventFlowTemplateGrain>(telegramTemplateId).CreateEventNode(new EventFlowTemplateDto
+        {
+            Id = telegramTemplateId,
+            Description = "Telegram",
+            AgentTopic = "Telegram",
+            Upstream = null,
+            Downstreams = null
+        });
+        var twitterTemplateId = Guid.NewGuid();
+        await _clusterClient.GetGrain<IEventFlowTemplateGrain>(twitterTemplateId).CreateEventNode(new EventFlowTemplateDto
+        {
+            Id = twitterTemplateId,
+            Description = "Twitter",
+            AgentTopic = "Twitter",
+            Upstream = null,
+            Downstreams = null
+        });
+        var gptTemplateId = Guid.NewGuid();
+        await _clusterClient.GetGrain<IEventFlowTemplateGrain>(gptTemplateId).CreateEventNode(new EventFlowTemplateDto
+        {
+            Id = gptTemplateId,
+            Description = "Twitter",
+            AgentTopic = "Twitter",
+            Upstream = null,
+            Downstreams = new List<Guid>()
+            {
+                telegramTemplateId,twitterTemplateId
+            }
+        });
+
+        var taskId = await _agentTaskService.CreateAgentTaskAsync(gptTemplateId, "send Telegram Message");
+        TaskDto taskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
     }
 }

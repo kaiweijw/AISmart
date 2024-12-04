@@ -19,7 +19,7 @@ public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
 
     public async Task<List<CreatedEvent>> CreateTask(Guid templateId, string param)
     {
-        var eventNodeDto = await GrainFactory.GetGrain<IEventNodeGrain>(templateId).GetEventNode();
+        var eventNodeDto = await GrainFactory.GetGrain<IEventFlowTemplateGrain>(templateId).GetEventNode();
         var createTaskEvent = new CreatedEvent
         {
             TaskId = this.GetPrimaryKey(),
@@ -99,7 +99,7 @@ public class TaskGrain : JournaledGrain<TaskState, TaskEvent>, ITaskGrain
     private async Task<List<CreatedEvent>> GetSubTaskEventsAsync(TaskState state, CompletedTaskEvent completeEvent)
     {
         List<CreatedEvent> taskEvents = new List<CreatedEvent>();
-        var eventNodeDto = await GrainFactory.GetGrain<IEventNodeGrain>(completeEvent.TemplateId).GetEventNode();
+        var eventNodeDto = await GrainFactory.GetGrain<IEventFlowTemplateGrain>(completeEvent.TemplateId).GetEventNode();
         if (!eventNodeDto.Downstreams.IsNullOrEmpty())
         {
             foreach (var guid in eventNodeDto.Downstreams)

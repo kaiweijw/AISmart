@@ -8,6 +8,6 @@ public class AISmartGrainsAutoMapperProfile : Profile
     public AISmartGrainsAutoMapperProfile()
     {
         // User AutoMap
-        CreateMap<EventNodeState, EventNodeDto>();
+        CreateMap<EventFlowTemplateState, EventFlowTemplateDto>();
     }
 }
