@@ -62,12 +62,12 @@ public class ClusterFixture: IDisposable, ISingletonDependency
                     services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
                     // foreach (var type in implementedTypes)
                     // {
-                        // onServiceExposingContext.ExposedTypes.Add(new ServiceIdentifier(type));
+                    // onServiceExposingContext.ExposedTypes.Add(new ServiceIdentifier(type));
                     // }
                 })
                 .AddMemoryStreams("AISmart")
                 .AddMemoryGrainStorage("PubSubStore")
-                .AddMemoryGrainStorageAsDefault();
+                .AddMemoryGrainStorageAsDefault().AddLogStorageBasedLogConsistencyProvider("LogStorage");
         }
     }
     

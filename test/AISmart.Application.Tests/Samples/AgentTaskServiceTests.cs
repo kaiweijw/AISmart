@@ -15,6 +15,9 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
 {
     private readonly AgentTaskService _agentTaskService;
     private readonly IClusterClient _clusterClient;
+    private readonly string _twitterTopic = "twitter";
+    private readonly string _telegramTopic = "Telegram";
+    private readonly string _gptTopic = "GPT";
 
     public AgentTaskServiceTests()
     {
@@ -46,8 +49,8 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         await _clusterClient.GetGrain<IEventFlowTemplateGrain>(telegramTemplateId).CreateEventNode(new EventFlowTemplateDto
         {
             Id = telegramTemplateId,
-            Description = "Telegram",
-            AgentTopic = "Telegram",
+            Description = _telegramTopic,
+            AgentTopic = _telegramTopic,
             Upstream = null,
             Downstreams = null
         });
@@ -55,8 +58,8 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         await _clusterClient.GetGrain<IEventFlowTemplateGrain>(twitterTemplateId).CreateEventNode(new EventFlowTemplateDto
         {
             Id = twitterTemplateId,
-            Description = "Twitter",
-            AgentTopic = "Twitter",
+            Description = _twitterTopic,
+            AgentTopic = _twitterTopic,
             Upstream = null,
             Downstreams = null
         });
@@ -64,8 +67,8 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         await _clusterClient.GetGrain<IEventFlowTemplateGrain>(gptTemplateId).CreateEventNode(new EventFlowTemplateDto
         {
             Id = gptTemplateId,
-            Description = "Twitter",
-            AgentTopic = "Twitter",
+            Description = "gpt",
+            AgentTopic = "gpt",
             Upstream = null,
             Downstreams = new List<Guid>()
             {
@@ -75,5 +78,31 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
 
         var taskId = await _agentTaskService.CreateAgentTaskAsync(gptTemplateId, "send Telegram Message");
         AgentTaskDto agentTaskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
+        if (agentTaskDto.EventResultDictionary.IsNullOrEmpty())
+        {
+        }
+    }
+    
+    
+    public async Task MockTelegram(string topic,CreatedAgentEvent agentEvent)
+    {
+        if (topic == _telegramTopic)
+        {
+          var task =  await _agentTaskService.GetAgentTaskDetailAsync(agentEvent.TaskId);
+          // telegram execute
+          await _agentTaskService.CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send Telegram success");
+        }else if (topic == _twitterTopic)
+        {
+            var task =  await _agentTaskService.GetAgentTaskDetailAsync(agentEvent.TaskId);
+            // telegram execute
+            await _agentTaskService.CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send Twitter success");
+        }else if (topic == _gptTopic)
+        {
+            var task =  await _agentTaskService.GetAgentTaskDetailAsync(agentEvent.TaskId);
+            // telegram execute
+            await _agentTaskService.CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send GPT success");
+        }
+
+
     }
 }

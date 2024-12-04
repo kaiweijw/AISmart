@@ -42,7 +42,7 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
         {
             foreach (var taskEvent in eventList)
             {
-                await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.Name,taskEvent.Param);
+                await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.Name,taskEvent);
             }
         }
 
