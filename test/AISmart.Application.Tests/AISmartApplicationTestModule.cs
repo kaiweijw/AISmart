@@ -1,5 +1,6 @@
 ﻿using AISmart.Dapr;
 using AISmart.Mock;
+using AISmart.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.Modularity;
@@ -19,6 +20,10 @@ public class AISmartApplicationTestModule : AbpModule
         context.Services.AddSingleton<IDaprProvider , MockDaprProvider>();
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
         var configuration = context.Services.GetConfiguration();
-        Configure<ChatConfigOptions>(configuration.GetSection("Chat"));   
+        Configure<ChatConfigOptions>(o =>
+        {
+            o.Model = "gpt-4o-mini";
+            o.APIKey = "";
+        });   
     }
 }

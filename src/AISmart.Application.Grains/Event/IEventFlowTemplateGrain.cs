@@ -4,9 +4,9 @@ namespace AISmart.Application.Grains.Event;
 
 public interface IEventFlowTemplateGrain : IGrainWithGuidKey
 {
-    public Task CreateEventNode(EventFlowTemplateDto eventFlowTemplateDto);
+    public Task CreateEventNodeAsync(EventFlowTemplateDto eventFlowTemplateDto);
     
     
-    public Task<EventFlowTemplateDto> GetEventNode();
+    public Task<EventFlowTemplateDto> GetEventNodeAsync();
 
 }

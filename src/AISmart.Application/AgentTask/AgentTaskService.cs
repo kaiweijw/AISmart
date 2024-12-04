@@ -9,40 +9,43 @@ using Volo.Abp.Application.Services;
 
 namespace AISmart.AgentTask;
 
-public class AgentTaskService : ApplicationService,IAgentTaskService
+public class AgentTaskService : ApplicationService, IAgentTaskService
 {
     private readonly IDaprProvider _daprProvider;
     private readonly IClusterClient _clusterClient;
-    public AgentTaskService(IDaprProvider daprProvider,IClusterClient clusterClient)
+
+    public AgentTaskService(IDaprProvider daprProvider, IClusterClient clusterClient)
     {
         _daprProvider = daprProvider;
         _clusterClient = clusterClient;
     }
 
-    public async Task<Guid> CreateAgentTaskAsync(Guid TaskTemplateId,string param)
+    public async Task<Guid> CreateAgentTaskAsync(Guid TaskTemplateId, string param)
     {
-       var taskId =  Guid.NewGuid();
-       var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(taskId).CreateAgentTaskAsync(TaskTemplateId,param);
-       if (!eventList.IsNullOrEmpty())
-       {
-           foreach (var taskEvent in eventList)
-           {
-              await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.agentTopic,taskEvent);
-           }
-       }
-
-       return taskId;
-    }
-    
-    public async Task<Guid> CompletedEventAsync(CreatedEvent createdEvent, bool isSuccess,
-        string failReason, string result)
-    {
-        var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(createdEvent.TaskId).CompletedEventAsync( createdEvent,isSuccess,failReason,result);
+        var taskId = Guid.NewGuid();
+        var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(taskId)
+            .CreateAgentTaskAsync(TaskTemplateId, param);
         if (!eventList.IsNullOrEmpty())
         {
             foreach (var taskEvent in eventList)
             {
-                await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.agentTopic,taskEvent);
+                await _daprProvider.PublishEventAsync(DaprConstants.PubSubName, taskEvent.agentTopic, taskEvent);
+            }
+        }
+
+        return taskId;
+    }
+
+    public async Task<Guid> CompletedEventAsync(CreatedEvent createdEvent, bool isSuccess,
+        string failReason, string result)
+    {
+        var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(createdEvent.TaskId)
+            .CompletedEventAsync(createdEvent, isSuccess, failReason, result);
+        if (!eventList.IsNullOrEmpty())
+        {
+            foreach (var taskEvent in eventList)
+            {
+                await _daprProvider.PublishEventAsync(DaprConstants.PubSubName, taskEvent.agentTopic, taskEvent);
             }
         }
 

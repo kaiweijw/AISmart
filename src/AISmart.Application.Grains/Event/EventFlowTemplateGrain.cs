@@ -12,13 +12,13 @@ public class EventFlowTemplateGrain:  Grain<EventFlowTemplateState>,IEventFlowTe
     {
         _objectMapper = objectMapper;
     }
-    public async Task CreateEventNode(EventFlowTemplateDto eventFlowTemplateDto)
+    public async Task CreateEventNodeAsync(EventFlowTemplateDto eventFlowTemplateDto)
     {
         State = _objectMapper.Map<EventFlowTemplateDto, EventFlowTemplateState>(eventFlowTemplateDto);
         await WriteStateAsync();
     }
 
-    public async Task<EventFlowTemplateDto> GetEventNode()
+    public async Task<EventFlowTemplateDto> GetEventNodeAsync()
     {
        return _objectMapper.Map<EventFlowTemplateState , EventFlowTemplateDto>(State);
     }

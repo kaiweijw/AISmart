@@ -1,4 +1,4 @@
-namespace AISmart.Mock;
+namespace AISmart.Options;
 
 public class ChatConfigOptions
 {
