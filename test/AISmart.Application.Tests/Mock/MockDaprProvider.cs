@@ -5,6 +5,10 @@ using AISmart.AgentTask;
 using AISmart.Application.Grains.Event;
 using AISmart.Dapr;
 using AISmart.Domain.Grains.Event;
+using AutoGen.BasicSample;
+using AutoGen.Core;
+using AutoGen.OpenAI;
+using AutoGen.OpenAI.Extension;
 using Microsoft.Extensions.DependencyInjection;
 using Orleans;
 
@@ -37,8 +41,18 @@ public class MockDaprProvider :  IDaprProvider
             }else if (topicName == _gptTopic)
             {
                 var task =  await _serviceProvider.GetRequiredService<AgentTaskService>().GetAgentTaskDetailAsync(agentEvent.TaskId);
+                var gpt4oMini = LLMConfiguration.GetOpenAIGPT4o_mini();
+                var assistantAgent = new OpenAIChatAgent(
+                        chatClient: gpt4oMini,
+                        name: "assistant",
+                        systemMessage: "You convert what user said to all uppercase.")
+                    .RegisterMessageConnector()
+                    .RegisterPrintMessage();
+                
+                // talk to the assistant agent
+                var reply = await assistantAgent.SendAsync(message.ToString()); 
                 // telegram execute
-                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send GPT success");
+                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,reply.GetContent());
             }
         }
     }
