@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
+using Volo.Abp.AspNetCore.Mvc.Dapr.EventBus;
 using Volo.Abp.Authorization;
 using Volo.Abp.Autofac;
 using Volo.Abp.BackgroundJobs;
+using Volo.Abp.Dapr;
 using Volo.Abp.Data;
 using Volo.Abp.Modularity;
 using Volo.Abp.Threading;
@@ -13,7 +15,9 @@ namespace AISmart;
     typeof(AbpAutofacModule),
     typeof(AbpTestBaseModule),
     typeof(AbpAuthorizationModule),
-    typeof(AbpBackgroundJobsAbstractionsModule)
+    typeof(AbpBackgroundJobsAbstractionsModule),
+    typeof(AbpDaprModule),
+    typeof(AbpAspNetCoreMvcDaprEventBusModule)
     )]
 public class AISmartTestBaseModule : AbpModule
 {
@@ -25,6 +29,7 @@ public class AISmartTestBaseModule : AbpModule
         });
 
         context.Services.AddAlwaysAllowAuthorization();
+        context.Services.AddDaprClient();
     }
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
