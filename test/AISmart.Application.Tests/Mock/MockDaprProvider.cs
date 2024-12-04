@@ -39,7 +39,7 @@ public class MockDaprProvider :  IDaprProvider
                 await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent,true, null,"send Telegram success");
             }else if (topicName == _twitterTopic)
             {
-                // telegram execute
+                // twitter execute
                 await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent, true, null,"send Twitter success");
             }else if (topicName == _gptTopic)
             {
@@ -53,8 +53,8 @@ public class MockDaprProvider :  IDaprProvider
                 
                 // talk to the assistant agent
                 var reply = await assistantAgent.SendAsync(agentEvent.Param); 
-                // telegram execute
-                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent, true, null,reply.GetContent());
+                // CompletedEvent
+                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent, true, "",reply.GetContent());
             }
         }
     }

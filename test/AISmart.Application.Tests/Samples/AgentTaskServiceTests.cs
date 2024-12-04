@@ -97,7 +97,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Telegram success");
     }
     [Fact]
-    public async Task _Task_Test()
+    public async Task Sequential_Task_Test()
     {
         var twitterTemplateId = Guid.NewGuid();
         await _clusterClient.GetGrain<IEventFlowTemplateGrain>(twitterTemplateId).CreateEventNode(new EventFlowTemplateDto

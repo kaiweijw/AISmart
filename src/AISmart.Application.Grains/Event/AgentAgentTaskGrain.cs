@@ -107,6 +107,10 @@ public class AgentAgentTaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent
     private async Task<List<CreatedEvent>> GetSubTaskEventsAsync(AgentTaskState state, CompletedEvent completeTaskEvent)
     {
         List<CreatedEvent> taskEvents = new List<CreatedEvent>();
+        if (!completeTaskEvent.IsSuccess)
+        {
+            return taskEvents;
+        }
         var eventNodeDto = await GrainFactory.GetGrain<IEventFlowTemplateGrain>(completeTaskEvent.TemplateId).GetEventNode();
         if (!eventNodeDto.Downstreams.IsNullOrEmpty())
         {
