@@ -1,9 +1,11 @@
 using System;
 using AISmart.Application.Grains;
+using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Orleans.Hosting;
 using Orleans.TestingHost;
+using Volo.Abp.AutoMapper;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.ObjectMapping;
 using Volo.Abp.Reflection;
@@ -32,11 +34,9 @@ public class ClusterFixture: IDisposable, ISingletonDependency
     {
         public void Configure(ISiloBuilder hostBuilder)
         {
-           
             hostBuilder.ConfigureServices(services =>
                 {
-                   
-
+                    services.AddAutoMapper(typeof(AIApplicationGrainsModule).Assembly);
                     services.OnExposing(onServiceExposingContext =>
                     {
                         //Register types for IObjectMapper<TSource, TDestination> if implements
@@ -44,24 +44,36 @@ public class ClusterFixture: IDisposable, ISingletonDependency
                             onServiceExposingContext.ImplementationType,
                             typeof(IObjectMapper<,>)
                         );
-                        services.AddTransient(
-                            typeof(IObjectMapper<>),
-                            typeof(DefaultObjectMapper<>)
-                        );
-                        services.AddTransient(
-                            typeof(IObjectMapper),
-                            typeof(DefaultObjectMapper)
-                        );
-                        foreach (var type in implementedTypes)
-                        {
-                            onServiceExposingContext.ExposedTypes.Add(new ServiceIdentifier(type));
-                        }
                     });
+                    services.AddTransient(
+                        typeof(IObjectMapper<>),
+                        typeof(DefaultObjectMapper<>)
+                    );
+                    services.AddTransient(
+                        typeof(IObjectMapper),
+                        typeof(DefaultObjectMapper)
+                    );
+                    services.AddTransient(typeof(IAutoObjectMappingProvider),
+                        typeof(AutoMapperAutoObjectMappingProvider));
+                    services.AddTransient(sp => new MapperAccessor()
+                    {
+                        Mapper = sp.GetRequiredService<IMapper>()
+                    });
+                    services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
+                    // foreach (var type in implementedTypes)
+                    // {
+                        // onServiceExposingContext.ExposedTypes.Add(new ServiceIdentifier(type));
+                    // }
                 })
                 .AddMemoryStreams("AISmart")
                 .AddMemoryGrainStorage("PubSubStore")
                 .AddMemoryGrainStorageAsDefault();
         }
+    }
+    
+    public class MapperAccessor : IMapperAccessor
+    {
+        public IMapper Mapper { get; set; }
     }
     
     private class TestClientBuilderConfigurator : IClientBuilderConfigurator
