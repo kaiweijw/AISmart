@@ -9,6 +9,7 @@ public interface IAgentTaskGrain : IGrainWithGuidKey
 {
     Task<List<CreatedAgentEvent>> CreateTask(Guid templateId, string param);
     
-    Task<List<CreatedAgentEvent>> CompleteEvent(Guid eventId,bool isSuccess, string failReason = null, string result = null);
+    Task<List<CreatedAgentEvent>> CompleteEvent(CreatedAgentEvent agentEvent,  bool isSuccess,
+        string failReason = null, string result = null);
     Task<AgentTaskDto> GetTask();
 }

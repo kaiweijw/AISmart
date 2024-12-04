@@ -27,26 +27,26 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
        {
            foreach (var taskEvent in eventList)
            {
-              await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.Name,taskEvent);
+              await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.agentTopic,taskEvent);
            }
        }
 
        return taskId;
     }
     
-    public async Task<Guid> CompletedEventAsync(Guid taskId,Guid eventId,bool isSuccess,
-    string failReason,string result)
+    public async Task<Guid> CompletedEventAsync(CreatedAgentEvent createdAgentEvent, bool isSuccess,
+        string failReason, string result)
     {
-        var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(taskId).CompleteEvent( eventId,isSuccess,failReason,result);
+        var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(createdAgentEvent.TaskId).CompleteEvent( createdAgentEvent,isSuccess,failReason,result);
         if (!eventList.IsNullOrEmpty())
         {
             foreach (var taskEvent in eventList)
             {
-                await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.Name,taskEvent);
+                await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.agentTopic,taskEvent);
             }
         }
 
-        return taskId;
+        return createdAgentEvent.TaskId;
     }
 
     public Task<AgentTaskDto> GetAgentTaskDetailAsync(Guid taskId)

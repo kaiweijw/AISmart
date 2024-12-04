@@ -28,17 +28,17 @@ public class MockDaprProvider :  IDaprProvider
             {
                 var task =  await _serviceProvider.GetRequiredService<AgentTaskService>().GetAgentTaskDetailAsync(agentEvent.TaskId);
                 // telegram execute
-                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send Telegram success");
+                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent,true, null,"send Telegram success");
             }else if (topicName == _twitterTopic)
             {
                 var task =  await _serviceProvider.GetRequiredService<AgentTaskService>().GetAgentTaskDetailAsync(agentEvent.TaskId);
                 // telegram execute
-                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send Twitter success");
+                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent, true, null,"send Twitter success");
             }else if (topicName == _gptTopic)
             {
                 var task =  await _serviceProvider.GetRequiredService<AgentTaskService>().GetAgentTaskDetailAsync(agentEvent.TaskId);
                 // telegram execute
-                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send GPT success");
+                await _serviceProvider.GetRequiredService<AgentTaskService>().CompletedEventAsync(agentEvent, true, null,"send GPT success");
             }
         }
     }
