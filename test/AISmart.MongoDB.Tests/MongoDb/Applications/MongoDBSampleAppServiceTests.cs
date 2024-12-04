@@ -5,7 +5,7 @@ using Xunit;
 namespace AISmart.MongoDb.Applications;
 
 [Collection(AISmartTestConsts.CollectionDefinitionName)]
-public class MongoDBSampleAppServiceTests : SampleAppServiceTests<AISmartMongoDbTestModule>
+public class MongoDBSampleAppServiceTests : SampleAppServiceTests
 {
 
 }

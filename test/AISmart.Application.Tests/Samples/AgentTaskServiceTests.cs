@@ -9,7 +9,7 @@ using Xunit;
 
 namespace AISmart.Samples;
 
-public class AgentTaskServiceTests : AISmartApplicationTestBase<AISmartApplicationModule>
+public class AgentTaskServiceTests : AISmartApplicationTestBase
    
 {
     private readonly AgentTaskService _agentTaskService;

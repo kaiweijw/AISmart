@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AISmart.Domain\AISmart.Domain.csproj" />
-    <ProjectReference Include="..\AISmart.TestBase\AISmart.TestBase.csproj" />
+    <ProjectReference Include="..\AISmart.Orleans.TestBase\AISmart.Orleans.TestBase.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,8 +6,7 @@ using Volo.Abp.Modularity;
 
 namespace AISmart;
 
-public abstract class AISmartApplicationTests <TStartupModule> : AISmartApplicationTestBase<TStartupModule>
-    where TStartupModule : IAbpModule
+public abstract class AISmartApplicationTests: AISmartApplicationTestBase
 {
     private readonly IRoutingService _routingService;
     private readonly IAgentService _agentService;

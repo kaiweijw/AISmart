@@ -11,8 +11,7 @@ namespace AISmart.Samples;
  * (like IIdentityUserAppService here).
  * Only test your own application services.
  */
-public abstract class SampleAppServiceTests<TStartupModule> : AISmartApplicationTestBase<TStartupModule>
-    where TStartupModule : IAbpModule
+public abstract class SampleAppServiceTests: AISmartApplicationTestBase
 {
     private readonly IIdentityUserAppService _userAppService;
 

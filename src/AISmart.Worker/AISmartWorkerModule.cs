@@ -6,8 +6,10 @@ using AISmart.Worker.Author;
 using AISmart.Worker.Dapr;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
+using Volo.Abp.AspNetCore.Mvc.Dapr.EventBus;
 using Volo.Abp.Autofac;
 using Volo.Abp.BackgroundWorkers;
+using Volo.Abp.Dapr;
 using Volo.Abp.Modularity;
 
 namespace AISmart.Worker;
@@ -18,7 +20,9 @@ namespace AISmart.Worker;
     typeof(AISmartApplicationModule),
     typeof(AISmartApplicationContractsModule),
     typeof(AISmartMongoDbModule),
-    typeof(AbpAutofacModule)
+    typeof(AbpAutofacModule),
+    typeof(AbpDaprModule),
+    typeof(AbpAspNetCoreMvcDaprEventBusModule)
 )]
 public class AISmartWorkerModule : AIApplicationGrainsModule, IDomainGrainsModule
 {

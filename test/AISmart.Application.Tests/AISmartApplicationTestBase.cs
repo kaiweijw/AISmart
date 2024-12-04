@@ -1,9 +1,5 @@
-﻿using Volo.Abp.Modularity;
-using Xunit.Abstractions;
+﻿namespace AISmart;
 
-namespace AISmart;
-
-public abstract class AISmartApplicationTestBase<TStartupModule> : AISmartOrleansTestBase<TStartupModule>
-    where TStartupModule : IAbpModule
+public abstract class AISmartApplicationTestBase : AISmartTestBase<AISmartApplicationTestModule>
 {
 }
