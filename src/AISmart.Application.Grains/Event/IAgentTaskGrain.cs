@@ -5,7 +5,7 @@ namespace AISmart.Application.Grains.Event;
 using Orleans;
 using System.Threading.Tasks;
 
-public interface ITaskGrain : IGrainWithGuidKey
+public interface IAgentTaskGrain : IGrainWithGuidKey
 {
     Task<List<CreatedAgentEvent>> CreateTask(Guid templateId, string param);
     

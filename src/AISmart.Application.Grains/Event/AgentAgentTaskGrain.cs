@@ -1,4 +1,5 @@
 using AISmart.Domain.Grains.Event;
+using Orleans.Providers;
 using Volo.Abp.ObjectMapping;
 
 namespace AISmart.Application.Grains.Event;
@@ -7,17 +8,17 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans.EventSourcing;
-
-public class TaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent>, ITaskGrain
+[LogConsistencyProvider(ProviderName = "LogStorage")]
+public class AgentAgentTaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent>, IAgentTaskGrain
 {
     private readonly IObjectMapper _objectMapper;
 
-    public TaskGrain(IObjectMapper objectMapper)
+    public AgentAgentTaskGrain(IObjectMapper objectMapper)
     {
         _objectMapper = objectMapper;
     }
 
-    public async Task<List<CreatedAgentEvent>> CreateTask(Guid templateId, string param)
+    public async Task<List<CreatedAgentEvent>> CreateTask( Guid templateId, string param)
     {
         var eventNodeDto = await GrainFactory.GetGrain<IEventFlowTemplateGrain>(templateId).GetEventNode();
         var createTaskEvent = new CreatedAgentEvent
@@ -55,12 +56,13 @@ public class TaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent>, ITaskGr
 
         base.RaiseEvents(events);
         await ConfirmEvents();
+       
         return  taskEvents;
     }
 
-    public Task<AgentTaskDto> GetTask()
+    public async Task<AgentTaskDto> GetTask()
     {
-        return Task.FromResult(_objectMapper.Map<AgentTaskState,AgentTaskDto>(State));
+        return _objectMapper.Map<AgentTaskState,AgentTaskDto>(State);
     }
 
 

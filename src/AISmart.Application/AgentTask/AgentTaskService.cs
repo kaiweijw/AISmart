@@ -22,12 +22,12 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
     public async Task<Guid> CreateAgentTaskAsync(Guid TaskTemplateId,string param)
     {
        var taskId =  Guid.NewGuid();
-       var eventList = await _clusterClient.GetGrain<ITaskGrain>(taskId).CreateTask(TaskTemplateId,param);
-       if (eventList.IsNullOrEmpty())
+       var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(taskId).CreateTask(TaskTemplateId,param);
+       if (!eventList.IsNullOrEmpty())
        {
            foreach (var taskEvent in eventList)
            {
-              await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.Name,taskEvent.Param);
+              await _daprProvider.PublishEventAsync(DaprConstants.PubSubName,taskEvent.Name,taskEvent);
            }
        }
 
@@ -37,8 +37,8 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
     public async Task<Guid> CompletedEventAsync(Guid taskId,Guid eventId,bool isSuccess,
     string failReason,string result)
     {
-        var eventList = await _clusterClient.GetGrain<ITaskGrain>(taskId).CompleteEvent( eventId,isSuccess,failReason,result);
-        if (eventList.IsNullOrEmpty())
+        var eventList = await _clusterClient.GetGrain<IAgentTaskGrain>(taskId).CompleteEvent( eventId,isSuccess,failReason,result);
+        if (!eventList.IsNullOrEmpty())
         {
             foreach (var taskEvent in eventList)
             {
@@ -51,6 +51,6 @@ public class AgentTaskService : ApplicationService,IAgentTaskService
 
     public Task<AgentTaskDto> GetAgentTaskDetailAsync(Guid taskId)
     {
-        return _clusterClient.GetGrain<ITaskGrain>(taskId).GetTask();
+        return _clusterClient.GetGrain<IAgentTaskGrain>(taskId).GetTask();
     }
 }

@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AISmart.AgentTask;
 using AISmart.Application.Grains.Event;
+using AISmart.Dapr;
 using AISmart.Domain.Grains.Event;
+using AISmart.Mock;
+using Microsoft.Extensions.DependencyInjection;
 using Orleans;
+using Shouldly;
 using Volo.Abp.Modularity;
 using Xunit;
 
@@ -23,6 +28,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     {
         _agentTaskService = GetRequiredService<AgentTaskService>();
         _clusterClient = GetRequiredService<IClusterClient>();
+       
     }
     
     [Fact]
@@ -40,6 +46,8 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
 
       var taskId = await _agentTaskService.CreateAgentTaskAsync(templateId, "send Telegram Message");
       AgentTaskDto agentTaskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
+      agentTaskDto.EventResultDictionary.ShouldNotBeEmpty();
+      agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Telegram success");
     }
     
     [Fact]
@@ -67,8 +75,8 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         await _clusterClient.GetGrain<IEventFlowTemplateGrain>(gptTemplateId).CreateEventNode(new EventFlowTemplateDto
         {
             Id = gptTemplateId,
-            Description = "gpt",
-            AgentTopic = "gpt",
+            Description = _gptTopic,
+            AgentTopic = _gptTopic,
             Upstream = null,
             Downstreams = new List<Guid>()
             {
@@ -78,31 +86,11 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
 
         var taskId = await _agentTaskService.CreateAgentTaskAsync(gptTemplateId, "send Telegram Message");
         AgentTaskDto agentTaskDto = await _agentTaskService.GetAgentTaskDetailAsync(taskId);
-        if (agentTaskDto.EventResultDictionary.IsNullOrEmpty())
-        {
-        }
+       
+        agentTaskDto.EventResultDictionary.ShouldNotBeEmpty();
+        agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send GPT success");
+        agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Twitter success");
+        agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Telegram success");
     }
     
-    
-    public async Task MockTelegram(string topic,CreatedAgentEvent agentEvent)
-    {
-        if (topic == _telegramTopic)
-        {
-          var task =  await _agentTaskService.GetAgentTaskDetailAsync(agentEvent.TaskId);
-          // telegram execute
-          await _agentTaskService.CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send Telegram success");
-        }else if (topic == _twitterTopic)
-        {
-            var task =  await _agentTaskService.GetAgentTaskDetailAsync(agentEvent.TaskId);
-            // telegram execute
-            await _agentTaskService.CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send Twitter success");
-        }else if (topic == _gptTopic)
-        {
-            var task =  await _agentTaskService.GetAgentTaskDetailAsync(agentEvent.TaskId);
-            // telegram execute
-            await _agentTaskService.CompletedEventAsync(agentEvent.TaskId, agentEvent.Id, true, null,"send GPT success");
-        }
-
-
-    }
 }
