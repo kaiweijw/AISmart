@@ -14,7 +14,7 @@ namespace AISmart.Silo;
     typeof(AbpAutofacModule),
     typeof(OpenTelemetryModule)
 )]
-public class SiloModule : AbpModule, IDomainGrainsModule, IApplicationGrainsModule
+public class SiloModule : AIApplicationGrainsModule, IDomainGrainsModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {

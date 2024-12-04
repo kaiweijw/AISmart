@@ -44,7 +44,7 @@ namespace AISmart;
     typeof(AbpSwashbuckleModule),
     typeof(OpenTelemetryModule)
 )]
-public class AISmartHttpApiHostModule : AbpModule, IDomainGrainsModule, IApplicationGrainsModule
+public class AISmartHttpApiHostModule : AIApplicationGrainsModule, IDomainGrainsModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
