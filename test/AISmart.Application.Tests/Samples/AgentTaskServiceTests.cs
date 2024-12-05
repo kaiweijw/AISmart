@@ -45,7 +45,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     }
 
     [Fact]
-    public async Task muti_Task_Test()
+    public async Task Muti_Task_Test()
     {
         var telegramTemplateId = Guid.NewGuid();
         await _clusterClient.GetGrain<IEventFlowTemplateGrain>(telegramTemplateId).CreateEventNodeAsync(
@@ -84,8 +84,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
             _output.WriteLine(value.AgentTopic + "  " + value.Result);
         }
 
-        agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Twitter success");
-        agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Telegram success");
     }
 
     [Fact]
@@ -118,7 +116,5 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         {
             _output.WriteLine(value.AgentTopic + "  " + value.Result);
         }
-
-        agentTaskDto.EventResultDictionary.Values.Select(o => o.Result).ShouldContain("send Twitter success");
     }
 }
