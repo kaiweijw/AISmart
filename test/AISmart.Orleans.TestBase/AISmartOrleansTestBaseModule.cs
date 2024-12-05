@@ -1,3 +1,4 @@
+using AElf.Indexing.Elasticsearch;
 using Microsoft.Extensions.DependencyInjection;
 using Orleans;
 using Volo.Abp;
@@ -12,7 +13,8 @@ namespace AISmart;
 [DependsOn(
     typeof(AbpAutofacModule),
     typeof(AbpTestBaseModule),
-    typeof(AbpAuthorizationModule)
+    typeof(AbpAuthorizationModule),
+    typeof(AElfIndexingElasticsearchModule)
 )]
 public class AISmartOrleansTestBaseModule : AbpModule
 {
