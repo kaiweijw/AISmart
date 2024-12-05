@@ -31,8 +31,9 @@ public class MockDaprProvider : IDaprProvider
         switch (topicName)
         {
             case DaprConstants.TwitterTopic:
+                
                 await _serviceProvider.GetRequiredService<AgentTaskService>()
-                    .CompletedEventAsync(agentEvent, true, null, "send Twitter success");
+                    .CompletedEventAsync(agentEvent, true, null, agentEvent.Param.IsNullOrEmpty()?"send Twitter success":agentEvent.Param);
                 break;
             case DaprConstants.TelegramTopic:
                 // telegram execute
