@@ -1,4 +1,5 @@
 using AISmart.Domain.Grains.Event;
+using Volo.Abp.EventBus.Local;
 using Volo.Abp.ObjectMapping;
 
 namespace AISmart.Application.Grains.Event;
@@ -16,7 +17,7 @@ public interface ITelegramAgent : IAgent
 
 public class TelegramAgent : Agent, ITelegramAgent,IAgent
 {
-    public TelegramAgent(IObjectMapper objectMapper) : base(objectMapper)
+    public TelegramAgent(IObjectMapper objectMapper,ILocalEventBus localEventBus) : base(objectMapper)
     {
     }
 
@@ -25,4 +26,6 @@ public class TelegramAgent : Agent, ITelegramAgent,IAgent
         // Additional logic can be added here before publishing
         await PublishAsync(eventData);
     }
+    
+    
 }

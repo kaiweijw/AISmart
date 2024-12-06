@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AISmart.AgentTask;
 using AISmart.Application.Grains.Event;
@@ -77,8 +78,10 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         
         await _senderAgent.PublishAsync(basicEvent);
         
-        await _receiverAgent.HandleEventAsync(basicEvent);
         
+        // await _receiverAgent.HandleEventAsync(basicEvent);
+        
+        Thread.Sleep(100000);
     }
     
 
@@ -109,15 +112,18 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
             Downstreams = null,
             Content = "比特币突破10万美元大关"
         };
-        await _tgAgent.ChatAsync(telegramEvent);
+
+        _tgAgent.ChatAsync(telegramEvent);
+        // bug.Reg(_tgAgent.HandleEventAsync);
+        // bus.Add(telegramEvent);
+        // await _tgAgent.Apply(new ChatEvent{id = telegramEvent.Id} );
         
         await _marketLeaderAgent.ExecuteStrategyAsync(telegramEvent);
         
-
         await _marketOperatorAgent.AnalyseContentAsync(new MarketLeaderCreatedEvent());
         await _marketOperatorAgent.CompleteAnalyseContentAsync();
 
-        await _marketLeaderAgent.CompelteStrategyAsync();
+        await _marketLeaderAgent.CompelteStrategyAsync(new MarketOperatoerCompleteEvent());
 
     }
 }

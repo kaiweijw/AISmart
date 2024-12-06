@@ -1,5 +1,6 @@
 using AISmart.Domain.Grains.Event;
 using Volo.Abp.EventBus;
+using Volo.Abp.EventBus.Local;
 using Volo.Abp.ObjectMapping;
 
 namespace AISmart.Application.Grains.Event;
@@ -12,12 +13,12 @@ public interface IMarketLeaderAgent : IAgent,ILocalEventHandler<TelegramEvent>,I
     /// <param name="eventData">The event to be published.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public Task ExecuteStrategyAsync(TelegramEvent eventData);
-    public Task CompelteStrategyAsync();
+    public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData);
 }
 
 public class MarketLeaderAgent : Agent, IMarketLeaderAgent
 {
-    public MarketLeaderAgent(IObjectMapper objectMapper) : base(objectMapper)
+    public MarketLeaderAgent(IObjectMapper objectMapper,ILocalEventBus localEventBus) : base(objectMapper)
     {
     }
 
@@ -27,13 +28,14 @@ public class MarketLeaderAgent : Agent, IMarketLeaderAgent
         await HandleEventAsync(eventData);
     }
 
-    public Task CompelteStrategyAsync()
+    public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData)
     {
         return Task.CompletedTask;
     }
 
     public Task HandleEventAsync(TelegramEvent eventData)
     {
+        // this.Apply(new ChatEvent { id = eventData.Id });
         Console.WriteLine($"Event Received: {eventData.Content}");
         return Task.CompletedTask;
     }
@@ -41,7 +43,7 @@ public class MarketLeaderAgent : Agent, IMarketLeaderAgent
     public Task HandleEventAsync(MarketOperatoerCompleteEvent eventData)
     {
         Console.WriteLine($"Event Received: {eventData.Content}");
-        CompelteStrategyAsync();
+        CompelteStrategyAsync(eventData);
         return Task.CompletedTask;
     }
 }

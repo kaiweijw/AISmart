@@ -1,5 +1,6 @@
 using AISmart.Domain.Grains.Event;
 using Volo.Abp.EventBus;
+using Volo.Abp.EventBus.Local;
 using Volo.Abp.ObjectMapping;
 
 namespace AISmart.Application.Grains.Event;
@@ -18,7 +19,7 @@ public interface IMarketOperatorAgent : IAgent,ILocalEventHandler<MarketLeaderCr
 
 public class MarketOperatorAgent : Agent, IMarketOperatorAgent, IAgent, ILocalEventHandler<MarketLeaderCreatedEvent>
 {
-    public MarketOperatorAgent(IObjectMapper objectMapper) : base(objectMapper)
+    public MarketOperatorAgent(IObjectMapper objectMapper,ILocalEventBus localEventBus) : base(objectMapper)
     {
     }
 
