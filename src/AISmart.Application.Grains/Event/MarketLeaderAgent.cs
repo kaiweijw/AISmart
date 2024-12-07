@@ -71,4 +71,17 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, 
         CompelteStrategyAsync(eventData);
         return Task.CompletedTask;
     }
+    
+    protected override void TransitionState(
+        AgentTaskState state, TelegramEvent @event)
+    {
+        switch (@event)
+        {
+            case TelegramEvent telegramEvent:
+                State.ProcessingEvents ??= new List<Guid>();
+                State.ProcessingEvents.Add(telegramEvent.Id);
+                State.State = telegramEvent.State;
+                break;
+        }
+    }
 }

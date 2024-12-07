@@ -78,9 +78,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         
         await _senderAgent.PublishAsync(basicEvent);
         
-        
-        // await _receiverAgent.HandleEventAsync(basicEvent);
-        
         await Task.Delay(1000 * 5);
     }
     
@@ -96,9 +93,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
             Content = "比特币突破10万美元大关"
         };
         await _tgAgent.ChatAsync(telegramEvent);
-        
-        // await _marketLeaderAgent.ExecuteStrategyAsync(telegramEvent);
-
 
     }
     
