@@ -97,7 +97,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         };
         await _tgAgent.ChatAsync(telegramEvent);
         
-        await _marketLeaderAgent.ExecuteStrategyAsync(telegramEvent);
+        // await _marketLeaderAgent.ExecuteStrategyAsync(telegramEvent);
 
 
     }
@@ -113,17 +113,18 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
             Content = "比特币突破10万美元大关"
         };
 
-        _tgAgent.ChatAsync(telegramEvent);
-        // bug.Reg(_tgAgent.HandleEventAsync);
+        await _tgAgent.ChatAsync(telegramEvent);
+        // bus.Reg(_tgAgent.HandleEventAsync);
         // bus.Add(telegramEvent);
         // await _tgAgent.Apply(new ChatEvent{id = telegramEvent.Id} );
         
-        await _marketLeaderAgent.ExecuteStrategyAsync(telegramEvent);
+        // await _marketLeaderAgent.ExecuteStrategyAsync(telegramEvent);
         
-        await _marketOperatorAgent.AnalyseContentAsync(new MarketLeaderCreatedEvent());
-        await _marketOperatorAgent.CompleteAnalyseContentAsync();
+        // await _marketOperatorAgent.AnalyseContentAsync(new MarketLeaderCreatedEvent());
+        // await _marketOperatorAgent.CompleteAnalyseContentAsync();
+        //
+        // await _marketLeaderAgent.CompelteStrategyAsync(new MarketOperatoerCompleteEvent());
 
-        await _marketLeaderAgent.CompelteStrategyAsync(new MarketOperatoerCompleteEvent());
-
+        await Task.Delay(1000 * 50);
     }
 }

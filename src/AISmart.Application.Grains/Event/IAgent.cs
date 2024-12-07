@@ -8,6 +8,4 @@ public interface IAgent :ILocalEventHandler<BasicEvent>,IGrainWithGuidKey,ITrans
 {
     public Task PublishAsync(BasicEvent basicEvent);
 
-    public Task<BasicEvent> GetEventNodeAsync();
-
 }

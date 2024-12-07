@@ -9,5 +9,7 @@ public class BasicEvent
     [Id(3)] public List<Guid> Downstreams { get; set; } = new List<Guid>();
     
     [Id(4)] public string Content { get; set; }
+    
+    [Id(5)] public EventStateEnum State { get; set; }
 
 }

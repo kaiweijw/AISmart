@@ -17,20 +17,19 @@ public interface IMarketPriceAgent : IAgent,ILocalEventHandler<MarketLeaderCreat
 
 public class MarketPriceAgent : Agent, IMarketPriceAgent
 {
-    public MarketPriceAgent(IObjectMapper objectMapper,ILocalEventBus localEventBus) : base(objectMapper)
+    public MarketPriceAgent(IObjectMapper objectMapper,ILocalEventBus localEventBus) : base(objectMapper,localEventBus)
     {
     }
 
     public async Task AnalysePriceAsync(MarketLeaderCreatedEvent eventData)
     {
         // Additional logic can be added here before executing the strategy
-        await HandleEventAsync(eventData);
     }
     
-    public Task HandleEventAsync(MarketLeaderCreatedEvent eventData)
+    public async Task HandleEventAsync(MarketLeaderCreatedEvent eventData)
     {
-        Console.WriteLine($"Event Received: {eventData.Content}");
-        return Task.CompletedTask;
+        Console.WriteLine($"MarketPriceAgent Event Received: {eventData.Content}");
+        await AnalysePriceAsync(eventData);
     }
     
 }

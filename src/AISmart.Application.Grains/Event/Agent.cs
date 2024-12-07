@@ -44,7 +44,7 @@ public class Agent : Grain<BasicEvent>, IAgent,ITransientDependency
 
     public Task HandleEventAsync(BasicEvent eventData)
     {
-        Console.WriteLine($"Event Received: {eventData.Content}");
+        Console.WriteLine($"Agent Event Received: {eventData.Content}");
         return Task.CompletedTask;
     }
 }
