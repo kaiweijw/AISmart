@@ -20,13 +20,14 @@ public class AgentAgentTaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent
 
     public async Task<List<CreatedEvent>> CreateAgentTaskAsync( Guid templateId, string param)
     {
-        var eventNodeDto = await GrainFactory.GetGrain<IEventFlowTemplateGrain>(templateId).GetEventNodeAsync();
+        // var eventNodeDto = await GrainFactory.GetGrain<IAgent>(templateId).GetEventNodeAsync();
+        // var eventNodeDto = new EventNodeDto();
         var createTaskEvent = new CreatedEvent
         {
             TaskId = this.GetPrimaryKey(),
-            TemplateId = eventNodeDto.Id,
-            Name = eventNodeDto.AgentTopic,
-            agentTopic = eventNodeDto.AgentTopic,
+            TemplateId = templateId,
+            Name = "CreateEvent",
+            agentTopic = "Agent",
             IsCompleted = false,
             Param = param
         };
@@ -111,26 +112,26 @@ public class AgentAgentTaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent
         {
             return taskEvents;
         }
-        var eventNodeDto = await GrainFactory.GetGrain<IEventFlowTemplateGrain>(completeTaskEvent.TemplateId).GetEventNodeAsync();
-        if (!eventNodeDto.Downstreams.IsNullOrEmpty())
-        {
-            foreach (var guid in eventNodeDto.Downstreams)
-            {
-                var childNodeDto = await GrainFactory.GetGrain<IEventFlowTemplateGrain>(guid).GetEventNodeAsync();
-
-               var taskEvent =  new CreatedEvent
-                {
-                    Id = Guid.NewGuid(),
-                    agentTopic = childNodeDto.AgentTopic,
-                    TemplateId = guid,
-                    TaskId = this.GetPrimaryKey(),
-                    Name = completeTaskEvent.Name,
-                    IsCompleted = false,
-                    Param = completeTaskEvent.Result,
-                };
-                taskEvents.Add(taskEvent);
-            }
-        }
+        // var eventNodeDto = await GrainFactory.GetGrain<IAgent>(completeTaskEvent.TemplateId).GetEventNodeAsync();
+        // if (!eventNodeDto.Downstreams.IsNullOrEmpty())
+        // {
+        //     foreach (var guid in eventNodeDto.Downstreams)
+        //     {
+        //        //  var childNodeDto = await GrainFactory.GetGrain<IAgent>(guid).GetEventNodeAsync();
+        //        //
+        //        // var taskEvent =  new CreatedEvent
+        //        //  {
+        //        //      Id = Guid.NewGuid(),
+        //        //      agentTopic = childNodeDto.AgentTopic,
+        //        //      TemplateId = guid,
+        //        //      TaskId = this.GetPrimaryKey(),
+        //        //      Name = completeTaskEvent.Name,
+        //        //      IsCompleted = false,
+        //        //      Param = completeTaskEvent.Result,
+        //        //  };
+        //        //  taskEvents.Add(taskEvent);
+        //     }
+        // }
 
         return taskEvents;
     }

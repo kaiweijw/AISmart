@@ -3,10 +3,12 @@ using AISmart.Application.Grains;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Orleans.Hosting;
 using Orleans.TestingHost;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.EventBus.Local;
 using Volo.Abp.ObjectMapping;
 using Volo.Abp.Reflection;
 
@@ -37,6 +39,9 @@ public class ClusterFixture: IDisposable, ISingletonDependency
             hostBuilder.ConfigureServices(services =>
                 {
                     services.AddAutoMapper(typeof(AIApplicationGrainsModule).Assembly);
+                    var mock = new Mock<ILocalEventBus>();
+                    services.AddSingleton(typeof(ILocalEventBus), mock.Object);
+                   
                     services.OnExposing(onServiceExposingContext =>
                     {
                         //Register types for IObjectMapper<TSource, TDestination> if implements

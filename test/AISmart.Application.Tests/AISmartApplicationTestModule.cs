@@ -3,12 +3,14 @@ using AISmart.Mock;
 using AISmart.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.EventBus;
 using Volo.Abp.Modularity;
 
 namespace AISmart;
 
 [DependsOn(
     typeof(AISmartApplicationModule),
+    typeof(AbpEventBusModule),
     typeof(AISmartOrleansTestBaseModule),
     typeof(AISmartDomainTestModule)
 )]
