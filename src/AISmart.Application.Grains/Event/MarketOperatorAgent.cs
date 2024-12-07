@@ -1,11 +1,13 @@
 using AISmart.Domain.Grains.Event;
+using Orleans.EventSourcing;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.ObjectMapping;
 
 namespace AISmart.Application.Grains.Event;
 
-public interface IMarketOperatorAgent : IAgent,ILocalEventHandler<MarketLeaderCreatedEvent>
+public interface IMarketOperatorAgent : IGrainWithGuidKey,ILocalEventHandler<MarketLeaderCreatedEvent>,ITransientDependency
 {
     /// <summary>
     /// Executes a market-leading strategy asynchronously.
@@ -17,10 +19,13 @@ public interface IMarketOperatorAgent : IAgent,ILocalEventHandler<MarketLeaderCr
     public Task CompleteAnalyseContentAsync();
 }
 
-public class MarketOperatorAgent : Agent, IMarketOperatorAgent, IAgent, ILocalEventHandler<MarketLeaderCreatedEvent>
+public class MarketOperatorAgent : JournaledGrain<AgentTaskState, MarketLeaderCreatedEvent>, IMarketOperatorAgent
 {
-    public MarketOperatorAgent(IObjectMapper objectMapper,ILocalEventBus localEventBus) : base(objectMapper,localEventBus)
+    private readonly ILocalEventBus _localEventBus;
+
+    public MarketOperatorAgent(ILocalEventBus localEventBus)
     {
+        _localEventBus = localEventBus;
     }
 
     public async Task AnalyseContentAsync(MarketLeaderCreatedEvent eventData)
@@ -30,7 +35,7 @@ public class MarketOperatorAgent : Agent, IMarketOperatorAgent, IAgent, ILocalEv
 
     public async Task CompleteAnalyseContentAsync()
     {
-        await PublishAsync(new MarketOperatoerCompleteEvent());
+        await _localEventBus.PublishAsync(new MarketOperatoerCompleteEvent());
     }
 
     public async Task HandleEventAsync(MarketLeaderCreatedEvent eventData)

@@ -9,23 +9,15 @@ namespace AISmart.Application.Grains.Event;
 
 public class Agent : Grain<BasicEvent>, IAgent,ITransientDependency
 {
-    private readonly IObjectMapper _objectMapper;
     
     // public ILocalEventBus EventBus { get; set; }
     
     private readonly ILocalEventBus _localEventBus;
 
 
-    public Agent(IObjectMapper objectMapper,ILocalEventBus localEventBus) 
+    public Agent(ILocalEventBus localEventBus) 
     {
-        _objectMapper = objectMapper;
          _localEventBus = localEventBus;
-
-    }
-
-    protected Agent(IObjectMapper objectMapper)
-    {
-        _objectMapper = objectMapper;
     }
 
 
@@ -35,11 +27,6 @@ public class Agent : Grain<BasicEvent>, IAgent,ITransientDependency
         // await EventBus.PublishAsync(basicEvent);
         await _localEventBus.PublishAsync(basicEvent);
         await WriteStateAsync();
-    }
-
-    public async Task<BasicEvent> GetEventNodeAsync()
-    {
-        return _objectMapper.Map<BasicEvent, BasicEvent>(State);
     }
 
     public Task HandleEventAsync(BasicEvent eventData)

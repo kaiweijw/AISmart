@@ -17,7 +17,7 @@ public interface ITelegramAgent : IAgent
 
 public class TelegramAgent : Agent, ITelegramAgent
 {
-    public TelegramAgent(IObjectMapper objectMapper,ILocalEventBus localEventBus) : base(objectMapper,localEventBus)
+    public TelegramAgent(ILocalEventBus localEventBus) : base(localEventBus)
     {
     }
 

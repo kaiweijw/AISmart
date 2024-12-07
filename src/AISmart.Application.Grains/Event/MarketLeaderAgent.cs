@@ -27,7 +27,7 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, 
     private readonly ILocalEventBus _localEventBus;
 
     
-    public MarketLeaderAgent(IObjectMapper objectMapper, ILocalEventBus localEventBus)
+    public MarketLeaderAgent(ILocalEventBus localEventBus)
     {
         _localEventBus = localEventBus;
     }
@@ -36,6 +36,8 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, 
     {
         // Additional logic can be added here before executing the strategy
         eventData.State = EventStateEnum.Processing;
+        
+        
         base.RaiseEvent(eventData);
         await ConfirmEvents();
         

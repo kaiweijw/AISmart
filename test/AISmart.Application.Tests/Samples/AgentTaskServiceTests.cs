@@ -81,7 +81,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         
         // await _receiverAgent.HandleEventAsync(basicEvent);
         
-        Thread.Sleep(100000);
+        await Task.Delay(1000 * 5);
     }
     
 
@@ -114,6 +114,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         };
 
         await _tgAgent.ChatAsync(telegramEvent);
+        
         // bus.Reg(_tgAgent.HandleEventAsync);
         // bus.Add(telegramEvent);
         // await _tgAgent.Apply(new ChatEvent{id = telegramEvent.Id} );
@@ -125,6 +126,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         //
         // await _marketLeaderAgent.CompelteStrategyAsync(new MarketOperatoerCompleteEvent());
 
-        await Task.Delay(1000 * 50);
+        await Task.Delay(1000 * 5);
     }
 }
