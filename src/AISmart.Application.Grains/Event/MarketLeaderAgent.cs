@@ -21,7 +21,7 @@ public interface IMarketLeaderAgent :  IGrainWithGuidKey,ILocalEventHandler<Tele
     public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData);
 }
 
-public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, IMarketLeaderAgent
+public class MarketLeaderAgent : JournaledGrain<AgentState, TelegramEvent>, IMarketLeaderAgent
 {
     
     private readonly ILocalEventBus _localEventBus;
@@ -68,5 +68,17 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, 
         Console.WriteLine($"MarketLeaderAgent Event Received: {eventData.Content}");
         CompelteStrategyAsync(eventData);
         return Task.CompletedTask;
+    }
+    
+    protected override void TransitionState(
+        AgentState state, TelegramEvent @event)
+    {
+        switch (@event)
+        {
+            case TelegramEvent createEvent:
+                State.ProcessingEvents ??= new List<Guid>();
+                State.ProcessingEvents.Add(createEvent.Id);
+                break;
+        }
     }
 }

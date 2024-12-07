@@ -1,6 +1,6 @@
 namespace AISmart.Domain.Grains.Event;
 [GenerateSerializer]
-public class AgentTaskState
+public class AgentState
 {
     [Id(0)]   public Guid Id { get; set; }
     

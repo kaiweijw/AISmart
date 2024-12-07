@@ -52,7 +52,7 @@ public class AgentTaskService : ApplicationService, IAgentTaskService
         return createdEvent.TaskId;
     }
 
-    public Task<AgentTaskDto> GetAgentTaskDetailAsync(Guid taskId)
+    public Task<AgentDto> GetAgentTaskDetailAsync(Guid taskId)
     {
         return _clusterClient.GetGrain<IAgentTaskGrain>(taskId).GetAgentTaskDetailAsync();
     }

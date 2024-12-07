@@ -10,5 +10,5 @@ public interface IAgentTaskService
 
       Task<Guid> CompletedEventAsync(CreatedEvent createdEvent, bool isSuccess,
             string failReason, string result);
-      Task<AgentTaskDto> GetAgentTaskDetailAsync(Guid guid);
+      Task<AgentDto> GetAgentTaskDetailAsync(Guid guid);
 }

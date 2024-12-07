@@ -11,5 +11,5 @@ public interface IAgentTaskGrain : IGrainWithGuidKey
     
     Task<List<CreatedEvent>> CompletedEventAsync(CreatedEvent @event,  bool isSuccess,
         string failReason = null, string result = null);
-    Task<AgentTaskDto> GetAgentTaskDetailAsync();
+    Task<AgentDto> GetAgentTaskDetailAsync();
 }

@@ -9,11 +9,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans.EventSourcing;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class AgentAgentTaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent>, IAgentTaskGrain
+public class AgentGrain : JournaledGrain<AgentState, AgentTaskEvent>, IAgentTaskGrain
 {
     private readonly IObjectMapper _objectMapper;
 
-    public AgentAgentTaskGrain(IObjectMapper objectMapper)
+    public AgentGrain(IObjectMapper objectMapper)
     {
         _objectMapper = objectMapper;
     }
@@ -66,15 +66,15 @@ public class AgentAgentTaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent
         return  taskEvents;
     }
 
-    public async Task<AgentTaskDto> GetAgentTaskDetailAsync()
+    public async Task<AgentDto> GetAgentTaskDetailAsync()
     {
         
-        return _objectMapper.Map<AgentTaskState,AgentTaskDto>(State);
+        return _objectMapper.Map<AgentState,AgentDto>(State);
     }
 
 
     protected override void TransitionState(
-        AgentTaskState state, AgentTaskEvent @event)
+        AgentState state, AgentTaskEvent @event)
     {
         switch (@event)
         {
@@ -105,7 +105,7 @@ public class AgentAgentTaskGrain : JournaledGrain<AgentTaskState, AgentTaskEvent
         }
     }
 
-    private async Task<List<CreatedEvent>> GetSubTaskEventsAsync(AgentTaskState state, CompletedEvent completeTaskEvent)
+    private async Task<List<CreatedEvent>> GetSubTaskEventsAsync(AgentState state, CompletedEvent completeTaskEvent)
     {
         List<CreatedEvent> taskEvents = new List<CreatedEvent>();
         if (!completeTaskEvent.IsSuccess)
