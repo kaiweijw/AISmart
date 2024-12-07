@@ -16,17 +16,16 @@ public class Agent : Grain<BasicEvent>, IAgent,ITransientDependency
     private readonly ILocalEventBus _localEventBus;
 
 
-    public Agent(IObjectMapper objectMapper,IServiceProvider serviceProvider,ILocalEventBus localEventBus) 
+    public Agent(IObjectMapper objectMapper,ILocalEventBus localEventBus) 
     {
         _objectMapper = objectMapper;
-        // _localEventBus = localEventBus;
-        _localEventBus = ServiceProvider.GetService<ILocalEventBus>();
-        
+         _localEventBus = localEventBus;
+
     }
 
     protected Agent(IObjectMapper objectMapper)
     {
-        throw new NotImplementedException();
+        _objectMapper = objectMapper;
     }
 
 
@@ -34,7 +33,7 @@ public class Agent : Grain<BasicEvent>, IAgent,ITransientDependency
     {
         Console.WriteLine($"Event Publish: {basicEvent.Content}");
         // await EventBus.PublishAsync(basicEvent);
-        _localEventBus.PublishAsync(basicEvent);
+        await _localEventBus.PublishAsync(basicEvent);
         await WriteStateAsync();
     }
 
