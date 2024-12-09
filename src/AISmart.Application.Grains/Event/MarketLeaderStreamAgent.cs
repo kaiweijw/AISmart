@@ -87,7 +87,7 @@ public class MarketLeaderStreamAgent : Grain<BasicEvent>, IMarketLeaderStreamAge
     
     private Task OnNextAsync(BasicEvent message, StreamSequenceToken token = null)
     {
-        Console.WriteLine($"OrleansMarketLeaderAgent Received message: {message.Content}");
+        Console.WriteLine($"OrleansMarketLeaderStreamAgent Received message: {message.Content}");
         ExecuteStrategyAsync(message);
         return Task.CompletedTask;
     }

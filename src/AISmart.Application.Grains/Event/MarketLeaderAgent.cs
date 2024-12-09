@@ -18,12 +18,12 @@ public interface IMarketLeaderAgent :  IGrainWithGuidKey,ILocalEventHandler<Tele
     /// </summary>
     /// <param name="eventData">The event to be published.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public Task ExecuteStrategyAsync(TelegramEvent eventData);
+    public Task ExecuteStrategyAsync(BasicEvent eventData);
 
     public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData);
 }
 
-public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, IMarketLeaderAgent
+public class MarketLeaderAgent : JournaledGrain<AgentTaskState, BasicEvent>, IMarketLeaderAgent
 {
     
     private readonly ILocalEventBus _localEventBus;
@@ -33,7 +33,7 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, 
         _localEventBus = localEventBus;
     }
 
-    public async Task ExecuteStrategyAsync(TelegramEvent eventData)
+    public async Task ExecuteStrategyAsync(BasicEvent eventData)
     {
         // Additional logic can be added here before executing the strategy
         eventData.State = EventStateEnum.Processing;
@@ -74,14 +74,14 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, 
     }
     
     protected override void TransitionState(
-        AgentTaskState state, TelegramEvent @event)
+        AgentTaskState state, BasicEvent @event)
     {
         switch (@event)
         {
-            case TelegramEvent telegramEvent:
+            case BasicEvent basicEvent:
                 State.ProcessingEvents ??= new List<Guid>();
-                State.ProcessingEvents.Add(telegramEvent.Id);
-                State.State = telegramEvent.State;
+                State.ProcessingEvents.Add(basicEvent.Id);
+                State.State = basicEvent.State;
                 break;
         }
     }
@@ -97,9 +97,10 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, 
 
     }
     
-    private Task OnNextAsync(BasicEvent message, StreamSequenceToken token = null)
+    private Task OnNextAsync(BasicEvent basicEvent, StreamSequenceToken token = null)
     {
-        Console.WriteLine($"OrleansMarketLeaderAgent Received message: {message.Content}");
+        Console.WriteLine($"OrleansMarketLeaderAgent Received message: {basicEvent.Content}");
+        ExecuteStrategyAsync(basicEvent);
         return Task.CompletedTask;
     }
     
