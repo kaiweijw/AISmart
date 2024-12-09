@@ -35,7 +35,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     private readonly Guid _marketOperatorTemplateId;
     
     private readonly IMarketOperatorAgent _marketOperatorAgent;
-    private readonly IMarketLeaderStreamAgent _marketOperatorStreamAgent;
+    private readonly IMarketLeaderStreamAgent _marketLeaderStreamAgent;
     
     private readonly Guid _senderTemplateId;
     private readonly IAgent _senderAgent;
@@ -66,7 +66,9 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         _marketLeaderAgent = _clusterClient.GetGrain<IMarketLeaderAgent>(_marketTemplateId);
         
         Guid _marketStreamTemplateId = Guid.NewGuid();
-        _marketOperatorStreamAgent = _clusterClient.GetGrain<IMarketLeaderStreamAgent>(_marketStreamTemplateId);
+        _marketLeaderStreamAgent = _clusterClient.GetGrain<IMarketLeaderStreamAgent>(_marketStreamTemplateId);
+        _marketLeaderStreamAgent.CompelteStrategyAsync(null);
+
         
         _marketOperatorTemplateId = Guid.NewGuid();
         _marketOperatorAgent = _clusterClient.GetGrain<IMarketOperatorAgent>(_marketOperatorTemplateId);
@@ -117,13 +119,17 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
 
         // await _tgAgent.ChatAsync(telegramEvent);
         // _localEventBus.PublishAsync(telegramEvent);
+        await _senderAgent.PublishOrleansAsync(telegramEvent);
+
         ;
         // _senderAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid());.
-        await _senderAgent.PublishOrleansAsync(telegramEvent);
         
         // await _marketOperatorStreamAgent.ExecuteStrategyAsync(null);
 
-        await _marketOperatorStreamAgent.CompelteStrategyAsync(null);
+        // await _marketLeaderStreamAgent.CompelteStrategyAsync(null);
+        
+        // await _marketLeaderAgent.CompelteStrategyAsync(null);
+        
         // EventSequenceToken evetnset;
         // _localEventBus.Subscribe(telegramEvent, () =>
         //     {
@@ -131,6 +137,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         //     }
         //     );
         // await evetnset.Task;
-        await Task.Delay(1000 * 5);
+        await Task.Delay(1000 * 50);
     }
 }

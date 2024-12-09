@@ -18,7 +18,7 @@ public interface IMarketLeaderStreamAgent :  IGrainWithGuidKey
     /// </summary>
     /// <param name="eventData">The event to be published.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public Task ExecuteStrategyAsync(TelegramEvent eventData);
+    public Task ExecuteStrategyAsync(BasicEvent eventData);
 
     public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData);
 }
@@ -35,8 +35,23 @@ public class MarketLeaderStreamAgent : Grain<BasicEvent>, IMarketLeaderStreamAge
     private IAsyncStream<BasicEvent>? _stream;
 
     
-    public async Task ExecuteStrategyAsync(TelegramEvent eventData)
+    public async Task ExecuteStrategyAsync(BasicEvent eventData)
     {
+        eventData.State = EventStateEnum.Processing;
+        
+        // base.RaiseEvent(eventData);
+        // await ConfirmEvents();
+        // RetrieveConfirmedEvents(2, 1);
+            
+        // call autogen , produces new event;
+        MarketLeaderCreatedEvent marketLeaderCreatedEvent = new MarketLeaderCreatedEvent
+        {
+            Id = Guid.NewGuid(),
+            AgentTopic = CommonConstants.GptTopic,
+            Downstreams = null,
+            Content = "请分析《比特币突破10万美元大关》对市场的影响"
+        };
+        // await _localEventBus.PublishAsync(marketLeaderCreatedEvent);
     }
 
     public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData)
@@ -73,6 +88,7 @@ public class MarketLeaderStreamAgent : Grain<BasicEvent>, IMarketLeaderStreamAge
     private Task OnNextAsync(BasicEvent message, StreamSequenceToken token = null)
     {
         Console.WriteLine($"OrleansMarketLeaderAgent Received message: {message.Content}");
+        ExecuteStrategyAsync(message);
         return Task.CompletedTask;
     }
 }
