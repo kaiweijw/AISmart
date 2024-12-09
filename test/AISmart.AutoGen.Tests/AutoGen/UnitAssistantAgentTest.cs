@@ -11,20 +11,15 @@ namespace AISmart.AutoGen.Tests;
 
 public class UnitAssistantAgent:AISmartAutoGenTestBase
 {
-    private readonly ChatClient _chatClient;
     public UnitAssistantAgent()
     {
-        IConfiguration configuration = GetRequiredService<IConfiguration>();
-        var apiKey = configuration.GetSection("Chat:APIKey").Value;
-        var modelId = configuration.GetSection("Chat:Model").Value;
-        _chatClient = new OpenAIClient(apiKey).GetChatClient(modelId);
     }
 
     [Fact]
     public async Task AutoGen_Assistant_Agent_Test()
     {
         IAgent assistantAgent = new OpenAIChatAgent(
-                chatClient: _chatClient,
+                chatClient: GetRequiredService<ChatClient>(),
                 name: "assistant",
                 systemMessage: "You convert what user said to all uppercase.")
             .RegisterMessageConnector()
