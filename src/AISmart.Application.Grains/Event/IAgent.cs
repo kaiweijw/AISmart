@@ -7,5 +7,6 @@ namespace AISmart.Application.Grains.Event;
 public interface IAgent :ILocalEventHandler<BasicEvent>,IGrainWithGuidKey,ITransientDependency
 {
     public Task PublishAsync(BasicEvent basicEvent);
+    public Task PublishOrleansAsync(BasicEvent basicEvent);
 
 }

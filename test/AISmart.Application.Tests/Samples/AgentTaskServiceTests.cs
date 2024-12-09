@@ -9,7 +9,9 @@ using AISmart.Dapr;
 using AISmart.Domain.Grains.Event;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Orleans;
+using Orleans.Providers.Streams.Common;
 using Shouldly;
+using Volo.Abp.EventBus.Local;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,6 +22,8 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
 {
     private readonly AgentTaskService _agentTaskService;
     private readonly IClusterClient _clusterClient;
+    
+    private readonly ILocalEventBus _localEventBus;
     private readonly ITestOutputHelper _output;
 
     private readonly Guid _tgTemplateId;
@@ -29,7 +33,9 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     private readonly IMarketLeaderAgent _marketLeaderAgent;
     
     private readonly Guid _marketOperatorTemplateId;
+    
     private readonly IMarketOperatorAgent _marketOperatorAgent;
+    private readonly IMarketLeaderStreamAgent _marketOperatorStreamAgent;
     
     private readonly Guid _senderTemplateId;
     private readonly IAgent _senderAgent;
@@ -41,7 +47,15 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     {
         _agentTaskService = GetRequiredService<AgentTaskService>();
         _clusterClient = GetRequiredService<IClusterClient>();
+        _localEventBus = GetRequiredService<ILocalEventBus>();
+        
         _output = output;
+        
+        _senderTemplateId = Guid.NewGuid();
+        _senderAgent = _clusterClient.GetGrain<IAgent>(_senderTemplateId);
+        
+        // _receiverTemplateId = Guid.NewGuid();
+        // _receiverAgent = _clusterClient.GetGrain<IAgent>(_receiverTemplateId);
         
         
         
@@ -51,17 +65,11 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         _marketTemplateId = Guid.NewGuid();
         _marketLeaderAgent = _clusterClient.GetGrain<IMarketLeaderAgent>(_marketTemplateId);
         
+        Guid _marketStreamTemplateId = Guid.NewGuid();
+        _marketOperatorStreamAgent = _clusterClient.GetGrain<IMarketLeaderStreamAgent>(_marketStreamTemplateId);
+        
         _marketOperatorTemplateId = Guid.NewGuid();
         _marketOperatorAgent = _clusterClient.GetGrain<IMarketOperatorAgent>(_marketOperatorTemplateId);
-        
-        
-        
-        _senderTemplateId = Guid.NewGuid();
-        _senderAgent = _clusterClient.GetGrain<IAgent>(_senderTemplateId);
-        
-        _receiverTemplateId = Guid.NewGuid();
-        _receiverAgent = _clusterClient.GetGrain<IAgent>(_receiverTemplateId);
-        
         
     }
     
@@ -99,7 +107,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     [Fact]
     public async Task Multi_Agent_Test()
     {
-        TelegramEvent telegramEvent = new TelegramEvent
+        TelegramEvent telegramEvent = new TelegramEvent()
         {
             Id = _tgTemplateId,
             AgentTopic = CommonConstants.TelegramTopic,
@@ -107,19 +115,20 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
             Content = "比特币突破10万美元大关"
         };
 
-        await _tgAgent.ChatAsync(telegramEvent);
+        // await _tgAgent.ChatAsync(telegramEvent);
+        // _localEventBus.PublishAsync(telegramEvent);
+        ;
+        // _senderAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid());.
+        await _senderAgent.PublishOrleansAsync(telegramEvent);
         
-        // bus.Reg(_tgAgent.HandleEventAsync);
-        // bus.Add(telegramEvent);
-        // await _tgAgent.Apply(new ChatEvent{id = telegramEvent.Id} );
-        
-        // await _marketLeaderAgent.ExecuteStrategyAsync(telegramEvent);
-        
-        // await _marketOperatorAgent.AnalyseContentAsync(new MarketLeaderCreatedEvent());
-        // await _marketOperatorAgent.CompleteAnalyseContentAsync();
-        //
-        // await _marketLeaderAgent.CompelteStrategyAsync(new MarketOperatoerCompleteEvent());
-
-        await Task.Delay(1000 * 5);
+        await _marketOperatorStreamAgent.ExecuteStrategyAsync(null);
+        // EventSequenceToken evetnset;
+        // _localEventBus.Subscribe(telegramEvent, () =>
+        //     {
+        //         evetnset.Set
+        //     }
+        //     );
+        // await evetnset.Task;
+        // await Task.Delay(1000 * 5);
     }
 }

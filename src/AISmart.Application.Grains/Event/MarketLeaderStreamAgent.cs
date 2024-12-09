@@ -10,8 +10,8 @@ using Volo.Abp.ObjectMapping;
 
 namespace AISmart.Application.Grains.Event;
 
-public interface IMarketLeaderAgent :  IGrainWithGuidKey,ILocalEventHandler<TelegramEvent>,
-    ILocalEventHandler<MarketOperatoerCompleteEvent>,ITransientDependency
+
+public interface IMarketLeaderStreamAgent :  IGrainWithGuidKey
 {
     /// <summary>
     /// Executes a market-leading strategy asynchronously.
@@ -23,34 +23,20 @@ public interface IMarketLeaderAgent :  IGrainWithGuidKey,ILocalEventHandler<Tele
     public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData);
 }
 
-public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, IMarketLeaderAgent
+
+public class MarketLeaderStreamAgent : Grain<BasicEvent>, IMarketLeaderStreamAgent
 {
     
-    private readonly ILocalEventBus _localEventBus;
 
-    public MarketLeaderAgent(ILocalEventBus localEventBus)
+    public MarketLeaderStreamAgent()
     {
-        _localEventBus = localEventBus;
     }
 
+    private IAsyncStream<BasicEvent>? _stream;
+
+    
     public async Task ExecuteStrategyAsync(TelegramEvent eventData)
     {
-        // Additional logic can be added here before executing the strategy
-        eventData.State = EventStateEnum.Processing;
-        
-        base.RaiseEvent(eventData);
-        await ConfirmEvents();
-        // RetrieveConfirmedEvents(2, 1);
-            
-        // call autogen , produces new event;
-        MarketLeaderCreatedEvent marketLeaderCreatedEvent = new MarketLeaderCreatedEvent
-        {
-            Id = Guid.NewGuid(),
-            AgentTopic = CommonConstants.GptTopic,
-            Downstreams = null,
-            Content = "请分析《比特币突破10万美元大关》对市场的影响"
-        };
-        await _localEventBus.PublishAsync(marketLeaderCreatedEvent);
     }
 
     public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData)
@@ -72,28 +58,15 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, 
         CompelteStrategyAsync(eventData);
         return Task.CompletedTask;
     }
-    
-    protected override void TransitionState(
-        AgentTaskState state, TelegramEvent @event)
-    {
-        switch (@event)
-        {
-            case TelegramEvent telegramEvent:
-                State.ProcessingEvents ??= new List<Guid>();
-                State.ProcessingEvents.Add(telegramEvent.Id);
-                State.State = telegramEvent.State;
-                break;
-        }
-    }
-    
+
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, CommonConstants.StreamGuid);
-        var stream = this
+        _stream = this
             .GetStreamProvider(CommonConstants.StreamProvider)
             .GetStream<BasicEvent>(streamId);
         
-        await stream.SubscribeAsync(OnNextAsync);
+        await _stream.SubscribeAsync(OnNextAsync);
 
     }
     
@@ -102,6 +75,4 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, TelegramEvent>, 
         Console.WriteLine($"OrleansMarketLeaderAgent Received message: {message.Content}");
         return Task.CompletedTask;
     }
-    
-    
 }
