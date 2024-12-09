@@ -23,12 +23,15 @@ public interface IMarketLeaderAgent :  IGrainWithGuidKey,ILocalEventHandler<Tele
     public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData);
 }
 
-public class MarketLeaderAgent : JournaledGrain<AgentTaskState, BasicEvent>, IMarketLeaderAgent
+public class BasicAgent : JournaledGrain<AgentTaskState, BasicEvent>, IMarketLeaderAgent
 {
     
     private readonly ILocalEventBus _localEventBus;
+    
+    private IAsyncStream<BasicEvent>? _stream;
 
-    public MarketLeaderAgent(ILocalEventBus localEventBus)
+
+    public BasicAgent(ILocalEventBus localEventBus)
     {
         _localEventBus = localEventBus;
     }
@@ -50,7 +53,7 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, BasicEvent>, IMa
             Downstreams = null,
             Content = "请分析《比特币突破10万美元大关》对市场的影响"
         };
-        await _localEventBus.PublishAsync(marketLeaderCreatedEvent);
+        await _stream.OnNextAsync(marketLeaderCreatedEvent);
     }
 
     public Task CompelteStrategyAsync(MarketOperatoerCompleteEvent eventData)
@@ -89,11 +92,11 @@ public class MarketLeaderAgent : JournaledGrain<AgentTaskState, BasicEvent>, IMa
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, CommonConstants.StreamGuid);
-        var stream = this
+        _stream = this
             .GetStreamProvider(CommonConstants.StreamProvider)
             .GetStream<BasicEvent>(streamId);
         
-        await stream.SubscribeAsync(OnNextAsync);
+        await _stream.SubscribeAsync(OnNextAsync);
 
     }
     

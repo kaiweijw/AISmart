@@ -66,9 +66,9 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         _marketLeaderAgent = _clusterClient.GetGrain<IMarketLeaderAgent>(_marketTemplateId);
         _marketLeaderAgent.CompelteStrategyAsync(null);
         
-        Guid _marketStreamTemplateId = Guid.NewGuid();
-        _marketLeaderStreamAgent = _clusterClient.GetGrain<IMarketLeaderStreamAgent>(_marketStreamTemplateId);
-        _marketLeaderStreamAgent.CompelteStrategyAsync(null);
+        // Guid _marketStreamTemplateId = Guid.NewGuid();
+        // _marketLeaderStreamAgent = _clusterClient.GetGrain<IMarketLeaderStreamAgent>(_marketStreamTemplateId);
+        // _marketLeaderStreamAgent.CompelteStrategyAsync(null);
 
         
         _marketOperatorTemplateId = Guid.NewGuid();
