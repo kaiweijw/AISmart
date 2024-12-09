@@ -121,7 +121,9 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         // _senderAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid());.
         await _senderAgent.PublishOrleansAsync(telegramEvent);
         
-        await _marketOperatorStreamAgent.ExecuteStrategyAsync(null);
+        // await _marketOperatorStreamAgent.ExecuteStrategyAsync(null);
+
+        await _marketOperatorStreamAgent.CompelteStrategyAsync(null);
         // EventSequenceToken evetnset;
         // _localEventBus.Subscribe(telegramEvent, () =>
         //     {
@@ -129,6 +131,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         //     }
         //     );
         // await evetnset.Task;
-        // await Task.Delay(1000 * 5);
+        await Task.Delay(1000 * 5);
     }
 }
