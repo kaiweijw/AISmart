@@ -29,6 +29,14 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         await stream.SubscribeAsync(OnNextAsync);
     }
     
+    public Task ActivateAsync()
+    {
+        //do nothing
+        return Task.CompletedTask;
+    }
+    
+    public abstract Task<string> GetDescriptionAsync();
+    
     // Agent3 -> Agent2 -> Agent3 dependencies through messages
     // strong typed messages
     // 3 messages sub -> 2 messages pub -> 3 messages pub
@@ -47,16 +55,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     
     // how does dependency work between agents? just pub/sub messages enough?
     
-    private Task OnNextAsync(TEvent message, StreamSequenceToken token = null)
-    {
-        Logger.LogInformation("Received message: {@Message}", message);
-        
-        ExecuteAsync(message);
-        
-        return Task.CompletedTask;
-    }
-    
-    public async Task PublishAsync<T>(T @event)
+    protected async Task PublishAsync<T>(T @event)
     {
         var stream = StreamProvider?.GetStream<T>(StreamId);
 
@@ -69,5 +68,14 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         await stream.OnNextAsync(@event);
     }
 
-    public abstract Task ExecuteAsync(TEvent eventData);
+    protected abstract Task ExecuteAsync(TEvent eventData);
+    
+    private Task OnNextAsync(TEvent message, StreamSequenceToken token = null)
+    {
+        Logger.LogInformation("Received message: {@Message}", message);
+        
+        ExecuteAsync(message);
+        
+        return Task.CompletedTask;
+    }
 }

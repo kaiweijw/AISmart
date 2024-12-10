@@ -9,7 +9,12 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
     {
     }
 
-    public override Task ExecuteAsync(XThreadCreatedEvent eventData)
+    public override Task<string> GetDescriptionAsync()
+    {
+        return Task.FromResult("An agent to inform other agents when a X thread is published.");
+    }
+
+    protected override Task ExecuteAsync(XThreadCreatedEvent eventData)
     {
         Logger.LogInformation("ExecuteAsync: X Thread {XContent}", eventData.Content);
         
