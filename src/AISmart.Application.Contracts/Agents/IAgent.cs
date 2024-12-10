@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Orleans.Runtime;
 
 namespace AISmart.Agents;
 
@@ -13,4 +14,6 @@ public interface IAgent<TEvent>
     
     //Function to get agent description
     Task<string> GetDescriptionAsync();
+    
+    StreamId GetStreamId();
 }

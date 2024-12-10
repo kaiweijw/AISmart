@@ -14,19 +14,10 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     protected IStreamProvider? StreamProvider { get; private set; } = null;
     protected ILogger Logger { get; }
     private StreamId StreamId { get; set; }
-
+    
     protected GAgent(ILogger logger)
     {
         Logger = logger;
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        StreamId = StreamId.Create(CommonConstants.StreamNamespace, CommonConstants.StreamGuid);
-        StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
-        var stream = StreamProvider.GetStream<TEvent>(StreamId);
-        
-        await stream.SubscribeAsync(OnNextAsync);
     }
     
     public Task ActivateAsync()
@@ -36,7 +27,43 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     }
     
     public abstract Task<string> GetDescriptionAsync();
+    public StreamId GetStreamId()
+    {
+        return StreamId;
+    }
+
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        StreamId = StreamId.Create(CommonConstants.StreamNamespace, Guid.NewGuid());
+        StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
+    }
     
+    
+    
+    public Task SubscribeAsync(IAgent<TEvent> agent)
+    {
+        var streamId = agent.GetStreamId();
+        var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
+            .GetStream<TEvent>(streamId);
+        stream.SubscribeAsync(OnNextAsync);
+        return Task.CompletedTask;
+    }
+    
+    protected async Task PublishAsync<T>(T @event)
+    {
+        var stream = StreamProvider?.GetStream<T>(StreamId);
+
+        if (stream == null)
+        {
+            Logger.LogError("StreamProvider is null");
+            return;
+        }
+
+        await stream.OnNextAsync(@event);
+    }
+    
+  
+
     // Agent3 -> Agent2 -> Agent3 dependencies through messages
     // strong typed messages
     // 3 messages sub -> 2 messages pub -> 3 messages pub
@@ -55,26 +82,14 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     
     // how does dependency work between agents? just pub/sub messages enough?
     
-    protected async Task PublishAsync<T>(T @event)
-    {
-        var stream = StreamProvider?.GetStream<T>(StreamId);
-
-        if (stream == null)
-        {
-            Logger.LogError("StreamProvider is null");
-            return;
-        }
-            
-        await stream.OnNextAsync(@event);
-    }
 
     protected abstract Task ExecuteAsync(TEvent eventData);
     
-    private Task OnNextAsync(TEvent message, StreamSequenceToken token = null)
+    private Task OnNextAsync(TEvent eventData, StreamSequenceToken token = null)
     {
-        Logger.LogInformation("Received message: {@Message}", message);
+        Logger.LogInformation("Received message: {@Message}", eventData);
         
-        ExecuteAsync(message);
+        ExecuteAsync(eventData);
         
         return Task.CompletedTask;
     }
