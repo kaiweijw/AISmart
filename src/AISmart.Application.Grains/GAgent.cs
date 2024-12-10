@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
 using Orleans.Runtime;
 using Orleans.Streams;
+using Volo.Abp.Domain.Entities.Events;
 
 namespace AISmart.Application.Grains;
 
@@ -15,9 +16,13 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     protected ILogger Logger { get; }
     private StreamId StreamId { get; set; }
     
-    protected GAgent(ILogger logger)
+    private readonly IClusterClient _clusterClient;
+
+    
+    protected GAgent(ILogger logger,IClusterClient clusterClient)
     {
         Logger = logger;
+        _clusterClient = clusterClient;
     }
     
     public Task ActivateAsync()
@@ -27,7 +32,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     }
     
     public abstract Task<string> GetDescriptionAsync();
-    public StreamId GetStreamId()
+    private StreamId GetStreamId()
     {
         return StreamId;
     }
@@ -37,32 +42,69 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         StreamId = StreamId.Create(CommonConstants.StreamNamespace, Guid.NewGuid());
         StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
     }
-    
-    
-    
+
+
+
     public Task SubscribeAsync(IAgent<TEvent> agent)
     {
-        var streamId = agent.GetStreamId();
+        var streamId = (agent as GAgent<TState,TEvent>).GetStreamId();
         var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
             .GetStream<TEvent>(streamId);
-        stream.SubscribeAsync(OnNextAsync);
+        stream.SubscribeAsync(OnNextAsync as Func<TEvent, StreamSequenceToken, Task>);
         return Task.CompletedTask;
     }
     
-    protected async Task PublishAsync<T>(T @event)
+    protected async Task PublishAsync<TEvent>(TEvent @event)
     {
-        var stream = StreamProvider?.GetStream<T>(StreamId);
+        var stream = StreamProvider?.GetStream<EventWrapper<TEvent>>(StreamId);
 
         if (stream == null)
         {
             Logger.LogError("StreamProvider is null");
             return;
         }
+        EventWrapper<TEvent> eventWrapper = new EventWrapper<TEvent>(@event, StreamId,this.GetGrainId());
+        
+        await stream.OnNextAsync(eventWrapper);
 
-        await stream.OnNextAsync(@event);
     }
-    
-  
+
+    public async Task AckAsync(EventWrapper<TEvent> eventWrapper)
+    {
+
+        StreamId = eventWrapper.StreamId;
+        var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
+        .GetStream<EventWrapper<TEvent> >(StreamId);
+
+        IAgent<TEvent> pubAgent = _clusterClient.GetGrain<IAgent<TEvent>>(eventWrapper.GrainId);
+
+        ExecuteAsync(eventWrapper.Event);
+
+        await ((pubAgent as GAgent<TState,TEvent>)!).DoACKAysnc(eventWrapper);
+    }
+
+    public async Task DoACKAysnc(EventWrapper<TEvent> eventWrapper)
+    {
+        eventWrapper.count ++;
+        
+        RaiseEvent(eventWrapper.Event);
+        await ConfirmEvents();
+
+        StreamId = eventWrapper.StreamId;
+        var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
+            .GetStream<TEvent>(StreamId);
+        var subscriptionHandles =  stream.GetAllSubscriptionHandles();
+        // The count of current subscriptions (consumers).
+        var subscriberCount = subscriptionHandles.Result.Count;
+        
+        if (eventWrapper.count == subscriberCount)
+        {
+            await CompleteAsync(eventWrapper.Event);
+        }
+    }
+
+
+
 
     // Agent3 -> Agent2 -> Agent3 dependencies through messages
     // strong typed messages
@@ -85,12 +127,15 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
 
     protected abstract Task ExecuteAsync(TEvent eventData);
     
-    private Task OnNextAsync(TEvent eventData, StreamSequenceToken token = null)
+    protected abstract Task CompleteAsync(TEvent eventData);
+
+    
+    private Task OnNextAsync(EventWrapper<TEvent> @event, StreamSequenceToken token = null)
     {
-        Logger.LogInformation("Received message: {@Message}", eventData);
-        
-        ExecuteAsync(eventData);
-        
+        Logger.LogInformation("Received message: {@Message}", @event);
+
+        ExecuteAsync(@event.Event);
+        DoACKAysnc(@event);
         return Task.CompletedTask;
     }
 }
