@@ -4,27 +4,28 @@ using AutoGen.Core;
 
 namespace AISmart.AutoGen.Tests.Common;
 
-public class AelfBlockChain
+public class DexExchange
 {
     /// <summary>
-    /// buy token
+    /// Get token price
     /// </summary>
     /// <param name="symbol">token symbol</param>
-    /// <returns></returns>
+    /// <returns>token price</returns>
     [Function]
-    public async Task<string> BuyTokenAsync(string symbol)
+    public async Task<string> GetTokenPriceAsync(string symbol)
     {
-        return "get 100 million elf";
+        return "$2.0";
     }
     
-    public FunctionContract BuyTokenAsyncContract
+    public FunctionContract GetTokenPriceAsyncContract
     {
         get => new FunctionContract
         {
-            ClassName = @"AelfBlockChain",
-            Name = @"BuyTokenAsync",
-            Description = @"buy token.",
+            ClassName = @"DexExchange",
+            Name = nameof(GetTokenPriceAsync),
+            Description = @"get symbol price",
             ReturnType = typeof(Task<string>),
+            ReturnDescription = "symbol price",
             Parameters = new global::AutoGen.Core.FunctionParameterContract[]
             {
                 new FunctionParameterContract
@@ -38,7 +39,7 @@ public class AelfBlockChain
         };
     }
     
-    public Task<string> BuyTokenAsyncWrapper(string arguments)
+    public Task<string> GetTokenPriceAsyncWrapper(string arguments)
     {
         var schema = JsonSerializer.Deserialize<BuyTokenSchema>(
             arguments,
@@ -47,7 +48,7 @@ public class AelfBlockChain
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             });
 
-        return BuyTokenAsync(schema.symbol);
+        return GetTokenPriceAsync(schema.symbol);
     }
     
     private class BuyTokenSchema
