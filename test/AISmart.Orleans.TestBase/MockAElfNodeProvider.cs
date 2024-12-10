@@ -4,17 +4,17 @@ using AElf.Contracts.MultiToken;
 using AElf.Types;
 using AISmart.Provider;
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using Xunit.Abstractions;
 
 namespace AISmart.Mock;
 
 public class MockAElfNodeProvider: IAElfNodeProvider
 {
-    private readonly ITestOutputHelper _output;
+  
 
-    public MockAElfNodeProvider(ITestOutputHelper output)
+    public MockAElfNodeProvider()
     {
-        _output = output;
     }
 
     public Task<Transaction> CreateTransactionAsync(string chainId, string senderName, string contractAddress, string methodName,
@@ -22,20 +22,16 @@ public class MockAElfNodeProvider: IAElfNodeProvider
     {
         return Task.FromResult(new Transaction
         {
-            From = null,
-            To = null,
+            From = Address.FromBase58("JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE"),
+            To =  Address.FromBase58("JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE"),
             RefBlockNumber = 0,
             MethodName = methodName,
-            Params = null,
-            Signature = null
         });
         
     }
 
     public Task<SendTransactionOutput> SendTransactionAsync(string chainId, Transaction transaction)
     {
-         _output.WriteLine("SendTransaction success methodName: " + transaction.MethodName +
-                                 "TransactionId: e1c3bb3be887e2b202d1611b797eff885b25d8c03688adfd5b8a9603cb4b9858");
          return Task.FromResult(new SendTransactionOutput
          {
              TransactionId = "e1c3bb3be887e2b202d1611b797eff885b25d8c03688adfd5b8a9603cb4b9858"

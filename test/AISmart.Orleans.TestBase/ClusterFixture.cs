@@ -1,5 +1,7 @@
 using System;
 using AISmart.Application.Grains;
+using AISmart.Mock;
+using AISmart.Provider;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +41,8 @@ public class ClusterFixture: IDisposable, ISingletonDependency
             hostBuilder.ConfigureServices(services =>
                 {
                     services.AddAutoMapper(typeof(AIApplicationGrainsModule).Assembly);
+
+                    services.AddSingleton<IAElfNodeProvider , MockAElfNodeProvider>();
                     var mock = new Mock<ILocalEventBus>();
                     services.AddSingleton(typeof(ILocalEventBus), mock.Object);
                    
