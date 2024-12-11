@@ -1,5 +1,5 @@
-using AISmart.Application.Grains.Agents.MarketLeader.Events;
-using AISmart.Application.Grains.Agents.X.Events;
+using AISmart.Agents.MarketLeader.Events;
+using AISmart.Agents.X.Events;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +18,7 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
 
     protected override async Task ExecuteAsync(XThreadCreatedEvent eventData)
     {
-        Console.WriteLine("ExecuteAsync: X Thread {XContent}", eventData.Content);
+        Console.WriteLine("{0} ExecuteAsync: X Thread {1}", this.GetType().ToString(), eventData.Content);
 
         var publishEvent = new SocialEvent
         {

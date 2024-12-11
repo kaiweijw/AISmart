@@ -1,4 +1,4 @@
-using AISmart.Dapr;
+using AISmart.Agents;
 using AISmart.Sender;
 using Microsoft.Extensions.Logging;
 
@@ -9,13 +9,13 @@ public class PublishingAgentState
 {
 }
 
-public class EmptyEvent
+public class EmptyEvent : GEvent
 {
 }
 
 public class PublishingAgent : GAgent<PublishingAgentState, EmptyEvent>, IPublishingAgent
 {
-    public PublishingAgent(ILogger<PublishingAgent> logger) : base(logger)
+    public PublishingAgent(ILogger<PublishingAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
     }
 
@@ -29,8 +29,18 @@ public class PublishingAgent : GAgent<PublishingAgentState, EmptyEvent>, IPublis
         throw new NotImplementedException();
     }
 
-    public async Task PublishEventAsync<T>(T @event)
+    protected override Task CompleteAsync(EmptyEvent eventData)
     {
+        throw new NotImplementedException();
+    }
+
+    public async Task PublishEventAsync<T>(T @event) where T : GEvent
+    {
+        if (@event == null)
+        {
+            throw new ArgumentNullException(nameof(@event));
+        }
+
         await PublishAsync(@event);
     }
 }

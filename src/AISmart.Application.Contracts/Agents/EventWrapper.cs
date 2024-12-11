@@ -1,22 +1,21 @@
-using System;
+using Orleans;
 using Orleans.Runtime;
 
-namespace AISmart.Application.Grains;
+namespace AISmart.Agents;
 
-public class EventWrapper<T>
+[GenerateSerializer]
+public class EventWrapper<T> : EventWrapperBase
 {
     // Properties with getters and setters
-    public T Event { get; private set; }
-    public StreamId StreamId { get; private set; }
-    public GrainId GrainId { get; private set; }
+    [Id(0)] public T Event { get; private set; }
+    [Id(1)] public GrainId GrainId { get; private set; }
 
-    public int count { get; set; } = 0;
+    [Id(2)] public int count { get; set; } = 0;
 
     // Constructor
-    public EventWrapper(T @event, StreamId streamId, GrainId grainId)
+    public EventWrapper(T @event, GrainId grainId)
     {
         Event = @event;
-        StreamId = streamId;
         GrainId = grainId;
     }
 

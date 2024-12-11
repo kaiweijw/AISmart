@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AISmart.Agents;
+using AISmart.Agents.MarketLeader.Events;
+using AISmart.Agents.X.Events;
 using AISmart.AgentTask;
-using AISmart.Application.Grains.Agents.X.Events;
+using AISmart.Application.Grains.Agents.X;
 using AISmart.Application.Grains.Event;
 using AISmart.Dapr;
 using AISmart.Domain.Grains.Event;
@@ -42,6 +45,8 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     
     private readonly IMarketOperatorAgent _marketOperatorAgent;
     private readonly IMarketLeaderStreamAgent _marketLeaderStreamAgent;
+    private readonly IAgent<XThreadCreatedEvent> _xAgent;
+    private readonly IAgent<SocialEvent> _marketAgent;
     
     private readonly Guid _senderTemplateId;
     private readonly IAgent _senderAgent;
@@ -64,7 +69,10 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         // _receiverTemplateId = Guid.NewGuid();
         // _receiverAgent = _clusterClient.GetGrain<IAgent>(_receiverTemplateId);
         
-        
+        _xAgent = _clusterClient.GetGrain<IAgent<XThreadCreatedEvent>>(Guid.NewGuid());
+        _xAgent.ActivateAsync();
+        _marketAgent = _clusterClient.GetGrain<IAgent<SocialEvent>>(Guid.NewGuid());
+        _marketAgent.ActivateAsync();
         
         _tgTemplateId = Guid.NewGuid();
         _tgAgent = _clusterClient.GetGrain<ITelegramAgent>(_tgTemplateId);
@@ -139,5 +147,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
         
         //TODO Expected from the unit tests
+        await Task.Delay(1000 * 10);
     }
 }

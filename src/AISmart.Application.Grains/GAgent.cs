@@ -4,13 +4,12 @@ using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
 using Orleans.Runtime;
 using Orleans.Streams;
-using Volo.Abp.Domain.Entities.Events;
 
 namespace AISmart.Application.Grains;
 
 public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, IAgent<TEvent>
     where TState : class, new()
-    where TEvent : class
+    where TEvent : GEvent
 {
     protected IStreamProvider? StreamProvider { get; private set; } = null;
     protected ILogger Logger { get; }
@@ -39,31 +38,22 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        StreamId = StreamId.Create(CommonConstants.StreamNamespace, Guid.NewGuid());
+        StreamId = StreamId.Create(CommonConstants.StreamNamespace, CommonConstants.StreamGuid);
         StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
+        var stream = StreamProvider.GetStream<EventWrapperBase>(StreamId);
+        await stream.SubscribeAsync(OnNextAsync);
     }
 
-
-
-    public Task SubscribeAsync(IAgent<TEvent> agent)
+    protected async Task PublishAsync<T>(T @event) where T : GEvent
     {
-        var streamId = (agent as GAgent<TState,TEvent>).GetStreamId();
-        var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
-            .GetStream<TEvent>(streamId);
-        stream.SubscribeAsync(OnNextAsync as Func<TEvent, StreamSequenceToken, Task>);
-        return Task.CompletedTask;
-    }
-    
-    protected async Task PublishAsync<TEvent>(TEvent @event)
-    {
-        var stream = StreamProvider?.GetStream<EventWrapper<TEvent>>(StreamId);
+        var stream = StreamProvider?.GetStream<EventWrapperBase>(StreamId);
 
         if (stream == null)
         {
             Logger.LogError("StreamProvider is null");
             return;
         }
-        EventWrapper<TEvent> eventWrapper = new EventWrapper<TEvent>(@event, StreamId,this.GetGrainId());
+        var eventWrapper = new EventWrapper<T>(@event, this.GetGrainId());
         
         await stream.OnNextAsync(eventWrapper);
 
@@ -71,14 +61,16 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
 
     public async Task AckAsync(EventWrapper<TEvent> eventWrapper)
     {
+        var pubAgent = _clusterClient.GetGrain<IAgent<TEvent>>(eventWrapper.GrainId);
 
-        StreamId = eventWrapper.StreamId;
-        var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
-        .GetStream<EventWrapper<TEvent> >(StreamId);
-
-        IAgent<TEvent> pubAgent = _clusterClient.GetGrain<IAgent<TEvent>>(eventWrapper.GrainId);
-
-        ExecuteAsync(eventWrapper.Event);
+        try
+        {
+            await ExecuteAsync(eventWrapper.Event);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error executing event");
+        }
 
         await ((pubAgent as GAgent<TState,TEvent>)!).DoACKAysnc(eventWrapper);
     }
@@ -90,7 +82,6 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         RaiseEvent(eventWrapper.Event);
         await ConfirmEvents();
 
-        StreamId = eventWrapper.StreamId;
         var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
             .GetStream<TEvent>(StreamId);
         var subscriptionHandles =  stream.GetAllSubscriptionHandles();
@@ -130,12 +121,16 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     protected abstract Task CompleteAsync(TEvent eventData);
 
     
-    private Task OnNextAsync(EventWrapper<TEvent> @event, StreamSequenceToken token = null)
+    private Task OnNextAsync(EventWrapperBase @event, StreamSequenceToken token = null)
     {
-        Logger.LogInformation("Received message: {@Message}", @event);
+        if(@event is EventWrapper<TEvent> eventWrapper)
+        {
+            Logger.LogInformation("Received message: {@Message}", eventWrapper);
 
-        ExecuteAsync(@event.Event);
-        DoACKAysnc(@event);
+            ExecuteAsync(eventWrapper.Event);
+            DoACKAysnc(eventWrapper);
+        }
+        
         return Task.CompletedTask;
     }
 }

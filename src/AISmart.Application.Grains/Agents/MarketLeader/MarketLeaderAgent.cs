@@ -1,12 +1,11 @@
-using AISmart.Application.Grains.Agents.MarketLeader.Events;
-using AISmart.Dapr;
+using AISmart.Agents.MarketLeader.Events;
 using Microsoft.Extensions.Logging;
 
 namespace AISmart.Application.Grains.Agents.MarketLeader;
 
 public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
 {
-    public MarketLeaderAgent(ILogger logger) : base(logger)
+    public MarketLeaderAgent(ILogger logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
     }
 
@@ -17,7 +16,12 @@ public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
 
     protected override Task ExecuteAsync(SocialEvent eventData)
     {
-        Console.WriteLine("ExecuteAsync: Social Event {Content}", eventData.Content);
+        Console.WriteLine("{0} ExecuteAsync: Market Leader analyses content: {1}", this.GetType().ToString(), eventData.Content);
         return Task.CompletedTask;
+    }
+
+    protected override Task CompleteAsync(SocialEvent eventData)
+    {
+        throw new NotImplementedException();
     }
 }
