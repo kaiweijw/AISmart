@@ -138,6 +138,9 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     [Fact]
     public async Task AgentFlow_Test()
     {
+        const string expectedLog =
+            "AISmart.Application.Grains.Agents.X.XAgent ExecuteAsync: X Thread BTC REACHED 100k WOOHOOOO!";
+
         var xThreadCreatedEvent = new XThreadCreatedEvent()
         {
             Id = "mock_x_thread_id",
@@ -145,8 +148,11 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         };
 
         await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
-        
-        //TODO Expected from the unit tests
-        await Task.Delay(1000 * 10);
+
+        var resetEvent = new ManualResetEventSlim(false);
+
+        await ClusterFixture.WaitLogAsync(resetEvent, expectedLog);
+
+        resetEvent.Wait(TimeSpan.FromSeconds(10)).ShouldBeTrue();
     }
 }

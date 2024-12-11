@@ -1,10 +1,18 @@
 using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AISmart.Agents;
+using AISmart.Agents.X.Events;
 using AISmart.Application.Grains;
+using AISmart.Application.Grains.Agents.X;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Orleans;
 using Orleans.Hosting;
 using Orleans.TestingHost;
 using Volo.Abp.AutoMapper;
@@ -13,10 +21,10 @@ using Volo.Abp.EventBus.Local;
 using Volo.Abp.ObjectMapping;
 using Volo.Abp.Reflection;
 
-namespace AISmart;
-
-public class ClusterFixture: IDisposable, ISingletonDependency
+public class ClusterFixture : IDisposable, ISingletonDependency
 {
+    public static MockLoggerProvider LoggerProvider { get; set; }
+
     public ClusterFixture()
     {
         var builder = new TestClusterBuilder();
@@ -32,64 +40,74 @@ public class ClusterFixture: IDisposable, ISingletonDependency
     }
 
     public TestCluster Cluster { get; private set; }
-    
-    private class TestSiloConfigurations : ISiloConfigurator 
+
+    private class TestSiloConfigurations : ISiloConfigurator
     {
         public void Configure(ISiloBuilder hostBuilder)
         {
             hostBuilder.ConfigureServices(services =>
+            {
+                services.AddAutoMapper(typeof(AIApplicationGrainsModule).Assembly);
+                var mock = new Mock<ILocalEventBus>();
+                services.AddSingleton(typeof(ILocalEventBus), mock.Object);
+
+                // Configure logging
+                var loggerProvider = new MockLoggerProvider();
+                services.AddSingleton<ILoggerProvider>(loggerProvider);
+                LoggerProvider = loggerProvider;
+                services.AddLogging(logging =>
                 {
-                    services.AddAutoMapper(typeof(AIApplicationGrainsModule).Assembly);
-                    var mock = new Mock<ILocalEventBus>();
-                    services.AddSingleton(typeof(ILocalEventBus), mock.Object);
-                    // Configure logging
-                    services.AddLogging(logging =>
-                    {
-                        logging.AddConsole(); // Adds console logger
-                        // Add further logging configurations or providers if needed
-                    });
-                    services.OnExposing(onServiceExposingContext =>
-                    {
-                        //Register types for IObjectMapper<TSource, TDestination> if implements
-                        var implementedTypes = ReflectionHelper.GetImplementedGenericTypes(
-                            onServiceExposingContext.ImplementationType,
-                            typeof(IObjectMapper<,>)
-                        );
-                    });
-                    services.AddTransient(
-                        typeof(IObjectMapper<>),
-                        typeof(DefaultObjectMapper<>)
+                    logging.AddProvider(loggerProvider);
+                    logging.AddConsole(); // Adds console logger
+                });
+
+                services.OnExposing(onServiceExposingContext =>
+                {
+                    var implementedTypes = ReflectionHelper.GetImplementedGenericTypes(
+                        onServiceExposingContext.ImplementationType,
+                        typeof(IObjectMapper<,>)
                     );
-                    services.AddTransient(
-                        typeof(IObjectMapper),
-                        typeof(DefaultObjectMapper)
-                    );
-                    services.AddTransient(typeof(IAutoObjectMappingProvider),
-                        typeof(AutoMapperAutoObjectMappingProvider));
-                    services.AddTransient(sp => new MapperAccessor()
-                    {
-                        Mapper = sp.GetRequiredService<IMapper>()
-                    });
-                    services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
-                    // foreach (var type in implementedTypes)
-                    // {
-                    // onServiceExposingContext.ExposedTypes.Add(new ServiceIdentifier(type));
-                    // }
-                })
-                .AddMemoryStreams("AISmart")
-                .AddMemoryGrainStorage("PubSubStore")
-                .AddMemoryGrainStorageAsDefault().AddLogStorageBasedLogConsistencyProvider("LogStorage");
+                });
+
+                services.AddTransient(typeof(IObjectMapper<>), typeof(DefaultObjectMapper<>));
+                services.AddTransient(typeof(IObjectMapper), typeof(DefaultObjectMapper));
+                services.AddTransient(typeof(IAutoObjectMappingProvider), typeof(AutoMapperAutoObjectMappingProvider));
+                services.AddTransient(sp => new MapperAccessor()
+                {
+                    Mapper = sp.GetRequiredService<IMapper>()
+                });
+                services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
+            })
+            .AddMemoryStreams("AISmart")
+            .AddMemoryGrainStorage("PubSubStore")
+            .AddMemoryGrainStorageAsDefault()
+            .AddLogStorageBasedLogConsistencyProvider("LogStorage");
         }
     }
-    
+
     public class MapperAccessor : IMapperAccessor
     {
         public IMapper Mapper { get; set; }
     }
-    
+
     private class TestClientBuilderConfigurator : IClientBuilderConfigurator
     {
         public void Configure(IConfiguration configuration, IClientBuilder clientBuilder) => clientBuilder
             .AddMemoryStreams("AISmart");
+    }
+    
+    public static async Task WaitLogAsync(ManualResetEventSlim resetEvent, string log)
+    {
+        var timeout = TimeSpan.FromSeconds(10);
+        var stopwatch = Stopwatch.StartNew();
+        while (stopwatch.Elapsed < timeout)
+        {
+            if (LoggerProvider.Logs.Any(l => l.Contains(log)))
+            {
+                resetEvent.Set();
+                break;
+            }
+            await Task.Delay(100);
+        }
     }
 }

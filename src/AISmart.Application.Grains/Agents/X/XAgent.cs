@@ -18,7 +18,7 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
 
     protected override async Task ExecuteAsync(XThreadCreatedEvent eventData)
     {
-        Console.WriteLine("{0} ExecuteAsync: X Thread {1}", this.GetType().ToString(), eventData.Content);
+        Logger.LogInformation("{0} ExecuteAsync: X Thread {1}", this.GetType().ToString(), eventData.Content);
 
         var publishEvent = new SocialEvent
         {
