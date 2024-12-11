@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
 using AISmart.Agent.Event;
+using AISmart.Agent.GEvent;
+using AISmart.Agent.Grains;
 using AISmart.Application.Grains;
 using AISmart.Application.Grains.Agents.X;
 using AISmart.Application.Grains.Agents.X.Events;
@@ -13,7 +17,7 @@ using Orleans.Providers;
 namespace AISmart.Agent;
 
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class AElfAgent : GAgent<AElfTransactionState, CreateTransactionEvent>,IAElfAgent
+public class AElfAgent : GAgent<AElfAgentState, CreateTransactionGEvent>,IAElfAgent
 {
     public readonly IAElfNodeProvider _AElfNodeProvider;
     public AElfAgent(ILogger<AElfAgent> logger,IAElfNodeProvider AElfNodeProvider) : base(logger)
@@ -26,53 +30,72 @@ public class AElfAgent : GAgent<AElfTransactionState, CreateTransactionEvent>,IA
         return Task.FromResult("An agent to inform other agents when a aelf thread is published.");
     }
 
-    public async Task<TransactionDto> GetAElfTransactionAsync()
+    public async Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData)
     {
-        return new TransactionDto
+         await ExecuteAsync( gEventData);
+    }
+    
+    protected override async Task ExecuteAsync(CreateTransactionGEvent gEventData)
+    {
+
+        base.RaiseEvent(gEventData);
+        // await PublishAsync(eventData);
+        Logger.LogInformation("ExecuteAsync: AElf {MethodName}", gEventData.MethodName);
+    }
+    
+    protected  async Task ApplyAsync(CreateTransactionGEvent gEventData)
+    {
+        base.RaiseEvent(gEventData);
+        await PublishAsync(new SendTransactionSEvent
         {
-            IsSuccess = State.IsSuccess,
-            TransactionId = State.TransactionId
-        };
+            Id = gEventData.Id,
+            ChainId = gEventData.ChainId,
+            SenderName = gEventData.SenderName,
+            ContractAddress = gEventData.ContractAddress,
+            MethodName = gEventData.MethodName,
+            Param = gEventData.Param
+        });
+    }
+    // from SendTransactionCallBackEvent
+    protected  async Task ApplyAsync(SendTransactionGEvent gEventData)
+    {
+        base.RaiseEvent(gEventData);
+        await PublishAsync(new QueryTransactionSEvent
+        {
+            Id = gEventData.Id,
+            ChainId = gEventData.ChainId,
+            TransactionId = gEventData.TransactionId
+        });
+    }
+    
+    // from queryTransactionCallBackEvent
+    protected  async Task ApplyAsync(TransactionSuccessGEvent successGEventData)
+    {
+        base.RaiseEvent(successGEventData);
+        await ConfirmEvents();
+    }
+    // from queryTransactionCallBackEvent
+    protected  async Task ApplyAsync(TransactionFailedGEvent gEventData)
+    {
+        base.RaiseEvent(gEventData);
+        await ConfirmEvents();
     }
 
-    public async Task ExecuteTransactionAsync(CreateTransactionEvent eventData)
+    protected override void TransitionState(AElfAgentState state, CreateTransactionGEvent gEvent)
     {
-         await ExecuteAsync( eventData);
-    }
-
-    protected override async Task ExecuteAsync(CreateTransactionEvent eventData)
-    {
-        var transaction = await _AElfNodeProvider.CreateTransactionAsync(eventData.ChainId, eventData.SenderName, eventData.ContractAddress,
-            eventData.MethodName, new TransferInput());
-        var SendTransactionOutput =  await _AElfNodeProvider.SendTransactionAsync(eventData.ChainId,transaction);
-       
-        Logger.LogInformation("ExecuteAsync: AElf {MethodName}", eventData.MethodName);
-        var transactionResult = await _AElfNodeProvider.GetTransactionResultAsync(eventData.ChainId,SendTransactionOutput.TransactionId);
-        if (transactionResult.Status == "Mined")
+        switch (gEvent)
         {
-            eventData.IsSuccess = true;
-            eventData.TransactionId = SendTransactionOutput.TransactionId;
-            base.RaiseEvent(eventData);
-            await PublishAsync(eventData);
-        }
-    }
-
-    protected override void TransitionState(AElfTransactionState state, CreateTransactionEvent @event)
-    {
-        switch (@event)
-        {
-           
-            case CreateTransactionEvent createEvent:
-                State.ChainId = createEvent.ChainId;
-                State.SenderName = createEvent.SenderName;
-                State.MethodName = createEvent.MethodName;
-                State.ContractAddress = createEvent.ContractAddress;
-                State.Param = createEvent.Param;
-                if (createEvent.IsSuccess)
-                {
-                    State.TransactionId = createEvent.TransactionId;
-                }
-                State.IsSuccess = createEvent.IsSuccess;
+            case TransactionSuccessGEvent transactionSuccessGEvent:
+                state.PendingTransactions ??= new Dictionary<Guid, CreateTransactionGEvent>();
+                state.PendingTransactions.Remove(transactionSuccessGEvent.Id);
+                break;
+            case TransactionFailedGEvent transactionFailedGEvent:
+                state.PendingTransactions ??= new Dictionary<Guid, CreateTransactionGEvent>();
+                state.PendingTransactions.Remove(transactionFailedGEvent.Id);
+                break;
+            case CreateTransactionGEvent createEvent:
+                state.PendingTransactions ??= new Dictionary<Guid, CreateTransactionGEvent>();
+                state.PendingTransactions[createEvent.Id] = createEvent;
                 break;
             default:
                 break;
@@ -82,6 +105,5 @@ public class AElfAgent : GAgent<AElfTransactionState, CreateTransactionEvent>,IA
 
 public interface IAElfAgent : IGrainWithGuidKey
 { 
-    Task <TransactionDto> GetAElfTransactionAsync();
-    Task ExecuteTransactionAsync(CreateTransactionEvent eventData);
+    Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData);
 }

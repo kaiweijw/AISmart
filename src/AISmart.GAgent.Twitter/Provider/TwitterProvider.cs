@@ -92,8 +92,6 @@ public class TwitterProvider : ITwitterProvider, ISingletonDependency
         {
             text = message
         };
-   
-        // 将推文数据序列化为 JSON
         var jsonContent = JsonConvert.SerializeObject(tweetData);
    
         using (var httpClient = new HttpClient())

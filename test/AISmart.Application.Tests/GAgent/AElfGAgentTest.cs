@@ -23,7 +23,7 @@ public class AElfGAgentTests : AISmartApplicationTestBase
     {
         string chainId = "AELF";
         string senderName = "Test";
-        var createTransactionEvent = new CreateTransactionEvent(){
+        var createTransactionEvent = new CreateTransactionGEvent(){
                 ChainId = chainId,
                 SenderName = senderName, 
                 ContractAddress = "JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE",
@@ -31,9 +31,9 @@ public class AElfGAgentTests : AISmartApplicationTestBase
                 };
                 var guid = Guid.NewGuid();
                 await _clusterClient.GetGrain<IAElfAgent>(guid).ExecuteTransactionAsync(createTransactionEvent);
-                var transaction = await _clusterClient.GetGrain<IAElfAgent>(guid).GetAElfTransactionAsync();
+                /*var transaction = await _clusterClient.GetGrain<IAElfAgent>(guid).GetAElfTransactionAsync();
                 _output.WriteLine("TransactionId: " + transaction.TransactionId );
-                _output.WriteLine("success: " + transaction.IsSuccess);
+                _output.WriteLine("success: " + transaction.IsSuccess);*/
     }
 
 }
