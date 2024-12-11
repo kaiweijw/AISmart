@@ -84,7 +84,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         await ConfirmEvents();
 
         var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
-            .GetStream<TEvent>(StreamId);
+            .GetStream<EventWrapperBase>(StreamId);
         var subscriptionHandles =  stream.GetAllSubscriptionHandles();
         // The count of current subscriptions (consumers).
         var subscriberCount = subscriptionHandles.Result.Count;
@@ -129,7 +129,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         {
             Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
 
-            ExecuteAsync(eventWrapper.Event);
+            await ExecuteAsync(eventWrapper.Event);
             await DoAckAsync(eventWrapper);
         }
     }
