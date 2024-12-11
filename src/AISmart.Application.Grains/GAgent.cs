@@ -12,7 +12,8 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     where TEvent : GEvent
 {
     protected IStreamProvider? StreamProvider { get; private set; } = null;
-    protected ILogger Logger { get; }
+    
+    protected readonly ILogger Logger;
     private StreamId StreamId { get; set; }
     
     private readonly IClusterClient _clusterClient;
@@ -123,9 +124,10 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     
     private Task OnNextAsync(EventWrapperBase @event, StreamSequenceToken token = null)
     {
+        Logger.LogInformation("Received message: {@Message}", @event);
         if(@event is EventWrapper<TEvent> eventWrapper)
         {
-            Logger.LogInformation("Received message: {@Message}", eventWrapper);
+            Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
 
             ExecuteAsync(eventWrapper.Event);
             DoACKAysnc(eventWrapper);

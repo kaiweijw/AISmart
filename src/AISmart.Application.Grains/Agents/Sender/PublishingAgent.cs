@@ -41,6 +41,7 @@ public class PublishingAgent : GAgent<PublishingAgentState, EmptyEvent>, IPublis
             throw new ArgumentNullException(nameof(@event));
         }
 
+        Logger.LogInformation($"PublishingAgent publish {@event}");
         await PublishAsync(@event);
     }
 }

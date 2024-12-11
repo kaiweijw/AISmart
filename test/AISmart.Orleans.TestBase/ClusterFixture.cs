@@ -3,6 +3,7 @@ using AISmart.Application.Grains;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Orleans.Hosting;
 using Orleans.TestingHost;
@@ -41,7 +42,12 @@ public class ClusterFixture: IDisposable, ISingletonDependency
                     services.AddAutoMapper(typeof(AIApplicationGrainsModule).Assembly);
                     var mock = new Mock<ILocalEventBus>();
                     services.AddSingleton(typeof(ILocalEventBus), mock.Object);
-                   
+                    // Configure logging
+                    services.AddLogging(logging =>
+                    {
+                        logging.AddConsole(); // Adds console logger
+                        // Add further logging configurations or providers if needed
+                    });
                     services.OnExposing(onServiceExposingContext =>
                     {
                         //Register types for IObjectMapper<TSource, TDestination> if implements
