@@ -6,7 +6,6 @@ using AISmart.Agents.X.Events;
 using AISmart.Sender;
 using Orleans;
 using Volo.Abp.Application.Services;
-using Volo.Abp.DependencyInjection;
 
 namespace AISmart.Application;
 
@@ -15,7 +14,7 @@ public interface IDemoAppService
     Task<string> PipelineDemoAsync(string content);
 }
 
-public class DemoAppService : ApplicationService, IDemoAppService, ISingletonDependency
+public class DemoAppService : ApplicationService, IDemoAppService
 {
     private readonly IClusterClient _clusterClient;
 
@@ -26,6 +25,10 @@ public class DemoAppService : ApplicationService, IDemoAppService, ISingletonDep
 
     public async Task<string> PipelineDemoAsync(string content)
     {
+        // var messageValidatorGrain = _clusterClient.GetGrain<IMessageValidator>(Guid.NewGuid());
+        // var result = await messageValidatorGrain.IsOffensive("test");
+        // return result.ToString();
+
         var xAgent = _clusterClient.GetGrain<IAgent<XThreadCreatedEvent>>(Guid.NewGuid());
         await xAgent.ActivateAsync();
 
