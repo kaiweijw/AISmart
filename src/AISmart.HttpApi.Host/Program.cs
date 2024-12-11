@@ -24,6 +24,7 @@ public class Program
             builder.Host
                 .UseOrleansClientConfiguration()
                 .ConfigureDefaults(args)
+                .UseOrleansClient()
                 .UseAutofac()
                 .UseSerilog();
             await builder.AddApplicationAsync<AISmartHttpApiHostModule>();
