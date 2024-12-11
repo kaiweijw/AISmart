@@ -1,3 +1,4 @@
+using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.MarketLeader.Events;
 using Microsoft.Extensions.Logging;
 
@@ -14,14 +15,15 @@ public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
-    protected override Task ExecuteAsync(SocialEvent eventData)
+    protected override async Task ExecuteAsync(SocialEvent eventData)
     {
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: Market Leader analyses content:{eventData.Content}");
-        return Task.CompletedTask;
+        
+        await PublishAsync(new ImplementationEvent());
     }
 
     protected override Task CompleteAsync(SocialEvent eventData)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 }

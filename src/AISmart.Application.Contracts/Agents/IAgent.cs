@@ -14,7 +14,5 @@ public interface IAgent<TEvent>:  IGrainWithGuidKey
     
     //Function to get agent description
     Task<string> GetDescriptionAsync();
-
-    Task AckAsync(EventWrapper<TEvent> eventWrapper);
-
+    
 }
