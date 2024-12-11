@@ -88,9 +88,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         _marketAgent = _clusterClient.GetGrain<IAgent<SocialEvent>>(Guid.NewGuid());
         _marketAgent.ActivateAsync();
         
-        _marketAgent = _clusterClient.GetGrain<IAgent<SocialEvent>>(Guid.NewGuid());
-        _marketAgent.ActivateAsync();
-        
         // _grainFactory.CreateObjectReference<IAgent<ImplementationEvent>>(typeof(IAgent<ImplementationEvent> ))
         
         _investmentAgent = _clusterClient.GetGrain<IInvestmentAgent>(Guid.NewGuid());
