@@ -1,8 +1,10 @@
 using System.Threading.Tasks;
+using AISmart.Application.Grains;
+using Orleans;
 
 namespace AISmart.Agents;
 
-public interface IAgent<TEvent>
+public interface IAgent<TEvent>:  IGrainWithGuidKey
     where TEvent : class
 {
     //used for activating the agent manually, mostly used for testing
@@ -13,4 +15,7 @@ public interface IAgent<TEvent>
     
     //Function to get agent description
     Task<string> GetDescriptionAsync();
+
+    Task AckAsync(EventWrapper<TEvent> eventWrapper);
+
 }
