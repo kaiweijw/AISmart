@@ -16,7 +16,7 @@ public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
 
     protected override Task ExecuteAsync(SocialEvent eventData)
     {
-        Console.WriteLine("{0} ExecuteAsync: Market Leader analyses content: {1}", this.GetType().ToString(), eventData.Content);
+        Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: Market Leader analyses content:{eventData.Content}");
         return Task.CompletedTask;
     }
 

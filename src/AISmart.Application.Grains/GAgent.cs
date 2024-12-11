@@ -73,10 +73,10 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
             Logger.LogError(e, "Error executing event");
         }
 
-        await ((pubAgent as GAgent<TState,TEvent>)!).DoACKAysnc(eventWrapper);
+        await ((pubAgent as GAgent<TState,TEvent>)!).DoAckAsync(eventWrapper);
     }
 
-    public async Task DoACKAysnc(EventWrapper<TEvent> eventWrapper)
+    public async Task DoAckAsync(EventWrapper<TEvent> eventWrapper)
     {
         eventWrapper.count ++;
         
@@ -122,7 +122,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     protected abstract Task CompleteAsync(TEvent eventData);
 
     
-    private Task OnNextAsync(EventWrapperBase @event, StreamSequenceToken token = null)
+    private async Task OnNextAsync(EventWrapperBase @event, StreamSequenceToken token = null)
     {
         Logger.LogInformation("Received message: {@Message}", @event);
         if(@event is EventWrapper<TEvent> eventWrapper)
@@ -130,9 +130,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
             Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
 
             ExecuteAsync(eventWrapper.Event);
-            DoACKAysnc(eventWrapper);
+            await DoAckAsync(eventWrapper);
         }
-        
-        return Task.CompletedTask;
     }
 }
