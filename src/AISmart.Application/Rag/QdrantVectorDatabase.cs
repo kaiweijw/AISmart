@@ -14,7 +14,7 @@ public class QdrantVectorDatabase : IVectorDatabase
     private readonly string _qdrantUrl;
     private readonly HttpClient _httpClient;
     private readonly string _collectionName;
-    private const int DefaultVectorSize = 768;
+    private const int DefaultVectorSize = 3;
 
     public QdrantVectorDatabase(string qdrantUrl, string collectionName)
     {
@@ -38,7 +38,7 @@ public class QdrantVectorDatabase : IVectorDatabase
         response.EnsureSuccessStatusCode();
         var data = await response.Content.ReadAsStringAsync();
         var result = JsonConvert.DeserializeObject<CollectionsResponse>(data);
-        return result.Collections.Select(c => c.Name).ToArray();
+        return result.Result.Collections.Select(c => c.Name).ToArray();
     }
     
     private async Task CreateCollectionAsync(int vectorSize)
@@ -61,7 +61,7 @@ public class QdrantVectorDatabase : IVectorDatabase
         
         var requestBody = new
         {
-            vectors = new[]
+            points = new[]
             {
                 new
                 {
@@ -73,13 +73,41 @@ public class QdrantVectorDatabase : IVectorDatabase
         };
         var json = JsonConvert.SerializeObject(requestBody);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        await _httpClient.PutAsync($"{_qdrantUrl}/collections/rag_collection/points?wait=true", content);
+        var response = await _httpClient.PutAsync($"{_qdrantUrl}/collections/{_collectionName}/points?wait=true", content);
+        response.EnsureSuccessStatusCode();
+    }
+    
+    public async Task StoreBatchAsync(IEnumerable<(float[] vector, string text)> points)
+    {
+        await EnsureCollectionExistsAsync(DefaultVectorSize);
+        
+        var requestBody = new
+        {
+            points = points.Select(p => new
+            {
+                id = Guid.NewGuid().ToString(),
+                vector = p.vector,
+                payload = new { text = p.text }
+            }).ToArray()
+        };
+
+        var json = JsonConvert.SerializeObject(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PutAsync($"{_qdrantUrl}/collections/{_collectionName}/points", content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error storing batch vectors: {response.StatusCode} - {errorContent}");
+            response.EnsureSuccessStatusCode();
+        }
     }
 
     public async Task<List<string>> RetrieveAsync(float[] queryEmbedding, int topK = 5)
     {
         var requestBody = new { vector = queryEmbedding, top = topK, with_payload = true };
-        var response = await _httpClient.PostAsJsonAsync($"{_qdrantUrl}/collections/rag_collection/points/search", requestBody);
+        var response = await _httpClient.PostAsJsonAsync($"{_qdrantUrl}/collections/{_collectionName}/points/search", requestBody);
         response.EnsureSuccessStatusCode();
         var responseString = await response.Content.ReadAsStringAsync();
         var results = JsonConvert.DeserializeObject<SearchResponse>(responseString);
@@ -89,10 +117,16 @@ public class QdrantVectorDatabase : IVectorDatabase
     private class CollectionsResponse
     {
         [JsonProperty("result")]
-        public List<CollectionResult> Collections { get; set; }
+        public CollectionResult Result { get; set; }
     }
     
     private class CollectionResult
+    {
+        [JsonProperty("collections")]
+        public List<CollectionItem> Collections { get; set; }
+    }
+    
+    private class CollectionItem
     {
         [JsonProperty("name")]
         public string Name { get; set; }
