@@ -1,15 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AISmart.AgentTask;
+using AISmart.Application.Grains.Agents.X.Events;
 using AISmart.Application.Grains.Event;
 using AISmart.Dapr;
 using AISmart.Domain.Grains.Event;
+using AISmart.Sender;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Providers.Streams.Common;
+using Orleans.Runtime;
+using Orleans.Streams;
 using Shouldly;
 using Volo.Abp.EventBus.Local;
 using Xunit;
@@ -42,6 +48,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     
     private readonly Guid _receiverTemplateId;
     private readonly IAgent _receiverAgent;
+    private readonly IPublishingAgent _publishingAgent;
 
     public AgentTaskServiceTests(ITestOutputHelper output)
     {
@@ -74,6 +81,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         _marketOperatorTemplateId = Guid.NewGuid();
         _marketOperatorAgent = _clusterClient.GetGrain<IMarketOperatorAgent>(_marketOperatorTemplateId);
         
+        _publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
     }
     
     
@@ -139,5 +147,19 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         //     );
         // await evetnset.Task;
         await Task.Delay(1000 * 50);
+    }
+    
+    [Fact]
+    public async Task AgentFlow_Test()
+    {
+        var xThreadCreatedEvent = new XThreadCreatedEvent()
+        {
+            Id = "mock_x_thread_id",
+            Content = "BTC REACHED 100k WOOHOOOO!"
+        };
+
+        await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
+        
+        //TODO Expected from the unit tests
     }
 }

@@ -1,4 +1,6 @@
+using AISmart.Application.Grains.Agents.MarketLeader.Events;
 using AISmart.Application.Grains.Agents.X.Events;
+using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 
 namespace AISmart.Application.Grains.Agents.X;
@@ -14,10 +16,14 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
         return Task.FromResult("An agent to inform other agents when a X thread is published.");
     }
 
-    protected override Task ExecuteAsync(XThreadCreatedEvent eventData)
+    protected override async Task ExecuteAsync(XThreadCreatedEvent eventData)
     {
-        Logger.LogInformation("ExecuteAsync: X Thread {XContent}", eventData.Content);
-        
-        return Task.CompletedTask;
+        Console.WriteLine("ExecuteAsync: X Thread {XContent}", eventData.Content);
+
+        var publishEvent = new SocialEvent
+        {
+            Content = $"X Thread {eventData.Content} has been published."
+        };
+        await PublishAsync(publishEvent);
     }
 }
