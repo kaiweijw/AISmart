@@ -1,10 +1,11 @@
+using AISmart.Agents;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Application.Grains.Agents.Developer;
 using Microsoft.Extensions.Logging;
 
 namespace AISmart.Application.Grains.Agents.Developer;
 
-public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>,IDeveloperAgent
+public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>
 {
     public DeveloperAgent(ILogger<DeveloperAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {

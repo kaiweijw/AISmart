@@ -3,8 +3,7 @@ using Orleans;
 
 namespace AISmart.Agents;
 
-public interface IAgent<TEvent>:  IGrainWithGuidKey
-    where TEvent : class
+public interface IAgent:  IGrainWithGuidKey
 {
     //used for activating the agent manually, mostly used for testing
     Task ActivateAsync();
