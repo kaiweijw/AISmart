@@ -10,14 +10,21 @@ public class EventWrapper<T>
     public StreamId StreamId { get; private set; }
     public GrainId GrainId { get; private set; }
 
-    public int count { get; set; } = 0;
+    public int Count { get; set; } = 0;
+    
+    public int SubscriberCount { get; set; } = 0;
+    
+    public Boolean Success { get; set; }
 
     // Constructor
-    public EventWrapper(T @event, StreamId streamId, GrainId grainId)
+    public EventWrapper(T @event, StreamId streamId, GrainId grainId,int subscriberCount)
     {
         Event = @event;
         StreamId = streamId;
         GrainId = grainId;
+        SubscriberCount = subscriberCount;
+        Success = false;
+        
     }
 
     // Optionally, you can add methods or other functionality as needed

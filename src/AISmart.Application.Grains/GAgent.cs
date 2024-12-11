@@ -10,13 +10,16 @@ namespace AISmart.Application.Grains;
 
 public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, IAgent<TEvent>
     where TState : class, new()
-    where TEvent : class
+    where TEvent : class, new()
 {
     protected IStreamProvider? StreamProvider { get; private set; } = null;
     protected ILogger Logger { get; }
     private StreamId StreamId { get; set; }
     
     private readonly IClusterClient _clusterClient;
+    
+    private IDisposable? _timer;
+
 
     
     protected GAgent(ILogger logger,IClusterClient clusterClient)
@@ -63,9 +66,16 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
             Logger.LogError("StreamProvider is null");
             return;
         }
-        EventWrapper<TEvent> eventWrapper = new EventWrapper<TEvent>(@event, StreamId,this.GetGrainId());
+        
+        var subscriptionHandles =  stream.GetAllSubscriptionHandles();
+        // The count of current subscriptions (consumers).
+        var subscriberCount = subscriptionHandles.Result.Count;
+        
+        EventWrapper<TEvent> eventWrapper = new EventWrapper<TEvent>(@event, StreamId,this.GetGrainId(),subscriberCount);
         
         await stream.OnNextAsync(eventWrapper);
+        
+        
 
     }
 
@@ -85,22 +95,47 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
 
     public async Task DoACKAysnc(EventWrapper<TEvent> eventWrapper)
     {
-        eventWrapper.count ++;
+        using var cts = new CancellationTokenSource();
+        
+        cts.CancelAfter(CommonConstants.TimeOutMilliseconds);
+        
+        
+        eventWrapper.Count ++;
         
         RaiseEvent(eventWrapper.Event);
         await ConfirmEvents();
 
-        StreamId = eventWrapper.StreamId;
-        var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
-            .GetStream<TEvent>(StreamId);
-        var subscriptionHandles =  stream.GetAllSubscriptionHandles();
-        // The count of current subscriptions (consumers).
-        var subscriberCount = subscriptionHandles.Result.Count;
-        
-        if (eventWrapper.count == subscriberCount)
+        if (eventWrapper.Count == eventWrapper.SubscriberCount)
         {
             await CompleteAsync(eventWrapper.Event);
+            eventWrapper.Success = true;
         }
+        else
+        {
+            var period = TimeSpan.FromSeconds(60);
+            RegisterTimer(
+                asyncCallback: async _ => await TimerTick(),
+                state: null,
+                dueTime: period,
+                period: period);
+        }
+
+    }
+
+    
+    private async Task TimerTick()
+    {
+        var historyEvents =  this.RetrieveConfirmedEvents(Version-1,Version);   
+        // todo to Retrieve eventWrapper 
+        if (historyEvents.Result[0].Equals("to do "))
+        {
+            Console.WriteLine("eventWrapper has been completed");
+        }
+        else
+        {
+            await CompleteAsync(new TEvent());
+        }
+
     }
 
 

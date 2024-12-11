@@ -16,5 +16,7 @@ public static class CommonConstants
     public const string StreamProvider = "AISmart";
     public static Guid StreamGuid = Guid.NewGuid();
     
+    public const  int TimeOutMilliseconds = 60*1000;
+    
 
 }
