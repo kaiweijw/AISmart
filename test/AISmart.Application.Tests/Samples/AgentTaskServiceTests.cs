@@ -10,6 +10,7 @@ using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X.Events;
 using AISmart.AgentTask;
 using AISmart.Application.Grains.Agents.Developer;
+using AISmart.Application.Grains.Agents.Investment;
 using AISmart.Application.Grains.Agents.X;
 using AISmart.Application.Grains.Event;
 using AISmart.Dapr;
@@ -52,8 +53,8 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
     
     private readonly IAgent<XThreadCreatedEvent> _xAgent;
     private readonly IAgent<SocialEvent> _marketAgent;
-    private readonly IAgent<ImplementationEvent> _investmentAgent;
-    // private readonly IDeveloperAgent<ImplementationEvent> _developerAgent;
+    private readonly IInvestmentAgent _investmentAgent;
+    private readonly IDeveloperAgent _developerAgent;
     
     // internal IGrainRuntime Runtime { get; }
     //
@@ -92,11 +93,11 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         
         // _grainFactory.CreateObjectReference<IAgent<ImplementationEvent>>(typeof(IAgent<ImplementationEvent> ))
         
-        _investmentAgent = _clusterClient.GetGrain<IAgent<ImplementationEvent>>(Guid.NewGuid());
+        _investmentAgent = _clusterClient.GetGrain<IInvestmentAgent>(Guid.NewGuid());
         _investmentAgent.ActivateAsync();
         
-        // _developerAgent = _clusterClient.GetGrain<IDeveloperAgent<ImplementationEvent>>(Guid.NewGuid());
-        // _developerAgent.ActivateAsync();
+        _developerAgent = _clusterClient.GetGrain<IDeveloperAgent>(Guid.NewGuid());
+        _developerAgent.ActivateAsync();
         
         
         // _tgTemplateId = Guid.NewGuid();
@@ -172,6 +173,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
         
         //TODO Expected from the unit tests
-        await Task.Delay(1000 * 10);
+        await Task.Delay(1000 * 100);
     }
 }

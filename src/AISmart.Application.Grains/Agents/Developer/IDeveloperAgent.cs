@@ -1,9 +1,11 @@
 
+
 using AISmart.Agents;
+using AISmart.Agents.ImplementationAgent.Events;
 
 namespace AISmart.Application.Grains.Agents.Developer;
 
-public interface IDeveloperAgent<ImplementationEvent>:IAgent<ImplementationEvent> where ImplementationEvent : class
+public interface IDeveloperAgent: IAgent<ImplementationEvent>
 {
     
 }
