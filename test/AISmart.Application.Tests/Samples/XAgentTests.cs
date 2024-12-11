@@ -5,6 +5,7 @@ using AISmart.Agents;
 using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X.Events;
 using AISmart.AgentTask;
+using AISmart.Application.Grains.Agents.X;
 using AISmart.Application.Grains.Event;
 using AISmart.Sender;
 using Orleans;
@@ -12,22 +13,26 @@ using Shouldly;
 using Volo.Abp.EventBus.Local;
 using Xunit;
 using Xunit.Abstractions;
+using IAgent = AISmart.Agents.IAgent;
 
 namespace AISmart.Samples;
 
 public class XAgentTests : AISmartApplicationTestBase
 {
     private readonly IClusterClient _clusterClient;
+    protected readonly IGrainFactory _grainFactory ;
+
     private readonly IMarketLeaderStreamAgent _marketLeaderStreamAgent;
-    private readonly IAgent<XThreadCreatedEvent> _xAgent;
-    private readonly IAgent<SocialEvent> _marketAgent;
+    private readonly IAgent _xAgent;
+    // private readonly IAgent<SocialEvent> _marketAgent;
     private readonly IPublishingAgent _publishingAgent;
     
     public XAgentTests(ITestOutputHelper output)
     {
         _clusterClient = GetRequiredService<IClusterClient>();
-        
-        _xAgent = _clusterClient.GetGrain<IAgent<XThreadCreatedEvent>>(Guid.NewGuid());
+        _grainFactory = GetRequiredService<IGrainFactory>();
+
+        _xAgent = _grainFactory.GetGrain<IAgent>(Guid.NewGuid(),typeof(XAgent).Namespace);
         _xAgent.ActivateAsync();
         
         _publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());

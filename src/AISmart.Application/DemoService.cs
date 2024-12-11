@@ -4,6 +4,9 @@ using AISmart.Agents;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X.Events;
+using AISmart.Application.Grains.Agents.Developer;
+using AISmart.Application.Grains.Agents.MarketLeader;
+using AISmart.Application.Grains.Agents.X;
 using AISmart.Sender;
 using Orleans;
 using Volo.Abp.Application.Services;
@@ -26,13 +29,13 @@ public class DemoAppService : ApplicationService, IDemoAppService
 
     public async Task<string> PipelineDemoAsync(string content)
     {
-        var xAgent = _clusterClient.GetGrain<IAgent<XThreadCreatedEvent>>(Guid.NewGuid());
+        var xAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid(), typeof(XAgent).Namespace);
         await xAgent.ActivateAsync();
 
-        var marketLeaderAgent = _clusterClient.GetGrain<IAgent<SocialEvent>>(Guid.NewGuid());
+        var marketLeaderAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid(), typeof(MarketLeaderAgent).Namespace);
         await marketLeaderAgent.ActivateAsync();
 
-        var developerAgent = _clusterClient.GetGrain<IAgent<ImplementationEvent>>(Guid.NewGuid());
+        var developerAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid(), typeof(DeveloperAgent).Namespace);
         await developerAgent.ActivateAsync();
 
         var publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
