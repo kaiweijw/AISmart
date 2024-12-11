@@ -14,7 +14,7 @@ public class QdrantVectorDatabase : IVectorDatabase
     private readonly string _qdrantUrl;
     private readonly HttpClient _httpClient;
     private readonly string _collectionName;
-    private const int DefaultVectorSize = 3;
+    private const int DefaultVectorSize = 1536;
 
     public QdrantVectorDatabase(string qdrantUrl, string collectionName)
     {
