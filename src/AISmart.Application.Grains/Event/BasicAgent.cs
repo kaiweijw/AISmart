@@ -65,7 +65,7 @@ public class BasicAgent : JournaledGrain<AgentTaskState, BasicEvent>, IMarketLea
     {
         // this.Apply(new ChatEvent { id = eventData.Id });
         Console.WriteLine($"MarketLeaderAgent Event Received: {eventData.Content}");
-        ExecuteStrategyAsync(eventData);
+        _ = ExecuteStrategyAsync(eventData);
         return Task.CompletedTask;
     }
 
@@ -103,7 +103,7 @@ public class BasicAgent : JournaledGrain<AgentTaskState, BasicEvent>, IMarketLea
     private Task OnNextAsync(BasicEvent basicEvent, StreamSequenceToken token = null)
     {
         Console.WriteLine($"OrleansMarketLeaderAgent Received message: {basicEvent.Content}");
-        ExecuteStrategyAsync(basicEvent);
+        _ = ExecuteStrategyAsync(basicEvent);
         return Task.CompletedTask;
     }
     

@@ -23,7 +23,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         Logger = logger;
         _clusterClient = clusterClient;
     }
-    
+
     public Task ActivateAsync()
     {
         //do nothing
@@ -56,7 +56,6 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         var eventWrapper = new EventWrapper<T>(@event, this.GetGrainId());
         
         await stream.OnNextAsync(eventWrapper);
-
     }
 
     public async Task AckAsync(EventWrapper<TEvent> eventWrapper)
