@@ -1,8 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AISmart.Rag;
 
-public class RagProvider
+public class RagProvider : IRagProvider
 {
     private readonly IChunker _chunker;
     private readonly IEmbeddingProvider _embeddingProvider;
@@ -23,6 +25,24 @@ public class RagProvider
             var embedding = await _embeddingProvider.GetEmbeddingAsync(chunk);
             await _vectorDatabase.StoreAsync(chunk, embedding);
         }
+    }
+    
+    public async Task BatchStoreTextsAsync(IEnumerable<string> texts)
+    {
+        var allChunks = new List<(float[] vector, string text)>();
+            
+        foreach (var text in texts)
+        {
+            var chunks = _chunker.Chunk(text);
+                
+            foreach (var chunk in chunks)
+            {
+                var embedding = await _embeddingProvider.GetEmbeddingAsync(chunk);
+                allChunks.Add((embedding, chunk));
+            }
+        }
+        
+        await _vectorDatabase.StoreBatchAsync(allChunks);
     }
 
     public async Task<string> RetrieveAnswerAsync(string query)
