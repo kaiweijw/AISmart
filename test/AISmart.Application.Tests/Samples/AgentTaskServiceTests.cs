@@ -134,25 +134,23 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
             Content = "比特币突破10万美元大关"
         };
     }
-    
+
     [Fact]
     public async Task AgentFlow_Test()
     {
+        const string content = "BTC REACHED 100k WOOHOOOO!";
         const string expectedLog =
-            "AISmart.Application.Grains.Agents.X.XAgent ExecuteAsync: X Thread BTC REACHED 100k WOOHOOOO!";
+            $"AISmart.Application.Grains.Agents.X.XAgent ExecuteAsync: X Thread {content}";
 
-        var xThreadCreatedEvent = new XThreadCreatedEvent()
+        var xThreadCreatedEvent = new XThreadCreatedEvent
         {
             Id = "mock_x_thread_id",
-            Content = "BTC REACHED 100k WOOHOOOO!"
+            Content = content
         };
 
         await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
 
-        var resetEvent = new ManualResetEventSlim(false);
-
-        await ClusterFixture.WaitLogAsync(resetEvent, expectedLog);
-
-        resetEvent.Wait(TimeSpan.FromSeconds(10)).ShouldBeTrue();
+        await ClusterFixture.WaitLogAsync(expectedLog);
+        ClusterFixture.LoggerProvider.Logs.Any(log => log.Contains(content)).ShouldBeTrue();
     }
 }

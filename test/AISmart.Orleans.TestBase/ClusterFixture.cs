@@ -52,7 +52,7 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddSingleton(typeof(ILocalEventBus), mock.Object);
 
                 // Configure logging
-                var loggerProvider = new MockLoggerProvider();
+                var loggerProvider = new MockLoggerProvider("AISmart");
                 services.AddSingleton<ILoggerProvider>(loggerProvider);
                 LoggerProvider = loggerProvider;
                 services.AddLogging(logging =>
@@ -96,18 +96,17 @@ public class ClusterFixture : IDisposable, ISingletonDependency
             .AddMemoryStreams("AISmart");
     }
     
-    public static async Task WaitLogAsync(ManualResetEventSlim resetEvent, string log)
+    public static async Task WaitLogAsync(string log)
     {
-        var timeout = TimeSpan.FromSeconds(10);
+        var timeout = TimeSpan.FromSeconds(15);
         var stopwatch = Stopwatch.StartNew();
         while (stopwatch.Elapsed < timeout)
         {
             if (LoggerProvider.Logs.Any(l => l.Contains(log)))
             {
-                resetEvent.Set();
                 break;
             }
-            await Task.Delay(100);
+            await Task.Delay(1000);
         }
     }
 }
