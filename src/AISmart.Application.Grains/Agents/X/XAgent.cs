@@ -7,7 +7,7 @@ namespace AISmart.Application.Grains.Agents.X;
 
 public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
 {
-    public XAgent(ILogger<XAgent> logger) : base(logger)
+    public XAgent(ILogger<XAgent> logger,IClusterClient clusterClient) : base(logger,clusterClient)
     {
     }
 
@@ -25,5 +25,12 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
             Content = $"X Thread {eventData.Content} has been published."
         };
         await PublishAsync(publishEvent);
+    }
+
+    protected override Task CompleteAsync(XThreadCreatedEvent eventData)
+    {
+        Logger.LogInformation("CompleteAsync: X Thread {XContent}", eventData.Content);
+
+        return Task.CompletedTask;
     }
 }

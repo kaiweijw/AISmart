@@ -125,28 +125,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
             Downstreams = null,
             Content = "比特币突破10万美元大关"
         };
-
-        // await _tgAgent.ChatAsync(telegramEvent);
-        // _localEventBus.PublishAsync(telegramEvent);
-        await _senderAgent.PublishOrleansAsync(telegramEvent);
-
-        ;
-        // _senderAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid());.
-        
-        // await _marketOperatorStreamAgent.ExecuteStrategyAsync(null);
-
-        // await _marketLeaderStreamAgent.CompelteStrategyAsync(null);
-        
-        // await _marketLeaderAgent.CompelteStrategyAsync(null);
-        
-        // EventSequenceToken evetnset;
-        // _localEventBus.Subscribe(telegramEvent, () =>
-        //     {
-        //         evetnset.Set
-        //     }
-        //     );
-        // await evetnset.Task;
-        await Task.Delay(1000 * 50);
     }
     
     [Fact]
