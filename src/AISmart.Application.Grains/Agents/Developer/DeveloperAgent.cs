@@ -1,12 +1,12 @@
 using AISmart.Agents.ImplementationAgent.Events;
-using AISmart.Agents.MarketLeader.Events;
+using AISmart.Application.Grains.Agents.Developer;
 using Microsoft.Extensions.Logging;
 
-namespace AISmart.Application.Grains.Agents.MarketLeader;
+namespace AISmart.Application.Grains.Agents.Developer;
 
-public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
+public class DeveloperAgent : GAgent<DeveloperAgentState, DeveloperEvent>
 {
-    public MarketLeaderAgent(ILogger<MarketLeaderAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public DeveloperAgent(ILogger<DeveloperAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
     }
 
@@ -15,15 +15,13 @@ public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
-    protected override Task ExecuteAsync(SocialEvent eventData)
+    protected override Task ExecuteAsync(DeveloperEvent eventData)
     {
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: Market Leader analyses content:{eventData.Content}");
-        
-        PublishAsync(new ImplementationEvent());
         return Task.CompletedTask;
     }
 
-    protected override Task CompleteAsync(SocialEvent eventData)
+    protected override Task CompleteAsync(DeveloperEvent eventData)
     {
         return Task.CompletedTask;
     }
