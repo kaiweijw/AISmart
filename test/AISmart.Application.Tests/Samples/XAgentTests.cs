@@ -34,7 +34,7 @@ public class XAgentTests : AISmartApplicationTestBase
     }
     
     [Fact]
-    public async Task XThreadCreatedEvent_Test()
+    public async Task XThreadCreatedEvent_Executed_Test()
     {
         const string content = "BTC REACHED 100k WOOHOOOO!";
         const string expectedLog =
