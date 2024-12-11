@@ -15,12 +15,11 @@ public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
-    protected override Task ExecuteAsync(SocialEvent eventData)
+    protected override async Task ExecuteAsync(SocialEvent eventData)
     {
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: Market Leader analyses content:{eventData.Content}");
         
-        PublishAsync(new ImplementationEvent());
-        return Task.CompletedTask;
+        await PublishAsync(new ImplementationEvent());
     }
 
     protected override Task CompleteAsync(SocialEvent eventData)

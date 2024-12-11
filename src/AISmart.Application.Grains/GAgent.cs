@@ -129,7 +129,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         {
             Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
 
-            ExecuteAsync(eventWrapper.Event);
+            await ExecuteAsync(eventWrapper.Event);
             await DoAckAsync(eventWrapper);
         }
     }
