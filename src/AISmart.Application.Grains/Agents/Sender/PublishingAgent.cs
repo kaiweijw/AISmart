@@ -1,6 +1,7 @@
 using AISmart.Agents;
 using AISmart.Sender;
 using Microsoft.Extensions.Logging;
+using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Sender;
 
@@ -13,6 +14,7 @@ public class EmptyEvent : GEvent
 {
 }
 
+[LogConsistencyProvider(ProviderName = "LogStorage")]
 public class PublishingAgent : GAgent<PublishingAgentState, EmptyEvent>, IPublishingAgent
 {
     public PublishingAgent(ILogger<PublishingAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)

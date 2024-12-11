@@ -3,9 +3,11 @@ using AISmart.Agents.MarketLeader.Events;
 using AISmart.Application.Grains.Agents.Developer;
 using AISmart.Application.Grains.Agents.MarketLeader;
 using Microsoft.Extensions.Logging;
+using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
+[LogConsistencyProvider(ProviderName = "LogStorage")]
 public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>,IInvestmentAgent
 {
     public InvestmentAgent(ILogger<InvestmentAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)

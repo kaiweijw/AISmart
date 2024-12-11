@@ -1,9 +1,11 @@
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.MarketLeader.Events;
 using Microsoft.Extensions.Logging;
+using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.MarketLeader;
 
+[LogConsistencyProvider(ProviderName = "LogStorage")]
 public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
 {
     public MarketLeaderAgent(ILogger<MarketLeaderAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)

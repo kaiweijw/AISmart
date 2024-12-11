@@ -2,9 +2,11 @@ using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X.Events;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
+using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.X;
 
+[LogConsistencyProvider(ProviderName = "LogStorage")]
 public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
 {
     public XAgent(ILogger<XAgent> logger,IClusterClient clusterClient) : base(logger,clusterClient)

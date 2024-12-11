@@ -1,9 +1,11 @@
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Application.Grains.Agents.Developer;
 using Microsoft.Extensions.Logging;
+using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Developer;
 
+[LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>,IDeveloperAgent
 {
     public DeveloperAgent(ILogger<DeveloperAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
