@@ -31,12 +31,24 @@ public class TelegramGAgentTest : AISmartApplicationTestBase
     [Fact]
     public async Task SendMessageWithReplayTest()
     {
-        //  var updates = await  _telegramProvider.GetUpdatesAsync("Test");
-        // _output.WriteLine("updates: " + updates);
         await  _telegramProvider.SendMessageAsync("Test","7027097058","hello bot2",new ReplyParamDto
         {
             MessageId = 12
         });
     }
-
+    
+    [Fact]
+    public async Task SendPhotoWithReplayTest()
+    {
+        await  _telegramProvider.SendPhotoAsync("Test",new PhotoParamsDto
+        {
+            ChatId = "7027097058",
+            Photo = "https://raw.githubusercontent.com/paulazhou/picbed/main/Hexo/2021_05_23_G1OwSTxDrfVlPdv.png",
+            ReplyParameters = new ReplyParamDto
+            {
+                MessageId = 12
+            },
+            Caption = "hello, this is a photo."
+        });
+    }
 }

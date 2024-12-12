@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using AISmart.Dto;
 using AISmart.Options;
@@ -90,5 +91,29 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
             throw new UserFriendlyException($"Telegram Account {accountName} not found");
         }
         return account;
+    }
+
+    public async Task SendPhotoAsync(string sendUser,PhotoParamsDto photoParamsDto)
+    {
+        var token = GetAccount(sendUser);
+        var url = $"https://api.telegram.org/bot{token}/sendPhoto";
+        var paramsJson = JsonConvert.SerializeObject(photoParamsDto, new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore
+        });
+        var content = new StringContent(paramsJson, Encoding.UTF8, "application/json");
+        try
+        {
+            var response = await new HttpClient().PostAsync(url, content);
+                
+            response.EnsureSuccessStatusCode();
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation(responseBody);
+        }
+        catch (HttpRequestException e)
+        {
+            _logger.LogError($"request error: {e.Message}");
+        }
     }
 }
