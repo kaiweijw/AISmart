@@ -46,26 +46,29 @@ public class AElfAgent : GAgent<AElfAgentState, CreateTransactionGEvent>,IAElfAg
     protected  async Task ApplyAsync(CreateTransactionGEvent gEventData)
     {
         base.RaiseEvent(gEventData);
-        await PublishAsync(new SendTransactionSEvent
-        {
-            Id = gEventData.Id,
-            ChainId = gEventData.ChainId,
-            SenderName = gEventData.SenderName,
-            ContractAddress = gEventData.ContractAddress,
-            MethodName = gEventData.MethodName,
-            Param = gEventData.Param
-        });
+        _= GrainFactory.GetGrain<ITransactionGrain>(gEventData.Id).SendAElfTransactionAsync(
+            new SendTransactionDto
+            {
+                Id = gEventData.Id,
+                ChainId = gEventData.ChainId,
+                SenderName = gEventData.SenderName,
+                ContractAddress = gEventData.ContractAddress,
+                MethodName = gEventData.MethodName,
+                Param = gEventData.Param
+            });
     }
     // from SendTransactionCallBackEvent
     protected  async Task ApplyAsync(SendTransactionGEvent gEventData)
     {
         base.RaiseEvent(gEventData);
-        await PublishAsync(new QueryTransactionSEvent
-        {
-            Id = gEventData.Id,
-            ChainId = gEventData.ChainId,
-            TransactionId = gEventData.TransactionId
-        });
+        _= GrainFactory.GetGrain<ITransactionGrain>(gEventData.Id).LoadAElfTransactionResultAsync(
+            new QueryTransactionDto
+            {
+                Id = gEventData.Id,
+                ChainId = gEventData.ChainId,
+                TransactionId = gEventData.TransactionId
+            });
+      
     }
     
     // from queryTransactionCallBackEvent
