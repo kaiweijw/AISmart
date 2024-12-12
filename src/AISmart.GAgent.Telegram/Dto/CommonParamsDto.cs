@@ -9,16 +9,16 @@ public class Message
     public long MessageId { get; set; }
     
     [JsonProperty("from")]
-    public User From { get; set; }
+    public User? From { get; set; }
     
     [JsonProperty("chat")]
-    public Chat Chat { get; set; }
+    public Chat? Chat { get; set; }
     
     [JsonProperty("date")]
     public long Date { get; set; }
     
     [JsonProperty("text")]
-    public string Text { get; set; }
+    public string? Text { get; set; }
 }
 
 public class User
@@ -30,13 +30,13 @@ public class User
     public bool IsBot { get; set; }
     
     [JsonProperty("first_name")]
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
     
     [JsonProperty("username")]
-    public string Username { get; set; }
+    public string? Username { get; set; }
     
     [JsonProperty("language_code")]
-    public string LanguageCode { get; set; }
+    public string? LanguageCode { get; set; }
 }
 
 public class Chat
@@ -45,10 +45,10 @@ public class Chat
     public long Id { get; set; }
     
     [JsonProperty("first_name")]
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
     
     [JsonProperty("username")]
-    public string Username { get; set; }
+    public string? Username { get; set; }
     
     [JsonProperty("type")]
     public string Type { get; set; }
@@ -57,7 +57,7 @@ public class Chat
 public class MessageEntity
 {
     [JsonProperty("type")] 
-    public string Type { get; set; }
+    public string? Type { get; set; }
     [JsonProperty("offset")] 
     public int Offset { get; set; }
     [JsonProperty("length")] 
@@ -76,10 +76,10 @@ public class MessageEntity
 public class BusinessConnection
 {
     [JsonProperty("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [JsonProperty("user")]
-    public User User { get; set; }
+    public User? User { get; set; }
 
     [JsonProperty("user_chat_id")]
     public long UserChatId { get; set; }
@@ -97,43 +97,43 @@ public class BusinessConnection
 public class BusinessMessagesDeleted
 {
     [JsonProperty("business_connection_id")]
-    public string BusinessConnectionId { get; set; }
+    public string? BusinessConnectionId { get; set; }
 
     [JsonProperty("chat")]
-    public Chat Chat { get; set; }
+    public Chat? Chat { get; set; }
 
     [JsonProperty("message_ids")]
-    public List<long> MessageIds { get; set; }
+    public List<long>? MessageIds { get; set; }
 }
 
 public class MessageReactionUpdated
 {
     [JsonProperty("chat")]
-    public Chat Chat { get; set; }
+    public Chat? Chat { get; set; }
 
     [JsonProperty("message_id")]
     public long MessageId { get; set; }
 
     [JsonProperty("user")]
-    public User User { get; set; } 
+    public User? User { get; set; } 
 
     [JsonProperty("actor_chat")]
-    public Chat ActorChat { get; set; } 
+    public Chat? ActorChat { get; set; } 
 
     [JsonProperty("date")]
     public long Date { get; set; } 
     
     [JsonProperty("old_reaction")]
-    public List<ReactionType> OldReaction { get; set; } 
+    public List<ReactionType>? OldReaction { get; set; } 
     
     [JsonProperty("new_reaction")]
-    public List<ReactionType> NewReaction { get; set; } 
+    public List<ReactionType>? NewReaction { get; set; } 
 }
 
 public class ReactionType
 {
     [JsonProperty("type")]
-    public string Type { get; set; }
+    public string? Type { get; set; }
 }
 
 public class ReactionTypeEmoji : ReactionType
@@ -142,7 +142,7 @@ public class ReactionTypeEmoji : ReactionType
     public new string Type { get; set; } = "emoji";
     
     [JsonProperty("emoji")]
-    public string Emoji { get; set; } 
+    public string? Emoji { get; set; } 
 }
 
 public class ReactionTypeCustomEmoji : ReactionType
@@ -151,7 +151,7 @@ public class ReactionTypeCustomEmoji : ReactionType
     public new string Type { get; set; } = "custom_emoji";
     
     [JsonProperty("custom_emoji_id")]
-    public string CustomEmojiId { get; set; } 
+    public string? CustomEmojiId { get; set; } 
 }
 
 public class ReactionTypePaid : ReactionType
@@ -163,7 +163,7 @@ public class ReactionTypePaid : ReactionType
 public class ReactionCountUpdate
 {
     [JsonProperty("chat")]
-    public Chat Chat { get; set; }
+    public Chat? Chat { get; set; }
 
     [JsonProperty("message_id")]
     public long MessageId { get; set; }
@@ -172,13 +172,13 @@ public class ReactionCountUpdate
     public long Date { get; set; }
     
     [JsonProperty("reactions")]
-    public List<ReactionCount> Reactions { get; set; }
+    public List<ReactionCount>? Reactions { get; set; }
 }
 
 public class ReactionCount
 {
     [JsonProperty("type")]
-    public ReactionType Type { get; set; }
+    public ReactionType? Type { get; set; }
     
     [JsonProperty("total_count")]
     public long TotalCount { get; set; }
@@ -186,7 +186,7 @@ public class ReactionCount
 public class MessageReactionCountUpdated
 {
     [JsonProperty("chat")]
-    public Chat Chat { get; set; } 
+    public Chat? Chat { get; set; } 
 
     [JsonProperty("message_id")]
     public long MessageId { get; set; } 
@@ -195,28 +195,28 @@ public class MessageReactionCountUpdated
     public long Date { get; set; } 
 
     [JsonProperty("reactions")]
-    public List<ReactionCount> Reactions { get; set; } 
+    public List<ReactionCount>? Reactions { get; set; } 
 }
 
 public class InlineQuery
 {
     [JsonProperty("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [JsonProperty("from")]
-    public User From { get; set; }
+    public User? From { get; set; }
 
     [JsonProperty("query")]
-    public string Query { get; set; }
+    public string? Query { get; set; }
 
     [JsonProperty("offset")]
-    public string Offset { get; set; }
+    public string? Offset { get; set; }
 
     [JsonProperty("chat_type")]
-    public string ChatType { get; set; }
+    public string? ChatType { get; set; }
 
     [JsonProperty("location")]
-    public Location Location { get; set; }
+    public Location? Location { get; set; }
 }
 
 public class Location
@@ -243,47 +243,47 @@ public class Location
 public class ChosenInlineResult
 {
     [JsonProperty("result_id")]
-    public string ResultId { get; set; }
+    public string? ResultId { get; set; }
 
     [JsonProperty("from")]
-    public User From { get; set; } 
+    public User? From { get; set; } 
 
     [JsonProperty("location")]
     public Location Location { get; set; }
 
     [JsonProperty("inline_message_id")]
-    public string InlineMessageId { get; set; }
+    public string? InlineMessageId { get; set; }
 
     [JsonProperty("query")]
-    public string Query { get; set; }
+    public string? Query { get; set; }
 }
 public class CallbackQuery
 {
     [JsonProperty("id")]
-    public string Id { get; set; } 
+    public string? Id { get; set; } 
 
     [JsonProperty("from")]
-    public User From { get; set; } 
+    public User? From { get; set; } 
 
     [JsonProperty("message")]
-    public MaybeInaccessibleMessage Message { get; set; }
+    public MaybeInaccessibleMessage? Message { get; set; }
 
     [JsonProperty("inline_message_id")]
-    public string InlineMessageId { get; set; }
+    public string? InlineMessageId { get; set; }
 
     [JsonProperty("chat_instance")]
-    public string ChatInstance { get; set; } 
+    public string? ChatInstance { get; set; } 
 
     [JsonProperty("data")]
-    public string Data { get; set; } 
+    public string? Data { get; set; } 
 
     [JsonProperty("game_short_name")]
-    public string GameShortName { get; set; }  
+    public string? GameShortName { get; set; }  
 }
 public class MaybeInaccessibleMessage
 {
     [JsonProperty("type")]
-    public string Type { get; set; }
+    public string? Type { get; set; }
 
     [JsonProperty("offset")]
     public long Offset { get; set; } 
@@ -292,113 +292,113 @@ public class MaybeInaccessibleMessage
     public long Length { get; set; }
 
     [JsonProperty("url")]
-    public string Url { get; set; } 
+    public string? Url { get; set; } 
 
     [JsonProperty("user")]
-    public User User { get; set; }
+    public User? User { get; set; }
 
     [JsonProperty("language")]
-    public string Language { get; set; }
+    public string? Language { get; set; }
 
     [JsonProperty("custom_emoji_id")]
-    public string CustomEmojiId { get; set; } 
+    public string? CustomEmojiId { get; set; } 
 }
 public class ShippingQuery
 {
     [JsonProperty("id")]
-    public string Id { get; set; } 
+    public string? Id { get; set; } 
 
     [JsonProperty("from")]
-    public User From { get; set; } 
+    public User? From { get; set; } 
 
     [JsonProperty("invoice_payload")]
-    public string InvoicePayload { get; set; } 
+    public string? InvoicePayload { get; set; } 
 
     [JsonProperty("shipping_address")]
-    public ShippingAddress ShippingAddress { get; set; }
+    public ShippingAddress? ShippingAddress { get; set; }
 }
 
 public class ShippingAddress
 {
     [JsonProperty("country_code")]
-    public string CountryCode { get; set; } 
+    public string? CountryCode { get; set; } 
 
     [JsonProperty("state")]
-    public string State { get; set; } 
+    public string? State { get; set; } 
 
     [JsonProperty("city")]
-    public string City { get; set; }
+    public string? City { get; set; }
 
     [JsonProperty("street_line1")]
-    public string StreetLine1 { get; set; } 
+    public string? StreetLine1 { get; set; } 
     [JsonProperty("street_line2")]
-    public string StreetLine2 { get; set; } 
+    public string? StreetLine2 { get; set; } 
 
     [JsonProperty("post_code")]
-    public string PostCode { get; set; } 
+    public string? PostCode { get; set; } 
 }
 
 public class PreCheckoutQuery
 {
     [JsonProperty("id")]
-    public string Id { get; set; } 
+    public string? Id { get; set; } 
 
     [JsonProperty("from")]
-    public User From { get; set; } 
+    public User? From { get; set; } 
 
     [JsonProperty("currency")]
-    public string Currency { get; set; } 
+    public string? Currency { get; set; } 
 
     [JsonProperty("total_amount")]
     public long TotalAmount { get; set; } 
 
     [JsonProperty("invoice_payload")]
-    public string InvoicePayload { get; set; } 
+    public string? InvoicePayload { get; set; } 
 
     [JsonProperty("shipping_option_id")]
-    public string ShippingOptionId { get; set; }
+    public string? ShippingOptionId { get; set; }
 
     [JsonProperty("order_info")]
-    public OrderInfo OrderInfo { get; set; }
+    public OrderInfo? OrderInfo { get; set; }
 }
 
 public class OrderInfo
 {
     [JsonProperty("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonProperty("phone_number")]
-    public string PhoneNumber { get; set; }
+    public string? PhoneNumber { get; set; }
 
     [JsonProperty("email")]
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
     [JsonProperty("shipping_address")]
-    public ShippingAddress ShippingAddress { get; set; } 
+    public ShippingAddress? ShippingAddress { get; set; } 
 }
 
 public class PaidMediaPurchased
 {
     [JsonProperty("from")]
-    public User From { get; set; } 
+    public User? From { get; set; } 
 
     [JsonProperty("paid_media_payload")]
-    public string PaidMediaPayload { get; set; } 
+    public string? PaidMediaPayload { get; set; } 
 }
 
 public class Poll
 {
     [JsonProperty("id")]
-    public string Id { get; set; } 
+    public string? Id { get; set; } 
 
     [JsonProperty("question")]
-    public string Question { get; set; } 
+    public string? Question { get; set; } 
 
     [JsonProperty("question_entities")]
-    public List<MessageEntity> QuestionEntities { get; set; } 
+    public List<MessageEntity>? QuestionEntities { get; set; } 
 
     [JsonProperty("options")]
-    public List<PollOption> Options { get; set; }
+    public List<PollOption>? Options { get; set; }
 
     [JsonProperty("total_voter_count")]
     public long TotalVoterCount { get; set; } 
@@ -410,7 +410,7 @@ public class Poll
     public bool IsAnonymous { get; set; }
 
     [JsonProperty("type")]
-    public string Type { get; set; } 
+    public string? Type { get; set; } 
 
     [JsonProperty("allows_multiple_answers")]
     public bool AllowsMultipleAnswers { get; set; }
@@ -419,10 +419,10 @@ public class Poll
     public long? CorrectOptionId { get; set; } 
 
     [JsonProperty("explanation")]
-    public string Explanation { get; set; }
+    public string? Explanation { get; set; }
 
     [JsonProperty("explanation_entities")]
-    public List<MessageEntity> ExplanationEntities { get; set; } 
+    public List<MessageEntity>? ExplanationEntities { get; set; } 
 
     [JsonProperty("open_period")]
     public long? OpenPeriod { get; set; } 
@@ -434,10 +434,10 @@ public class Poll
 public class PollOption
 {
     [JsonProperty("text")]
-    public string Text { get; set; } 
+    public string? Text { get; set; } 
 
     [JsonProperty("text_entities")]
-    public List<MessageEntity> TextEntities { get; set; } 
+    public List<MessageEntity>? TextEntities { get; set; } 
 
     [JsonProperty("voter_count")]
     public long VoterCount { get; set; } 
@@ -445,36 +445,36 @@ public class PollOption
 public class PollAnswer
 {
     [JsonProperty("poll_id")]
-    public string PollId { get; set; }
+    public string? PollId { get; set; }
 
     [JsonProperty("voter_chat")]
-    public Chat VoterChat { get; set; }
+    public Chat? VoterChat { get; set; }
 
     [JsonProperty("user")]
-    public User User { get; set; } 
+    public User? User { get; set; } 
 
     [JsonProperty("option_ids")]
-    public List<long> OptionIds { get; set; } 
+    public List<long>? OptionIds { get; set; } 
 }
 public class ChatMemberUpdated
 {
     [JsonProperty("chat")]
-    public Chat Chat { get; set; }
+    public Chat? Chat { get; set; }
 
     [JsonProperty("from")]
-    public User From { get; set; }
+    public User? From { get; set; }
 
     [JsonProperty("date")]
     public int Date { get; set; } 
 
     [JsonProperty("old_chat_member")]
-    public ChatMember OldChatMember { get; set; } 
+    public ChatMember? OldChatMember { get; set; } 
 
     [JsonProperty("new_chat_member")]
-    public ChatMember NewChatMember { get; set; } 
+    public ChatMember? NewChatMember { get; set; } 
 
     [JsonProperty("invite_link")]
-    public ChatInviteLink InviteLink { get; set; }
+    public ChatInviteLink? InviteLink { get; set; }
 
     [JsonProperty("via_join_request")]
     public bool? ViaJoinRequest { get; set; } 
@@ -486,10 +486,10 @@ public class ChatMemberUpdated
 public class ChatMember
 {
     [JsonProperty("status")]
-    public string Status { get; set; }  // The status of the member in the chat
+    public string? Status { get; set; }  // The status of the member in the chat
 
     [JsonProperty("user")]
-    public User User { get; set; }  // Information about the user
+    public User? User { get; set; }  // Information about the user
 }
 
 public class ChatMemberOwner : ChatMember
@@ -503,7 +503,7 @@ public class ChatMemberOwner : ChatMember
     public bool IsAnonymous { get; set; }  // True if the user's presence in the chat is hidden
 
     [JsonProperty("custom_title")]
-    public string CustomTitle { get; set; }  // Custom title for this user (optional)
+    public string? CustomTitle { get; set; }  // Custom title for this user (optional)
 }
 
 public class ChatMemberAdministrator : ChatMember
@@ -562,7 +562,7 @@ public class ChatMemberAdministrator : ChatMember
     public bool? CanManageTopics { get; set; }  // True if the admin can manage forum topics (only for supergroups)
 
     [JsonProperty("custom_title")]
-    public string CustomTitle { get; set; }  // Custom title for the administrator (optional)
+    public string? CustomTitle { get; set; }  // Custom title for the administrator (optional)
 }
 
 public class ChatMemberMember : ChatMember
@@ -654,10 +654,10 @@ public class ChatMemberBanned : ChatMember
 public class ChatInviteLink
 {
     [JsonProperty("invite_link")]
-    public string InviteLink { get; set; }  // The invite link. If created by another admin, the second part will be replaced with "…"
+    public string? InviteLink { get; set; }  // The invite link. If created by another admin, the second part will be replaced with "…"
 
     [JsonProperty("creator")]
-    public User Creator { get; set; }  // The creator of the invite link
+    public User? Creator { get; set; }  // The creator of the invite link
 
     [JsonProperty("creates_join_request")]
     public bool CreatesJoinRequest { get; set; }  // True if users need approval to join via this link
@@ -669,7 +669,7 @@ public class ChatInviteLink
     public bool IsRevoked { get; set; }  // True if the invite link is revoked
 
     [JsonProperty("name")]
-    public string Name { get; set; }  // Optional: Name for the invite link
+    public string? Name { get; set; }  // Optional: Name for the invite link
 
     [JsonProperty("expire_date")]
     public int? ExpireDate { get; set; }  // Optional: Unix timestamp of when the link will expire or has expired
@@ -690,10 +690,10 @@ public class ChatInviteLink
 public class ChatJoinRequest
 {
     [JsonProperty("chat")]
-    public Chat Chat { get; set; }  // Chat to which the request was sent
+    public Chat? Chat { get; set; }  // Chat to which the request was sent
 
     [JsonProperty("from")]
-    public User From { get; set; }  // User that sent the join request
+    public User? From { get; set; }  // User that sent the join request
 
     [JsonProperty("user_chat_id")]
     public long UserChatId { get; set; }  // Identifier of a private chat with the user who sent the join request
@@ -702,40 +702,40 @@ public class ChatJoinRequest
     public int Date { get; set; }  // Date the request was sent in Unix time
 
     [JsonProperty("bio")]
-    public string Bio { get; set; }  // Optional bio of the user
+    public string? Bio { get; set; }  // Optional bio of the user
 
     [JsonProperty("invite_link")]
-    public ChatInviteLink InviteLink { get; set; }  // Optional: The invite link used by the user to send the join request
+    public ChatInviteLink? InviteLink { get; set; }  // Optional: The invite link used by the user to send the join request
 }
 
 public class ChatBoostUpdated
 {
     [JsonProperty("chat")]
-    public Chat Chat { get; set; }  // Chat which was boosted
+    public Chat? Chat { get; set; }  // Chat which was boosted
 
     [JsonProperty("boost")]
-    public ChatBoost Boost { get; set; }  // Information about the chat boost
+    public ChatBoost? Boost { get; set; }  // Information about the chat boost
 }
 
 public class ChatBoostRemoved
 {
     [JsonProperty("chat")]
-    public Chat Chat { get; set; }  // Chat which was boosted
+    public Chat? Chat { get; set; }  // Chat which was boosted
 
     [JsonProperty("boost_id")]
-    public string BoostId { get; set; }  // Unique identifier of the boost
+    public string? BoostId { get; set; }  // Unique identifier of the boost
 
     [JsonProperty("remove_date")]
     public int RemoveDate { get; set; }  // Point in time (Unix timestamp) when the boost was removed
 
     [JsonProperty("source")]
-    public ChatBoostSource Source { get; set; }  // Source of the removed boost
+    public ChatBoostSource? Source { get; set; }  // Source of the removed boost
 }
 
 public class ChatBoost
 {
     [JsonProperty("boost_id")]
-    public string BoostId { get; set; }  // Unique identifier of the boost
+    public string? BoostId { get; set; }  // Unique identifier of the boost
 
     [JsonProperty("add_date")]
     public int AddDate { get; set; }  // Point in time (Unix timestamp) when the chat was boosted
@@ -744,16 +744,16 @@ public class ChatBoost
     public int ExpirationDate { get; set; }  // Point in time (Unix timestamp) when the boost will automatically expire
 
     [JsonProperty("source")]
-    public ChatBoostSource Source { get; set; }  // Source of the added boost
+    public ChatBoostSource? Source { get; set; }  // Source of the added boost
 }
 
 public class ChatBoostSource
 {
     [JsonProperty("source")]
-    public string Source { get; set; }  // Source of the boost (e.g., "premium", "gift_code", "giveaway")
+    public string? Source { get; set; }  // Source of the boost (e.g., "premium", "gift_code", "giveaway")
 
     [JsonProperty("user")]
-    public User User { get; set; }  // User related to the boost (varies by source type)
+    public User? User { get; set; }  // User related to the boost (varies by source type)
 }
 
 public class ChatBoostSourcePremium : ChatBoostSource
@@ -764,7 +764,7 @@ public class ChatBoostSourcePremium : ChatBoostSource
     }
 
     [JsonProperty("user")]
-    public User User { get; set; }  // User who boosted the chat via Telegram Premium
+    public User? User { get; set; }  // User who boosted the chat via Telegram Premium
 }
 
 public class ChatBoostSourceGiftCode : ChatBoostSource
@@ -775,7 +775,7 @@ public class ChatBoostSourceGiftCode : ChatBoostSource
     }
 
     [JsonProperty("user")]
-    public User User { get; set; }  // User for whom the gift code was created
+    public User? User { get; set; }  // User for whom the gift code was created
 }
 
 public class ChatBoostSourceGiveaway : ChatBoostSource
@@ -789,7 +789,7 @@ public class ChatBoostSourceGiveaway : ChatBoostSource
     public int GiveawayMessageId { get; set; } // Identifier of a message related to the giveaway
 
     [JsonProperty("user")]
-    public User User { get; set; } // User who won the giveaway (optional, for Telegram Premium giveaways)
+    public User? User { get; set; } // User who won the giveaway (optional, for Telegram Premium giveaways)
 
     [JsonProperty("prize_star_count")]
     public int PrizeStarCount { get; set; } // Number of Telegram Stars for Telegram Star giveaways
