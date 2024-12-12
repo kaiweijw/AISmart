@@ -1,11 +1,9 @@
-using System;
 using System.Threading.Tasks;
 using Orleans;
-using Orleans.Streams;
 
 namespace AISmart.Agents;
 
-public interface IAgent<TState>:  IGrainWithGuidKey
+public interface IAgent: IGrainWithGuidKey
 {
     //used for activating the agent manually, mostly used for testing
     Task ActivateAsync();
@@ -15,7 +13,10 @@ public interface IAgent<TState>:  IGrainWithGuidKey
     
     //Function to get agent description
     Task<string> GetDescriptionAsync();
-
-    Task<TState> GetStateAsync();
     Task SubscribeTo(IAgent agent);
+}
+
+public interface IAgent<TState>:  IAgent
+{
+    Task<TState> GetStateAsync();
 }
