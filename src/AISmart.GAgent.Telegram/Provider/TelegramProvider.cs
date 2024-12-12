@@ -150,9 +150,16 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
         }
     }
 
-    public async Task GetUpdatesMessagesAsync(TelegramUpdateDto updateMessage)
+    public async Task TestUpdatesMessagesAsync(TelegramUpdateDto updateMessage)
     {
         _logger.LogDebug("GetUpdatesMessagesAsync:{message}",JsonConvert.SerializeObject(updateMessage));
+        if (updateMessage.Message != null && updateMessage.Message.Chat != null)
+        {
+            await SendMessageAsync("Test",updateMessage.Message.Chat.Id.ToString(), "hello test message",new ReplyParamDto
+            {
+                MessageId = updateMessage.Message.MessageId
+            });
+        }
         // todo: process message
     }
 

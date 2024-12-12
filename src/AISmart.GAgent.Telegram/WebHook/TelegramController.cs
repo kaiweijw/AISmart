@@ -30,6 +30,6 @@ public class TelegramController
     public async Task PostMessages([FromBody]TelegramUpdateDto updateMessage)
     {
         _logger.LogDebug("Receive update message from telegram.{message}",JsonConvert.SerializeObject(updateMessage));
-        await _telegramProvider.GetUpdatesMessagesAsync(updateMessage);
+        await _telegramProvider.TestUpdatesMessagesAsync(updateMessage);
     }
 }
