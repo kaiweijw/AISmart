@@ -77,9 +77,9 @@ namespace AISmart.Samples
             var developerAgentState = await developerAgent.GetStateAsync();
 
             await TestingUtils.WaitUntilAsync(_ => CheckState(developerAgentState), TimeSpan.FromSeconds(20));
-            developerAgentState.Content.Count.ShouldBe(1);
-            
             await TestingUtils.WaitUntilAsync(_ => CheckState(investmentAgentState), TimeSpan.FromSeconds(20));
+            
+            developerAgentState.Content.Count.ShouldBe(1);
             investmentAgentState.Content.Count.ShouldBe(1);
         }
 
