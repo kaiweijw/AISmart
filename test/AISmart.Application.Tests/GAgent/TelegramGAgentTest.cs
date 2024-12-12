@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using AElf.Client.Dto;
 using AElf.Contracts.MultiToken;
 using AElf.Types;
+using AISmart.Dto;
 using AISmart.Provider;
 using Newtonsoft.Json;
 using Xunit;
@@ -25,6 +26,17 @@ public class TelegramGAgentTest : AISmartApplicationTestBase
     //  var updates = await  _telegramProvider.GetUpdatesAsync("Test");
      // _output.WriteLine("updates: " + updates);
       await  _telegramProvider.SendMessageAsync("Test","7600783090","hello bot2");
+    }
+    
+    [Fact]
+    public async Task SendMessageWithReplayTest()
+    {
+        //  var updates = await  _telegramProvider.GetUpdatesAsync("Test");
+        // _output.WriteLine("updates: " + updates);
+        await  _telegramProvider.SendMessageAsync("Test","7027097058","hello bot2",new ReplyParamDto
+        {
+            MessageId = 12
+        });
     }
 
 }
