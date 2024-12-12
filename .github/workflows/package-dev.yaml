@@ -27,8 +27,8 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.servicename }}
-          path: out/${{ github.event.inputs.servicename }}
+          name: ${{ matrix.servicename }}
+          path: out/${{ matrix.servicename }}
           retention-days: 1
 
   build-and-push-image:
