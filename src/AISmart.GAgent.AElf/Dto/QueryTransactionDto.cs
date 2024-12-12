@@ -5,7 +5,7 @@ using Orleans;
 namespace AISmart.Agent.Event;
 
 [GenerateSerializer]
-public  class QueryTransactionSEvent
+public  class QueryTransactionDto
 {
     [Id(0)] public Guid Id { get; set; }
     [Id(1)] public string ChainId { get; set; }

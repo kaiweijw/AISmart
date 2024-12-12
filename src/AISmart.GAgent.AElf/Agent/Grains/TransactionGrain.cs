@@ -22,20 +22,20 @@ public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
         _Logger = Logger;
     }
 
-    public async Task<TransactionDto> SendAElfTransactionAsync(SendTransactionSEvent sendTransactionSEvent)
+    public async Task<TransactionDto> SendAElfTransactionAsync(SendTransactionDto sendTransactionDto)
     {
         //subscribe SendTransactionSEvent
-        var transaction = await _AElfNodeProvider.CreateTransactionAsync(sendTransactionSEvent.ChainId, sendTransactionSEvent.SenderName, sendTransactionSEvent.ContractAddress,
-            sendTransactionSEvent.MethodName, new TransferInput());
-        var SendTransactionOutput =  await _AElfNodeProvider.SendTransactionAsync(sendTransactionSEvent.ChainId,transaction);
+        var transaction = await _AElfNodeProvider.CreateTransactionAsync(sendTransactionDto.ChainId, sendTransactionDto.SenderName, sendTransactionDto.ContractAddress,
+            sendTransactionDto.MethodName, new TransferInput());
+        var sendTransactionAsync =  await _AElfNodeProvider.SendTransactionAsync(sendTransactionDto.ChainId,transaction);
         return new TransactionDto
         {
-            TransactionId = SendTransactionOutput.TransactionId
+            TransactionId = sendTransactionAsync.TransactionId
         };
         // publish SendTransactionCallBackSEvent
     }
 
-    public async Task<TransactionDto> LoadAElfTransactionResultAsync(QueryTransactionSEvent queryTransactionSEvent)
+    public async Task<TransactionDto> LoadAElfTransactionResultAsync(QueryTransactionDto queryTransactionDto)
     {
         //subscribe SendTransactionSEvent
         bool isSuccess = false;
@@ -47,8 +47,8 @@ public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
             {
                 await Task.Delay(500, cts.Token);
                 var txResult =
-                    await _AElfNodeProvider.GetTransactionResultAsync(queryTransactionSEvent.ChainId,
-                        queryTransactionSEvent.TransactionId);
+                    await _AElfNodeProvider.GetTransactionResultAsync(queryTransactionDto.ChainId,
+                        queryTransactionDto.TransactionId);
                 if (txResult.Status == "Mined")
                 {
                     isSuccess = true;
@@ -67,11 +67,11 @@ public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
         return new TransactionDto
         {
             IsSuccess = isSuccess,
-            TransactionId = queryTransactionSEvent.TransactionId
+            TransactionId = queryTransactionDto.TransactionId
         };
     }
 
-    public async Task <TransactionDto> GetAElfTransactionAsync(QueryTransactionSEvent queryTransactionSEvent)
+    public async Task <TransactionDto> GetAElfTransactionAsync(QueryTransactionDto queryTransactionDto)
     {
         return new TransactionDto
         {

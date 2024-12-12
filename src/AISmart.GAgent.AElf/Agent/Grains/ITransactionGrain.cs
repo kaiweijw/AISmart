@@ -7,8 +7,8 @@ namespace AISmart.Agent.Grains;
 
 public interface ITransactionGrain:IGrainWithGuidKey
 {
-    Task <TransactionDto> SendAElfTransactionAsync(SendTransactionSEvent sendTransactionSEvent);
-    Task <TransactionDto> LoadAElfTransactionResultAsync(QueryTransactionSEvent queryTransactionSEvent);
+    Task <TransactionDto> SendAElfTransactionAsync(SendTransactionDto sendTransactionDto);
+    Task <TransactionDto> LoadAElfTransactionResultAsync(QueryTransactionDto queryTransactionDto);
     
-    Task <TransactionDto> GetAElfTransactionAsync(QueryTransactionSEvent queryTransactionSEvent);
+    Task <TransactionDto> GetAElfTransactionAsync(QueryTransactionDto queryTransactionDto);
 }
