@@ -16,6 +16,19 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
         return Task.FromResult("An agent to inform other agents when a X thread is published.");
     }
 
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        await base.OnActivateAsync(cancellationToken);
+
+        await SubscribeAsync<XThreadCreatedEvent>(TryExecuteAsync);
+    }
+
+    private Task TryExecuteAsync(XThreadCreatedEvent eventData)
+    {
+        Logger.LogInformation("TryExecuteAsync: X Thread {XContent}", eventData.Content);
+        return Task.CompletedTask;
+    }
+
     protected override async Task ExecuteAsync(XThreadCreatedEvent eventData)
     {
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: XAgent analyses content:{eventData.Content}");

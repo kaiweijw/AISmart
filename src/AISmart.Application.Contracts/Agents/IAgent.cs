@@ -1,5 +1,7 @@
+using System;
 using System.Threading.Tasks;
 using Orleans;
+using Orleans.Streams;
 
 namespace AISmart.Agents;
 
@@ -13,5 +15,5 @@ public interface IAgent:  IGrainWithGuidKey
     
     //Function to get agent description
     Task<string> GetDescriptionAsync();
-    
+    Task SubscribeTo(IAgent agent);
 }

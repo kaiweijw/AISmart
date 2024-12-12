@@ -17,6 +17,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     private StreamId StreamId { get; set; }
     
     private readonly IClusterClient _clusterClient;
+    private readonly List<IAsyncStream<EventWrapperBase>> _streams = new();
 
     
     protected GAgent(ILogger logger,IClusterClient clusterClient)
@@ -31,18 +32,48 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         return Task.CompletedTask;
     }
     
-    public abstract Task<string> GetDescriptionAsync();
-    private StreamId GetStreamId()
+    public Task SubscribeTo(IAgent agent)
     {
-        return StreamId;
+        var streamId = StreamId.Create(CommonConstants.StreamNamespace, agent.GetPrimaryKey());
+        var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
+        _streams.Add(stream);
+        return Task.CompletedTask;
     }
+    
+    protected async Task SubscribeAsync<T>(Func<T, Task> onEvent)
+    {
+        foreach (var stream in _streams)
+        {
+            await stream.SubscribeAsync(OnNextWrapperAsync);
+        }
+
+        return;
+
+        Task OnNextWrapperAsync(EventWrapperBase @event, StreamSequenceToken token = null)
+        {
+            Logger.LogInformation("Received message: {@Message}", @event);
+            if(@event is EventWrapper<T> eventWrapper)
+            {
+                Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
+
+                onEvent(eventWrapper.Event);
+                //await DoAckAsync(eventWrapper);
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+    
+    public abstract Task<string> GetDescriptionAsync();
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        StreamId = StreamId.Create(CommonConstants.StreamNamespace, CommonConstants.StreamGuid);
+        /*StreamId = StreamId.Create(CommonConstants.StreamNamespace, CommonConstants.StreamGuid);
         StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
         var stream = StreamProvider.GetStream<EventWrapperBase>(StreamId);
-        await stream.SubscribeAsync(OnNextAsync);
+        await stream.SubscribeAsync(OnNextAsync);*/
+        StreamId = StreamId.Create(CommonConstants.StreamNamespace, this.GetPrimaryKey());
+        StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
     }
 
     protected async Task PublishAsync<T>(T @event) where T : GEvent
