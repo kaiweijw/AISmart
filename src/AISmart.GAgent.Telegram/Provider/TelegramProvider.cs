@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using AISmart.Dto;
 using AISmart.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 
@@ -21,16 +24,26 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
         _telegramOptions = telegramOptions;
     }
     
-    public async Task SendMessageAsync(string sendUser,string chatId, string message)
+    public async Task SendMessageAsync(string sendUser,string chatId, string message,ReplyParamDto? replyParam = null)
     {
         String Token = GetAccount(sendUser);
         string url = $"https://api.telegram.org/bot{Token}/sendMessage";
-
-        var parameters = new FormUrlEncodedContent(new[]
+        
+        var parametersList = new List<KeyValuePair<string, string>>
         {
-            new KeyValuePair<string, string>("chat_id", chatId),
-            new KeyValuePair<string, string>("text", message)
-        });
+            new("chat_id", chatId),
+            new("text", message)
+        };
+        if (replyParam != null)
+        {
+            parametersList.Add(new KeyValuePair<string, string>("reply_parameters",
+                JsonConvert.SerializeObject(replyParam,new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                })));
+        }
+        FormUrlEncodedContent parameters = new(parametersList);
+
 
         try
         {
@@ -105,5 +118,29 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
             throw new UserFriendlyException($"Telegram Account {accountName} not found");
         }
         return account;
+    }
+
+    public async Task SendPhotoAsync(string sendUser,PhotoParamsDto photoParamsDto)
+    {
+        var token = GetAccount(sendUser);
+        var url = $"https://api.telegram.org/bot{token}/sendPhoto";
+        var paramsJson = JsonConvert.SerializeObject(photoParamsDto, new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore
+        });
+        var content = new StringContent(paramsJson, Encoding.UTF8, "application/json");
+        try
+        {
+            var response = await new HttpClient().PostAsync(url, content);
+                
+            response.EnsureSuccessStatusCode();
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation(responseBody);
+        }
+        catch (HttpRequestException e)
+        {
+            _logger.LogError($"request error: {e.Message}");
+        }
     }
 }
