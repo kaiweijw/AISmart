@@ -27,10 +27,8 @@ public class XAgentTests : AISmartApplicationTestBase
     private readonly IAgent<XAgentState> _xAgent;
     private readonly IAgent<MarketLeaderAgentState> _marketLeaderAgent;
     private readonly IAgent<DeveloperAgentState> _developerAgent;
-    // private readonly IAgent<SocialEvent> _marketAgent;
+    private readonly IAgent<InvestmentAgentState> _investmentAgent;
     private readonly IPublishingAgent _publishingAgent;
-    
-    private readonly Guid XAgentGrainId = Guid.NewGuid();
 
     public XAgentTests(ITestOutputHelper output)
     {
@@ -38,13 +36,16 @@ public class XAgentTests : AISmartApplicationTestBase
         _grainFactory = GetRequiredService<IGrainFactory>();
 
         _xAgent = _grainFactory.GetGrain<IAgent<XAgentState>>(Guid.NewGuid());
-        _xAgent.ActivateAsync();
+        _xAgent.ActivateAsync().Wait();
 
         _marketLeaderAgent = _grainFactory.GetGrain<IAgent<MarketLeaderAgentState>>(Guid.NewGuid());
-        _marketLeaderAgent.ActivateAsync();
+        _marketLeaderAgent.ActivateAsync().Wait();
 
         _developerAgent = _grainFactory.GetGrain<IAgent<DeveloperAgentState>>(Guid.NewGuid());
-        _developerAgent.ActivateAsync();
+        _developerAgent.ActivateAsync().Wait();
+
+        _investmentAgent = _grainFactory.GetGrain<IAgent<InvestmentAgentState>>(Guid.NewGuid());
+        _investmentAgent.ActivateAsync().Wait();
 
         _publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
     }
@@ -62,14 +63,14 @@ public class XAgentTests : AISmartApplicationTestBase
 
         await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
 
-        var developerAgent = GrainTracker.DeveloperAgents.First();
-        var state = await developerAgent.GetStateAsync();
+        var agent = GrainTracker.InvestmentAgents.First();
+        var state = await agent.GetStateAsync();
 
         await TestingUtils.WaitUntilAsync(_ => CheckState(state), TimeSpan.FromSeconds(20));
         state.Content.Count.ShouldBe(1);
     }
 
-    private async Task<bool> CheckState(DeveloperAgentState state)
+    private async Task<bool> CheckState(InvestmentAgentState state)
     {
         return !state.Content.IsNullOrEmpty();
     }

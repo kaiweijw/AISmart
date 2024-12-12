@@ -5,6 +5,7 @@ using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
+[StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>, IInvestmentAgent<InvestmentAgentState>
 {
@@ -24,6 +25,12 @@ public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>
 
     protected override Task ExecuteAsync(ImplementationEvent eventData)
     {
+        if (State.Content.IsNullOrEmpty())
+        {
+            State.Content = [];
+        }
+
+        State.Content.Add(eventData.Content);
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: InvestmentAgent analyses content:{eventData.Content}");
         return Task.CompletedTask;
     }
@@ -31,5 +38,11 @@ public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>
     protected override Task CompleteAsync(ImplementationEvent eventData)
     {
         return Task.CompletedTask;
+    }
+
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        GrainTracker.InvestmentAgents.Enqueue(this);
+        return base.OnActivateAsync(cancellationToken);
     }
 }

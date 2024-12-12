@@ -16,4 +16,5 @@ public static class GrainTracker
     public static ConcurrentQueue<IAgent<XAgentState>> XAgents = new();
     public static ConcurrentQueue<IAgent<MarketLeaderAgentState>> MarketLeaderAgents = new();
     public static ConcurrentQueue<IAgent<DeveloperAgentState>> DeveloperAgents = new();
+    public static ConcurrentQueue<IAgent<InvestmentAgentState>> InvestmentAgents = new();
 }
