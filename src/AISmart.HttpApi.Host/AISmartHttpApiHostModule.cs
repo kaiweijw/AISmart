@@ -66,7 +66,7 @@ public class AISmartHttpApiHostModule : AIApplicationGrainsModule, IDomainGrains
 
         ConfigureAuthentication(context);
         ConfigureBundles();
-        ConfigureUrls(configuration);
+       // ConfigureUrls(configuration);
         ConfigureConventionalControllers();
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
@@ -209,8 +209,7 @@ public class AISmartHttpApiHostModule : AIApplicationGrainsModule, IDomainGrains
 
         app.UseUnitOfWork();
         app.UseDynamicClaims();
-        app.UseAuthorization();
-
+        app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         app.UseSwagger();
         app.UseAbpSwaggerUI(c =>
         {
