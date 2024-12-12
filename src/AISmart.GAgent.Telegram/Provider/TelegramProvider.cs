@@ -70,6 +70,33 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
         return null;
     }
     
+    
+    public async Task SetWebhookAsync(string sendUser,string webhook, string secretToken)
+    {
+        String Token = GetAccount(sendUser);
+        string url = $"https://api.telegram.org/bot{Token}/setWebhook";
+
+        var parameters = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("url", webhook),
+            new KeyValuePair<string, string>("secret_token", secretToken)
+        });
+
+        try
+        {
+            HttpResponseMessage response = await new HttpClient().PostAsync(url, parameters);
+                
+            response.EnsureSuccessStatusCode();
+
+            string responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation(responseBody);
+        }
+        catch (HttpRequestException e)
+        {
+            _logger.LogError($"request error: {e.Message}");
+        }
+    }
+    
     private string GetAccount(string accountName)
     {
         var optionExists = _telegramOptions.CurrentValue.AccountDictionary.TryGetValue(accountName, out var account);
