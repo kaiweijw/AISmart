@@ -4,10 +4,12 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using AISmart.Dto;
+using AISmart.Helper;
 using AISmart.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Volo.Abp;
 using Volo.Abp.DependencyInjection;
 
@@ -47,6 +49,7 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
 
         try
         {
+            _logger.LogDebug("send message to {chatId} : {message}",chatId, message);
             HttpResponseMessage response = await new HttpClient().PostAsync(url, parameters);
                 
             response.EnsureSuccessStatusCode();
@@ -67,12 +70,15 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
         string url = $"https://api.telegram.org/bot{Token}/GetUpdates";
         try
         {
+            // var telUpdate = await GetAsync<TelegramUpdateDto>(url);
             HttpResponseMessage response = await new HttpClient().GetAsync(url);
                 
             response.EnsureSuccessStatusCode();
 
             string responseBody = await response.Content.ReadAsStringAsync();
             _logger.LogInformation(responseBody);
+            var res = await response.Content.DeserializeSnakeCaseAsync<GetUpdatedDto>();
+            _logger.LogInformation("GetUpdatesAsync:{message}",JsonConvert.SerializeObject(res));
             return responseBody;
         }
         catch (HttpRequestException e)
@@ -143,4 +149,17 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
             _logger.LogError($"request error: {e.Message}");
         }
     }
+
+    public async Task GetUpdatesMessagesAsync(TelegramUpdateDto updateMessage)
+    {
+        _logger.LogDebug("GetUpdatesMessagesAsync:{message}",JsonConvert.SerializeObject(updateMessage));
+        // todo: process message
+    }
+
+    // public async Task<T> GetAsync<T>(string url)
+    // {
+    //     var resp = await new HttpClient().GetAsync(url);
+    //     resp.EnsureSuccessStatusCode();
+    //     return await resp.Content.DeserializeSnakeCaseAsync<T>();
+    // }
 }

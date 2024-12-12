@@ -2,10 +2,12 @@ using System.Threading.Tasks;
 using AISmart.Authors;
 using AISmart.Dapr;
 using AISmart.Dto;
+using AISmart.Provider;
 using Asp.Versioning;
 using Dapr;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Volo.Abp;
 
 namespace AISmart.Controllers;
@@ -16,13 +18,18 @@ namespace AISmart.Controllers;
 public class TelegramController
 {
     private readonly ILogger<TelegramController> _logger;
-    public TelegramController(ILogger<TelegramController> logger)
+    private readonly ITelegramProvider _telegramProvider;
+    
+    public TelegramController(ILogger<TelegramController> logger, 
+        ITelegramProvider telegramProvider)
     {
         _logger = logger;
+        _telegramProvider = telegramProvider;
     }
     [HttpPost("messages")]
-    public Task<long> PostMessages(TelegramUpdateDto updates)
+    public async Task PostMessages([FromBody]TelegramUpdateDto updateMessage)
     {
-        return Task.FromResult(updates.UpdateId);
+        _logger.LogDebug("Receive update message from telegram.{message}",JsonConvert.SerializeObject(updateMessage));
+        await _telegramProvider.GetUpdatesMessagesAsync(updateMessage);
     }
 }
