@@ -52,6 +52,6 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
     {
         GrainTracker.XAgents.Enqueue(this);
         await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<XThreadCreatedEvent>(TryExecuteAsync);
+        await SubscribeAsync<XThreadCreatedEvent>(ExecuteAsync);
     }
 }

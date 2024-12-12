@@ -7,18 +7,19 @@ using Orleans.Streams;
 
 namespace AISmart.Application.Grains;
 
-public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, IAgent<TState>
+public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateAgent<TState>
     where TState : class, new()
     where TEvent : GEvent
 {
     protected IStreamProvider? StreamProvider { get; private set; } = null;
     
     protected readonly ILogger Logger;
-    private StreamId StreamId { get; set; }
     
     private readonly IClusterClient _clusterClient;
-    private readonly List<IAsyncStream<EventWrapperBase>> _streams = new();
-
+    // need to use persistent storage to store this
+    private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
+    private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
+    private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
     
     protected GAgent(ILogger logger, IClusterClient clusterClient)
     {
@@ -32,21 +33,93 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         return Task.CompletedTask;
     }
     
-    public Task SubscribeTo(IAgent agent)
+    public async Task<bool> SubscribeTo(IAgent agent)
     {
-        var streamId = StreamId.Create(CommonConstants.StreamNamespace, agent.GetPrimaryKey());
+        StreamProvider ??= this.GetStreamProvider(CommonConstants.StreamProvider);
+
+        var agentGuid = agent.GetPrimaryKey();
+        var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        _streams.Add(stream);
-        return Task.CompletedTask;
-    }
-    
-    protected async Task SubscribeAsync<T>(Func<T, Task> onEvent)
-    {
-        foreach (var stream in _streams)
+        if (!_subscriptions.TryAdd(agentGuid, stream))
         {
-            await stream.SubscribeAsync(OnNextWrapperAsync);
+            return false;
         }
 
+        await SubscribeAsync(stream);
+        return true;
+    }
+
+    public async Task<bool> UnsubscribeFrom(IAgent agent)
+    {
+        var agentGuid = agent.GetPrimaryKey();
+        if (!_subscriptions.ContainsKey(agentGuid))
+        {
+            return false;
+        }
+
+        _subscriptions.Remove(agentGuid);
+        //TODO: Unsubscribe from stream
+        return true;
+    }
+
+    public async Task<bool> PublishTo(IAgent agent)
+    {
+        StreamProvider ??= this.GetStreamProvider(CommonConstants.StreamProvider);
+
+        var agentGuid = agent.GetPrimaryKey();
+        var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
+        var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
+        return _publishers.TryAdd(agentGuid, stream);
+    }
+
+    public async Task<bool> UnpublishFrom(IAgent agent)
+    {
+        if (!_publishers.ContainsKey(agent.GetPrimaryKey()))
+        {
+            return false;
+        }
+
+        _publishers.Remove(agent.GetPrimaryKey());
+        return true;
+    }
+
+    public async Task Register(IAgent agent)
+    {
+        var success = await agent.SubscribeTo(this);
+        success = await agent.PublishTo(this) | success;
+        
+        if(!success)
+        {
+            return;
+        }
+        
+        await OnRegisterAgentAsync(agent.GetPrimaryKey());
+    }
+
+    public async Task Unregister(IAgent agent)
+    {
+        var success = await agent.UnsubscribeFrom(this);
+        success = await agent.UnpublishFrom(this) | success;
+        
+        if(!success)
+        {
+            return;
+        }
+
+        await OnUnregisterAgentAsync(agent.GetPrimaryKey());
+    }
+    
+    protected virtual async Task OnRegisterAgentAsync(Guid agentGuid)
+    {
+    }
+    
+    protected virtual async Task OnUnregisterAgentAsync(Guid agentGuid)
+    {
+    }
+
+    protected async Task SubscribeAsync<T>(Func<T, Task> onEvent)
+    {
+        _subscriptionHandlers.Add(OnNextWrapperAsync);
         return;
 
         Task OnNextWrapperAsync(EventWrapperBase @event, StreamSequenceToken token = null)
@@ -65,74 +138,60 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     }
     
     public abstract Task<string> GetDescriptionAsync();
+    
     public Task<TState> GetStateAsync()
     {
         return Task.FromResult(State);
     }
 
-    private StreamId GetStreamId()
-    {
-        return StreamId;
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        /*StreamId = StreamId.Create(CommonConstants.StreamNamespace, CommonConstants.StreamGuid);
-        StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
-        var stream = StreamProvider.GetStream<EventWrapperBase>(StreamId);
-        await stream.SubscribeAsync(OnNextAsync);*/
-        StreamId = StreamId.Create(CommonConstants.StreamNamespace, this.GetPrimaryKey());
-        StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
-    }
-
     protected async Task PublishAsync<T>(T @event) where T : GEvent
     {
-        var stream = StreamProvider?.GetStream<EventWrapperBase>(StreamId);
-
-        if (stream == null)
+        if(_publishers.Count == 0)
         {
-            Logger.LogError("StreamProvider is null");
             return;
         }
+        
         var eventWrapper = new EventWrapper<T>(@event, this.GetGrainId());
         
-        await stream.OnNextAsync(eventWrapper);
-
+        foreach (var publisher in _publishers.Select(kp => kp.Value))
+        {
+            await publisher.OnNextAsync(eventWrapper);
+        }
     }
 
     public async Task AckAsync(EventWrapper<TEvent> eventWrapper)
     {
-        var pubAgent = _clusterClient.GetGrain<IAgent<TState>>(eventWrapper.GrainId);
-
-        try
-        {
-            await ExecuteAsync(eventWrapper.Event);
-        }
-        catch (Exception e)
-        {
-            Logger.LogError(e, "Error executing event");
-        }
-
-        await ((pubAgent as GAgent<TState,TEvent>)!).DoAckAsync(eventWrapper);
+        // var pubAgent = _clusterClient.GetGrain<IAgent<TState>>(eventWrapper.GrainId);
+        //
+        // try
+        // {
+        //     await ExecuteAsync(eventWrapper.Event);
+        // }
+        // catch (Exception e)
+        // {
+        //     Logger.LogError(e, "Error executing event");
+        // }
+        //
+        // await ((pubAgent as GAgent<TState,TEvent>)!).DoAckAsync(eventWrapper);
     }
 
     public async Task DoAckAsync(EventWrapper<TEvent> eventWrapper)
     {
-        eventWrapper.count ++;
-        
-        RaiseEvent(eventWrapper.Event);
-        await ConfirmEvents();
-
-        var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
-            .GetStream<EventWrapperBase>(StreamId);
-        var subscriptionHandles =  stream.GetAllSubscriptionHandles();
-        // The count of current subscriptions (consumers).
-        var subscriberCount = subscriptionHandles.Result.Count;
-        
-        if (eventWrapper.count == subscriberCount)
-        {
-            await CompleteAsync(eventWrapper.Event);
-        }
+        // eventWrapper.count ++;
+        //
+        // RaiseEvent(eventWrapper.Event);
+        // await ConfirmEvents();
+        //
+        // var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
+        //     .GetStream<EventWrapperBase>(StreamId);
+        // var subscriptionHandles =  stream.GetAllSubscriptionHandles();
+        // // The count of current subscriptions (consumers).
+        // var subscriberCount = subscriptionHandles.Result.Count;
+        //
+        // if (eventWrapper.count == subscriberCount)
+        // {
+        //     await CompleteAsync(eventWrapper.Event);
+        // }
     }
 
 
@@ -171,6 +230,14 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
 
             await ExecuteAsync(eventWrapper.Event);
             await DoAckAsync(eventWrapper);
+        }
+    }
+    
+    private async Task SubscribeAsync(IAsyncStream<EventWrapperBase> stream)
+    {
+        foreach (var handler in _subscriptionHandlers)
+        {
+            await stream.SubscribeAsync(handler);
         }
     }
 }

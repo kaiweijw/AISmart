@@ -13,10 +13,15 @@ public interface IAgent: IGrainWithGuidKey
     
     //Function to get agent description
     Task<string> GetDescriptionAsync();
-    Task SubscribeTo(IAgent agent);
+    Task<bool> SubscribeTo(IAgent agent);
+    Task<bool> UnsubscribeFrom(IAgent agent);
+    Task<bool> PublishTo(IAgent agent);
+    Task<bool> UnpublishFrom(IAgent agent);
+    Task Register(IAgent agent);
+    Task Unregister(IAgent agent);
 }
 
-public interface IAgent<TState>:  IAgent
+public interface IStateAgent<TState>:  IAgent
 {
     Task<TState> GetStateAsync();
 }
