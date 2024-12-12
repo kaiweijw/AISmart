@@ -2,58 +2,95 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AISmart.Agents;
-using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X.Events;
-using AISmart.AgentTask;
+using AISmart.Application.Grains;
+using AISmart.Application.Grains.Agents.Developer;
+using AISmart.Application.Grains.Agents.MarketLeader;
 using AISmart.Application.Grains.Agents.X;
-using AISmart.Application.Grains.Event;
 using AISmart.Sender;
+using Microsoft.IdentityModel.Tokens;
 using Orleans;
+using Orleans.TestingHost.Utils;
 using Shouldly;
-using Volo.Abp.EventBus.Local;
 using Xunit;
 using Xunit.Abstractions;
-using IAgent = AISmart.Agents.IAgent;
 
-namespace AISmart.Samples;
-
-public class XAgentTests : AISmartApplicationTestBase
+namespace AISmart.Samples
 {
-    private readonly IClusterClient _clusterClient;
-    protected readonly IGrainFactory _grainFactory ;
-
-    private readonly IMarketLeaderStreamAgent _marketLeaderStreamAgent;
-    private readonly IAgent _xAgent;
-    // private readonly IAgent<SocialEvent> _marketAgent;
-    private readonly IPublishingAgent _publishingAgent;
-    
-    public XAgentTests(ITestOutputHelper output)
+    public class XAgentTests : AISmartApplicationTestBase, IAsyncLifetime
     {
-        _clusterClient = GetRequiredService<IClusterClient>();
-        _grainFactory = GetRequiredService<IGrainFactory>();
+        private readonly IClusterClient _clusterClient;
+        protected readonly IGrainFactory _grainFactory;
 
-        _xAgent = _grainFactory.GetGrain<IAgent>(Guid.NewGuid(),typeof(XAgent).Namespace);
-        _xAgent.ActivateAsync();
-        
-        _publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
-    }
-    
-    [Fact]
-    public async Task XThreadCreatedEvent_Executed_Test()
-    {
-        const string content = "BTC REACHED 100k WOOHOOOO!";
-        const string expectedLog =
-            $"AISmart.Application.Grains.Agents.X.XAgent ExecuteAsync: X Thread {content}";
+        private IAgent<XAgentState> _xAgent;
+        private IAgent<MarketLeaderAgentState> _marketLeaderAgent;
+        private IAgent<DeveloperAgentState> _developerAgent;
+        private IAgent<InvestmentAgentState> _investmentAgent;
+        private IPublishingAgent _publishingAgent;
 
-        var xThreadCreatedEvent = new XThreadCreatedEvent
+        public XAgentTests(ITestOutputHelper output)
         {
-            Id = "mock_x_thread_id",
-            Content = content
-        };
+            _clusterClient = GetRequiredService<IClusterClient>();
+            _grainFactory = GetRequiredService<IGrainFactory>();
+        }
 
-        await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
+        public async Task InitializeAsync()
+        {
+            _xAgent = _grainFactory.GetGrain<IAgent<XAgentState>>(Guid.NewGuid());
+            await _xAgent.ActivateAsync();
 
-        await ClusterFixture.WaitLogAsync(expectedLog);
-        ClusterFixture.LoggerProvider.Logs.Any(log => log.Contains(content)).ShouldBeTrue();
+            _marketLeaderAgent = _grainFactory.GetGrain<IAgent<MarketLeaderAgentState>>(Guid.NewGuid());
+            await _marketLeaderAgent.ActivateAsync();
+
+            _developerAgent = _grainFactory.GetGrain<IAgent<DeveloperAgentState>>(Guid.NewGuid());
+            await _developerAgent.ActivateAsync();
+
+            _investmentAgent = _grainFactory.GetGrain<IAgent<InvestmentAgentState>>(Guid.NewGuid());
+            await _investmentAgent.ActivateAsync();
+
+            _publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
+        }
+
+        public Task DisposeAsync()
+        {
+            // Clean up resources if needed
+            return Task.CompletedTask;
+        }
+
+        [Fact]
+        public async Task XThreadCreatedEvent_Executed_Test()
+        {
+            const string content = "BTC REACHED 100k WOOHOOOO!";
+
+            var xThreadCreatedEvent = new XThreadCreatedEvent
+            {
+                Id = "mock_x_thread_id",
+                Content = content
+            };
+
+            await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
+
+            var investmentAgent = GrainTracker.InvestmentAgents.First();
+            var investmentAgentState = await investmentAgent.GetStateAsync();
+            
+            var developerAgent = GrainTracker.DeveloperAgents.First();
+            var developerAgentState = await developerAgent.GetStateAsync();
+
+            await TestingUtils.WaitUntilAsync(_ => CheckState(developerAgentState), TimeSpan.FromSeconds(20));
+            await TestingUtils.WaitUntilAsync(_ => CheckState(investmentAgentState), TimeSpan.FromSeconds(20));
+            
+            developerAgentState.Content.Count.ShouldBe(1);
+            investmentAgentState.Content.Count.ShouldBe(1);
+        }
+
+        private async Task<bool> CheckState(InvestmentAgentState state)
+        {
+            return !state.Content.IsNullOrEmpty();
+        }
+        
+        private async Task<bool> CheckState(DeveloperAgentState state)
+        {
+            return !state.Content.IsNullOrEmpty();
+        }
     }
 }

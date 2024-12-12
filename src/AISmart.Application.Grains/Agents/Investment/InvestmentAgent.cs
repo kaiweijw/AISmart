@@ -1,10 +1,13 @@
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Application.Grains.Agents.MarketLeader;
 using Microsoft.Extensions.Logging;
+using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
-public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>,IInvestmentAgent
+[StorageProvider(ProviderName = "PubSubStore")]
+[LogConsistencyProvider(ProviderName = "LogStorage")]
+public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>, IInvestmentAgent<InvestmentAgentState>
 {
     public InvestmentAgent(ILogger<InvestmentAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
@@ -15,8 +18,19 @@ public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
+    public Task<InvestmentAgentState> GetStateAsync()
+    {
+        return Task.FromResult(State);
+    }
+
     protected override Task ExecuteAsync(ImplementationEvent eventData)
     {
+        if (State.Content.IsNullOrEmpty())
+        {
+            State.Content = [];
+        }
+
+        State.Content.Add(eventData.Content);
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: InvestmentAgent analyses content:{eventData.Content}");
         return Task.CompletedTask;
     }
@@ -24,5 +38,11 @@ public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>
     protected override Task CompleteAsync(ImplementationEvent eventData)
     {
         return Task.CompletedTask;
+    }
+
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        GrainTracker.InvestmentAgents.Enqueue(this);
+        return base.OnActivateAsync(cancellationToken);
     }
 }

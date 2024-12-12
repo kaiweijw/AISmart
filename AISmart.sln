@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Worker", "src\AISma
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Orleans.TestBase", "test\AISmart.Orleans.TestBase\AISmart.Orleans.TestBase.csproj", "{3C0B0690-0E0F-464E-ACEF-FE46D2ADA54F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Grains.Tests", "test\AISmart.Grains.Tests\AISmart.Grains.Tests.csproj", "{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +129,10 @@ Global
 		{3C0B0690-0E0F-464E-ACEF-FE46D2ADA54F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C0B0690-0E0F-464E-ACEF-FE46D2ADA54F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C0B0690-0E0F-464E-ACEF-FE46D2ADA54F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -151,6 +157,7 @@ Global
 		{3B9806E6-3F8B-4200-B2A2-52DCE698D334} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 		{B2E02009-1254-4098-AB30-40682ECB80FF} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 		{3C0B0690-0E0F-464E-ACEF-FE46D2ADA54F} = {04DBDB01-70F4-4E06-B468-8F87850B22BE}
+		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007} = {04DBDB01-70F4-4E06-B468-8F87850B22BE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28315BFD-90E7-4E14-A2EA-F3D23AF4126F}

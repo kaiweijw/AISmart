@@ -1,18 +1,13 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using AISmart.Agents;
-using AISmart.Agents.X.Events;
 using AISmart.Application.Grains;
-using AISmart.Application.Grains.Agents.X;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Orleans;
 using Orleans.Hosting;
 using Orleans.TestingHost;
 using Volo.Abp.AutoMapper;
@@ -57,7 +52,7 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 LoggerProvider = loggerProvider;
                 services.AddLogging(logging =>
                 {
-                    logging.AddProvider(loggerProvider);
+                    //logging.AddProvider(loggerProvider);
                     logging.AddConsole(); // Adds console logger
                 });
 
@@ -80,7 +75,7 @@ public class ClusterFixture : IDisposable, ISingletonDependency
             })
             .AddMemoryStreams("AISmart")
             .AddMemoryGrainStorage("PubSubStore")
-            .AddMemoryGrainStorageAsDefault()
+            //.AddMemoryGrainStorageAsDefault()
             .AddLogStorageBasedLogConsistencyProvider("LogStorage");
         }
     }
