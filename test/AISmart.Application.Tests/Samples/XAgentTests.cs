@@ -70,14 +70,25 @@ namespace AISmart.Samples
 
             await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
 
-            var agent = GrainTracker.InvestmentAgents.First();
-            var state = await agent.GetStateAsync();
+            var investmentAgent = GrainTracker.InvestmentAgents.First();
+            var investmentAgentState = await investmentAgent.GetStateAsync();
+            
+            var developerAgent = GrainTracker.DeveloperAgents.First();
+            var developerAgentState = await developerAgent.GetStateAsync();
 
-            await TestingUtils.WaitUntilAsync(_ => CheckState(state), TimeSpan.FromSeconds(20));
-            state.Content.Count.ShouldBe(1);
+            await TestingUtils.WaitUntilAsync(_ => CheckState(developerAgentState), TimeSpan.FromSeconds(20));
+            developerAgentState.Content.Count.ShouldBe(1);
+            
+            await TestingUtils.WaitUntilAsync(_ => CheckState(investmentAgentState), TimeSpan.FromSeconds(20));
+            investmentAgentState.Content.Count.ShouldBe(1);
         }
 
         private async Task<bool> CheckState(InvestmentAgentState state)
+        {
+            return !state.Content.IsNullOrEmpty();
+        }
+        
+        private async Task<bool> CheckState(DeveloperAgentState state)
         {
             return !state.Content.IsNullOrEmpty();
         }
