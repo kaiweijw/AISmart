@@ -1,9 +1,11 @@
 using AISmart.Agents.ImplementationAgent.Events;
+using AISmart.Application.Grains.Agents.X;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Developer;
 
+[StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>
 {
@@ -19,11 +21,22 @@ public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>
     protected override Task ExecuteAsync(ImplementationEvent eventData)
     {
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: DeveloperAgent analyses content:{eventData.Content}");
+        if (State.Content.IsNullOrEmpty())
+        {
+            State.Content = [];
+        }
+        State.Content.Add(eventData.Content);
         return Task.CompletedTask;
     }
 
     protected override Task CompleteAsync(ImplementationEvent eventData)
     {
         return Task.CompletedTask;
+    }
+
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        GrainTracker.DeveloperAgents.Enqueue(this);
+        return base.OnActivateAsync(cancellationToken);
     }
 }

@@ -14,6 +14,7 @@ public class EmptyEvent : GEvent
 {
 }
 
+[StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class PublishingAgent : GAgent<PublishingAgentState, EmptyEvent>, IPublishingAgent
 {

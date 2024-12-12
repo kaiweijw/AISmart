@@ -57,7 +57,7 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 LoggerProvider = loggerProvider;
                 services.AddLogging(logging =>
                 {
-                    logging.AddProvider(loggerProvider);
+                    //logging.AddProvider(loggerProvider);
                     logging.AddConsole(); // Adds console logger
                 });
 
@@ -80,7 +80,7 @@ public class ClusterFixture : IDisposable, ISingletonDependency
             })
             .AddMemoryStreams("AISmart")
             .AddMemoryGrainStorage("PubSubStore")
-            .AddMemoryGrainStorageAsDefault()
+            //.AddMemoryGrainStorageAsDefault()
             .AddLogStorageBasedLogConsistencyProvider("LogStorage");
         }
     }

@@ -5,7 +5,7 @@ using AISmart.Agents.ImplementationAgent.Events;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
-public interface IInvestmentAgent: IAgent
+public interface IInvestmentAgent<TState>: IAgent<TState>
 {
     
 }

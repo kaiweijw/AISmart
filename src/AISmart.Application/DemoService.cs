@@ -29,13 +29,13 @@ public class DemoAppService : ApplicationService, IDemoAppService
 
     public async Task<string> PipelineDemoAsync(string content)
     {
-        var xAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid(), typeof(XAgent).Namespace);
+        var xAgent = _clusterClient.GetGrain<IAgent<XAgentState>>(Guid.NewGuid(), typeof(XAgent).Namespace);
         await xAgent.ActivateAsync();
 
-        var marketLeaderAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid(), typeof(MarketLeaderAgent).Namespace);
+        var marketLeaderAgent = _clusterClient.GetGrain<IAgent<MarketLeaderAgentState>>(Guid.NewGuid(), typeof(MarketLeaderAgent).Namespace);
         await marketLeaderAgent.ActivateAsync();
 
-        var developerAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid(), typeof(DeveloperAgent).Namespace);
+        var developerAgent = _clusterClient.GetGrain<IAgent<DeveloperAgentState>>(Guid.NewGuid(), typeof(DeveloperAgent).Namespace);
         await developerAgent.ActivateAsync();
 
         var publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());

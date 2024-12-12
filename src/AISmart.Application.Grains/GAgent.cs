@@ -7,7 +7,7 @@ using Orleans.Streams;
 
 namespace AISmart.Application.Grains;
 
-public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, IAgent
+public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, IAgent<TState>
     where TState : class, new()
     where TEvent : GEvent
 {
@@ -19,7 +19,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     private readonly IClusterClient _clusterClient;
 
     
-    protected GAgent(ILogger logger,IClusterClient clusterClient)
+    protected GAgent(ILogger logger, IClusterClient clusterClient)
     {
         Logger = logger;
         _clusterClient = clusterClient;
@@ -32,6 +32,11 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     }
     
     public abstract Task<string> GetDescriptionAsync();
+    public Task<TState> GetStateAsync()
+    {
+        return Task.FromResult(State);
+    }
+
     private StreamId GetStreamId()
     {
         return StreamId;
@@ -62,7 +67,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
 
     public async Task AckAsync(EventWrapper<TEvent> eventWrapper)
     {
-        var pubAgent = _clusterClient.GetGrain<IAgent>(eventWrapper.GrainId);
+        var pubAgent = _clusterClient.GetGrain<IAgent<TState>>(eventWrapper.GrainId);
 
         try
         {

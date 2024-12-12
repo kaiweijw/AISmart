@@ -1,15 +1,15 @@
 using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X.Events;
-using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.X;
 
+[StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
 {
-    public XAgent(ILogger<XAgent> logger,IClusterClient clusterClient) : base(logger,clusterClient)
+    public XAgent(ILogger<XAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
     }
 
@@ -20,7 +20,13 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
 
     protected override async Task ExecuteAsync(XThreadCreatedEvent eventData)
     {
-        Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: XAgent analyses content:{eventData.Content}");
+        Logger.LogInformation($"{GetType()} ExecuteAsync: XAgent analyses content:{eventData.Content}");
+        if (State.ThreadIds.IsNullOrEmpty())
+        {
+            State.ThreadIds = [];
+        }
+
+        State.ThreadIds.Add(eventData.Id);
 
         var publishEvent = new SocialEvent
         {
@@ -34,5 +40,11 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
         Logger.LogInformation("CompleteAsync: X Thread {XContent}", eventData.Content);
 
         return Task.CompletedTask;
+    }
+
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        GrainTracker.XAgents.Enqueue(this);
+        return base.OnActivateAsync(cancellationToken);
     }
 }

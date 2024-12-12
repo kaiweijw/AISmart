@@ -6,7 +6,7 @@ using Orleans.Providers;
 namespace AISmart.Application.Grains.Agents.Investment;
 
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>,IInvestmentAgent
+public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>, IInvestmentAgent<InvestmentAgentState>
 {
     public InvestmentAgent(ILogger<InvestmentAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
@@ -15,6 +15,11 @@ public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>
     public override Task<string> GetDescriptionAsync()
     {
         return Task.FromResult("An agent to inform other agents when a social event is published.");
+    }
+
+    public Task<InvestmentAgentState> GetStateAsync()
+    {
+        return Task.FromResult(State);
     }
 
     protected override Task ExecuteAsync(ImplementationEvent eventData)
