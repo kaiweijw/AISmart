@@ -2,10 +2,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 using Volo.Abp.DependencyInjection;
+using AISmart.Application.Grains;
 
-namespace AISmart.Application.Grains.Agents.AutoGen;
+namespace AISmart.GAgent.Autogen.Common;
 
 public class AgentDescriptionManager : ISingletonDependency
 {

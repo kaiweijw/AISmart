@@ -1,4 +1,4 @@
-namespace AISmart.Application.Grains.Agents.AutoGen;
+namespace AISmart.GAgent.Autogen.Common;
 
 public class AgentDescription
 {

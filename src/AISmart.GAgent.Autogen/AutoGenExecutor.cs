@@ -1,31 +1,40 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AISmart.GAgent.Autogen.Common;
+using AISmart.GAgent.Autogen.Event;
+using AISmart.GAgent.Autogen.EventSourcingEvent;
 using AISmart.Rag;
+using AISmart.Sender;
 using AutoGen.Core;
 using AutoGen.OpenAI;
 using AutoGen.OpenAI.Extension;
+using Castle.Core.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OpenAI.Chat;
 using Volo.Abp.DependencyInjection;
 
-namespace AISmart.Application.Grains.Agents.AutoGen;
+namespace AISmart.GAgent.Autogen;
 
-public class AutoGenExecutor:ISingletonDependency
+public class AutoGenExecutor : ISingletonDependency
 {
     private readonly AgentDescriptionManager _agentDescriptionManager;
     private readonly IClusterClient _clusterClient;
+    private readonly ILogger<AutoGenExecutor> _logger;
+    private readonly Guid _publishGrainId = new Guid(); 
     private const string AgentName = "admin";
-    private const string FinishFlag = "!!!!Completed!!!!";
-    
-    public AutoGenExecutor(IClusterClient clusterClient, AgentDescriptionManager agentDescriptionManager)
+    private const string FinishFlag = "complete";
+    private const string BreakFlag = "break";
+
+    public AutoGenExecutor(ILogger<AutoGenExecutor> logger,IClusterClient clusterClient, AgentDescriptionManager agentDescriptionManager)
     {
+        _logger = logger;
         _clusterClient = clusterClient;
         _agentDescriptionManager = agentDescriptionManager;
     }
-    
+
     public async Task ExecuteTask(Guid taskId, List<IMessage> history)
     {
-        // todo: define IAgent to ConfigureServices
         var chatClient = _clusterClient.ServiceProvider.GetRequiredService<ChatClient>();
         IAgent agent = new OpenAIChatAgent(chatClient, AgentName, GetAgentResponsibility())
             .RegisterMessageConnector()
@@ -33,27 +42,47 @@ public class AutoGenExecutor:ISingletonDependency
 
         var response = await agent.SendAsync("What should be done next?", history);
         var responseStr = response.GetContent();
-        var ifContinue = true;
-        if (responseStr == FinishFlag)
+        if (responseStr.IsNullOrEmpty())
         {
-            ifContinue = false;
+            _logger.LogDebug($"[AutoGenExecutor] autoGen response is null, History:{JsonSerializer.Serialize(history)}");
+            return;
         }
-        else if (responseStr.Contains("break"))
+        if (responseStr.Contains(FinishFlag))
+        {
+            var completeEvent = JsonSerializer.Deserialize<CompleteEvent>(responseStr);
+            if (completeEvent != null)
+            {
+                var publishGrain = _clusterClient.GetGrain<IPublishingAgent>(_publishGrainId);
+                await publishGrain.PublishEventAsync(new AutoGenSessionFinishedEvent()
+                {
+                    TaskId = taskId,
+                    ExecuteStatus = TaskExecuteStatus.Finish,
+                    EndContent = completeEvent.Summary,
+                });
+                return;
+            }
+            
+            _logger.LogDebug($"[AutoGenExecutor] response is finished,but Deserialize error, History:{JsonSerializer.Serialize(history)} response:{responseStr}");
+        }
+        else if (responseStr.Contains(BreakFlag))
         {
             var breakInfo = JsonSerializer.Deserialize<EventBreak>(responseStr);
             if (breakInfo != null)
-            {
-                ifContinue = false;
+            { 
+                var publishGrain = _clusterClient.GetGrain<IPublishingAgent>(_publishGrainId);
+                await publishGrain.PublishEventAsync(new AutoGenSessionFinishedEvent()
+                {
+                    TaskId = taskId,
+                    ExecuteStatus = TaskExecuteStatus.Break,
+                    EndContent = breakInfo.Break,
+                });
+                return;
             }
-        }
-        if (ifContinue == false)
-        {
-            // todo: generate output by call autogen
-            // todo: send ack to caller.
+            
+            _logger.LogDebug($"[AutoGenExecutor] response is break,but Deserialize error, History:{JsonSerializer.Serialize(history)} response:{responseStr}");
         }
     }
-    
-    
+
     private FunctionCallMiddleware GetMiddleware()
     {
         var groupChatContract = new List<FunctionContract>()
@@ -89,7 +118,22 @@ public class AutoGenExecutor:ISingletonDependency
                  - Split the task into different events, and use the output of the previous event combined with the user's request to determine the execution of the next event.
                  - Based on the event's response, reorganize the next request in line with the user's intent until the user's issue is resolved.
                  - If the above events cannot meet the user's task execution needs, you can generate results based on the events to drive the continuation of the process.
-                 - If the user's request is completed, please output the string "{{FinishFlag}}".
+                 - The response for each event will be added to the conversation in JSON format. 
+                   You need to analyze the response information to decide whether to proceed to the next round. 
+                   The response information will be used during the final summary. The JSON format is as follows:
+                   {
+                    "EventName":"", 
+                    "Reply":"",
+                   }
+                   JSON explanation:EventName is the name of the event,and Reply is the response from the event corresponding to EventName.
+                   
+                 - If the user's request is completed, please output the Json format:
+                    ```
+                    {
+                        "complete":"{reply summary}"
+                    }
+                    ```
+                    
                  - If the user's request cannot continue, please output the Json format:
                     ```
                     {
@@ -178,6 +222,11 @@ public class AutoGenExecutor:ISingletonDependency
     public class EventBreak
     {
         [JsonPropertyName(@"break")] public string Break { get; set; }
+    }
+
+    public class EventComplete
+    {
+        [JsonPropertyName(@"compete")] public string Complete { get; set; }
     }
 
     #endregion
