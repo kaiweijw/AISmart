@@ -16,21 +16,13 @@ namespace AISmart.Controllers;
 [ControllerName("rag")]
 public class RagController
 {
-    private readonly ILogger<DaprController> _logger;
+    private readonly ILogger<RagController> _logger;
     private readonly IRagProvider _ragProvider;
     
-    public RagController(ILogger<DaprController> logger, IRagProvider ragProvider)
+    public RagController(ILogger<RagController> logger)
     {
         _logger = logger;
-        _ragProvider = ragProvider;
-    }
-    
-    [HttpGet("token")]
-    [Topic(CommonConstants.PubSubName, CommonConstants.TestGroup)]
-    public Task<string> GetToken( AuthorDto authorDto)
-    {
-        _logger.LogInformation("GetToken {Name}",authorDto.Name);
-        return Task.FromResult(authorDto.Name);
+        _ragProvider = new RagProvider();
     }
     
     [HttpPost("add")]
