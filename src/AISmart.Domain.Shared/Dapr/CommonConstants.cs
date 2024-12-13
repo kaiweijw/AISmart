@@ -1,3 +1,5 @@
+using System;
+
 namespace AISmart.Dapr;
 
 public static class CommonConstants
@@ -9,5 +11,10 @@ public static class CommonConstants
     public const string GptTopic = "Gpt";
     
     public const string CommonTopic = "CommonTopic";
+    
+    public const string StreamNamespace = "AINamespace";
+    public const string StreamProvider = "AISmart";
+    public static Guid StreamGuid = Guid.NewGuid();
+    
 
 }

@@ -9,6 +9,9 @@ public class AgentTaskState
     [Id(2)]  public List<Guid> FailedEvents { get; set; }
     
     [Id(3)]  public Dictionary<Guid,EventResult> EventResultDictionary { get; set; }
+    
+    [Id(4)] public EventStateEnum State { get; set; }
+
 }
 [GenerateSerializer]
 public class EventResult

@@ -26,6 +26,7 @@ public class AISmartOrleansTestBaseModule : AbpModule
         });
         context.Services.AddSingleton<ClusterFixture>();
         context.Services.AddSingleton<IClusterClient>(sp => context.Services.GetRequiredService<ClusterFixture>().Cluster.Client);
+        context.Services.AddSingleton<IGrainFactory>(sp => context.Services.GetRequiredService<ClusterFixture>().Cluster.GrainFactory);
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
 
     }

@@ -27,5 +27,6 @@ public class AISmartApplicationModule : AbpModule
         {
             options.AddMaps<AISmartApplicationModule>();
         });
+        
     }
 }
