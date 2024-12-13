@@ -61,11 +61,11 @@ public class OpenAIChunker : IChunker
         while (start < text.Length)
         {
             // Assume that each character corresponds to 1 token on average (need to use tokenizer to verify)
-            int length = Math.Min(maxTokens, text.Length - start);
-            string chunk = text.Substring(start, length);
+            var length = Math.Min(maxTokens, text.Length - start);
+            var chunk = text.Substring(start, length);
 
             // Try to end at a semantic boundary (e.g. a period)
-            int lastPeriod = chunk.LastIndexOfAny(new[] { '.', '!', '?' });
+            var lastPeriod = chunk.LastIndexOfAny(new[] { '.', '!', '?' });
             if (lastPeriod != -1 && start + lastPeriod + 1 < text.Length)
             {
                 chunk = text.Substring(start, lastPeriod + 1);
@@ -88,17 +88,13 @@ public class OpenAIChunker : IChunker
         var openai = new OpenAIAPI(_apiKey);
 
         // 定义 Prompt 模板
-        string prompt = $"Summarize the following text:\n\n{text}";
+        var prompt = $"Summarize the following text:\n\n{text}";
 
         var response = await openai.Completions.CreateCompletionAsync(
             prompt,
             max_tokens: _maxTokensPerChunk, 
             temperature: _temperature);
 
-        foreach (var result in response.Completions)
-        {
-            Console.WriteLine(result.Text);
-        }
         return response.Completions[0].Text;
     }
 }

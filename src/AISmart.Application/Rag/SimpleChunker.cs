@@ -10,11 +10,11 @@ public class SimpleChunker : IChunker
     {
         
         var chunks = new List<string>();
-        int length = text.Length;
+        var length = text.Length;
 
-        for (int i = 0; i < length; i += maxChunkSize)
+        for (var i = 0; i < length; i += maxChunkSize)
         {
-            int actualChunkSize = maxChunkSize;
+            var actualChunkSize = maxChunkSize;
             if (i + maxChunkSize < length && char.IsLetterOrDigit(text[i + maxChunkSize]))
             {
                 while (i + actualChunkSize < length && char.IsLetterOrDigit(text[i + actualChunkSize]))
