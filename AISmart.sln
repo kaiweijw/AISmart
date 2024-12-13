@@ -45,7 +45,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Worker", "src\AISma
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Orleans.TestBase", "test\AISmart.Orleans.TestBase\AISmart.Orleans.TestBase.csproj", "{3C0B0690-0E0F-464E-ACEF-FE46D2ADA54F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Grains.Tests", "test\AISmart.Grains.Tests\AISmart.Grains.Tests.csproj", "{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Agents.Tests", "test\AISmart.Agents.Tests\AISmart.Agents.Tests.csproj", "{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTestKit", "test\OrleansTestKit\OrleansTestKit.csproj", "{E86A0D99-3FDA-4B84-980C-A106E22ACAA9}"
 EndProject

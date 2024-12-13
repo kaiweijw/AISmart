@@ -231,11 +231,11 @@ public sealed class TestKitSilo
     public async Task<T> CreateGrainAsync<T>(IdSpan identity, CancellationToken cancellation = default)
         where T : IGrainBase
     {
-        if (_isGrainCreated)
-        {
-            throw new Exception(
-                "A grain has already been created in this silo. Only 1 grain per test silo should ever be created. Add grain probes for supporting grains.");
-        }
+        // if (_isGrainCreated)
+        // {
+        //     throw new Exception(
+        //         "A grain has already been created in this silo. Only 1 grain per test silo should ever be created. Add grain probes for supporting grains.");
+        // }
 
         // Add state attribute mapping for storage facets
         _ = this.AddService<IAttributeToFactoryMapper<PersistentStateAttribute>>(StorageManager

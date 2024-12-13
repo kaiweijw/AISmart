@@ -44,7 +44,7 @@ public sealed class TestStream<T> : IAsyncStream<T>, IStreamIdentity
     public string ProviderName { get; }
 
     /// <summary>Gets the number of times OneNextAsync was called.</summary>
-    public uint Sends { get; private set; }
+    public int Sends { get; private set; }
 
     /// <inheritdoc/>
     public StreamId StreamId { get; }
