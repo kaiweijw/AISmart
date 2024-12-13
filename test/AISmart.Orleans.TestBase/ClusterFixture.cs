@@ -81,7 +81,9 @@ public class ClusterFixture : IDisposable, ISingletonDependency
             .AddMemoryStreams("AISmart")
             .AddMemoryGrainStorage("PubSubStore")
             .AddMemoryGrainStorageAsDefault()
-            .AddLogStorageBasedLogConsistencyProvider("LogStorage");
+            .AddLogStorageBasedLogConsistencyProvider("LogStorage")
+            .AddLogStorageBasedLogConsistencyProvider("MongoStorage");
+            
         }
     }
 
