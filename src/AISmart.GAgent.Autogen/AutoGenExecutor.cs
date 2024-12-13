@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AISmart.Agents;
 using AISmart.GAgent.Autogen.Common;
 using AISmart.GAgent.Autogen.Event;
 using AISmart.GAgent.Autogen.EventSourcingEvent;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenAI.Chat;
 using Volo.Abp.DependencyInjection;
+using IAgent = AutoGen.Core.IAgent;
 
 namespace AISmart.GAgent.Autogen;
 
@@ -166,7 +168,8 @@ public class AutoGenExecutor : ISingletonDependency
             throw new Exception($"Event name:{eventName} Deserialize object is null, the parameters is{parameters}");
         }
 
-        //todo: await PublishAsync(eventData as GEvent);
+        var publishGrain = _clusterClient.GetGrain<IPublishingAgent>(_publishGrainId);
+        await publishGrain.PublishEventAsync(eventData as GEvent);
 
         return JsonSerializer.Serialize(new HandleEventAsyncSchema()
             { EventName = eventName, Parameters = parameters });
