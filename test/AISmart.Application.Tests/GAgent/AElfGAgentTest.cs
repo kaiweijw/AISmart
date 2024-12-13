@@ -32,9 +32,8 @@ public class AElfGAgentTests : AISmartApplicationTestBase
                 };
                 var guid = Guid.NewGuid();
                 await _clusterClient.GetGrain<IAElfAgent>(guid).ExecuteTransactionAsync(createTransactionEvent);
-                /*var transaction = await _clusterClient.GetGrain<IAElfAgent>(guid).GetAElfTransactionAsync();
-                _output.WriteLine("TransactionId: " + transaction.TransactionId );
-                _output.WriteLine("success: " + transaction.IsSuccess);*/
+               var transaction = await _clusterClient.GetGrain<IAElfAgent>(guid).GetAElfAgentDto();
+                _output.WriteLine("TransactionId: " + transaction.PendingTransactions.Count);
     }
 
 }
