@@ -30,4 +30,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="AISmart.Application">
+      <HintPath>bin\Debug\net8.0\AISmart.Application.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

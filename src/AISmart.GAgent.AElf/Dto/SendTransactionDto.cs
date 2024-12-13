@@ -17,4 +17,6 @@ public  class SendTransactionDto
     [Id(6)] public bool IsSuccess   { get; set; }
     
     [Id(7)] public string TransactionId { get; set; }
+    
+    [Id(8)] public string CreateTransactionGEventId { get; set; }
 }

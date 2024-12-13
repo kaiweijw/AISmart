@@ -10,7 +10,7 @@ namespace AISmart.Application.Grains.Agents.MarketLeader;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
 {
-    public MarketLeaderAgent(ILogger<MarketLeaderAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public MarketLeaderAgent(ILogger<MarketLeaderAgent> logger) : base(logger)
     {
     }
 

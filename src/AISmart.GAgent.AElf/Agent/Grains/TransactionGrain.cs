@@ -1,12 +1,11 @@
 using System;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AElf.Client.MultiToken;
 using AISmart.Agent.Event;
-using AISmart.Agent.Grains;
 using AISmart.Dto;
 using AISmart.Provider;
+using AISmart.Sender;
 using Microsoft.Extensions.Logging;
 using Orleans;
 
@@ -24,20 +23,23 @@ public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
 
     public async Task<TransactionDto> SendAElfTransactionAsync(SendTransactionDto sendTransactionDto)
     {
-        //subscribe SendTransactionSEvent
         var transaction = await _AElfNodeProvider.CreateTransactionAsync(sendTransactionDto.ChainId, sendTransactionDto.SenderName, sendTransactionDto.ContractAddress,
             sendTransactionDto.MethodName, new TransferInput());
         var sendTransactionAsync =  await _AElfNodeProvider.SendTransactionAsync(sendTransactionDto.ChainId,transaction);
+        var publishingAgent = GrainFactory.GetGrain<IPublishingAgent>(Guid.NewGuid());
+        await publishingAgent.PublishEventAsync(new SendTransactionCallBackSEvent
+        {
+            TransactionId = sendTransactionAsync.TransactionId,
+            
+        });
         return new TransactionDto
         {
             TransactionId = sendTransactionAsync.TransactionId
         };
-        // publish SendTransactionCallBackSEvent
     }
 
     public async Task<TransactionDto> LoadAElfTransactionResultAsync(QueryTransactionDto queryTransactionDto)
     {
-        //subscribe SendTransactionSEvent
         bool isSuccess = false;
         TimeSpan timeout = TimeSpan.FromSeconds(30); 
         CancellationTokenSource cts = new CancellationTokenSource(timeout);
@@ -62,8 +64,11 @@ public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
         {
             _Logger.LogError(e,"Transaction query timed out.");
         }
-
-        // publish QueryTransactionCallBackSEvent
+        var publishingAgent = GrainFactory.GetGrain<IPublishingAgent>(Guid.NewGuid());
+        await publishingAgent.PublishEventAsync(new QueryTransactionCallBackSEvent()
+                {
+                    TransactionId =  queryTransactionDto.TransactionId
+                });
         return new TransactionDto
         {
             IsSuccess = isSuccess,

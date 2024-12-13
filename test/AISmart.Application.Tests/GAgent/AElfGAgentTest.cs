@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agent.Event;
+using AISmart.Agent.GEvents;
 using Orleans;
 using Xunit;
 using Xunit.Abstractions;

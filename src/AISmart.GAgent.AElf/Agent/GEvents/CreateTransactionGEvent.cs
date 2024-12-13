@@ -1,13 +1,10 @@
-using System;
-using Google.Protobuf;
 using Orleans;
 
-namespace AISmart.Agent.Event;
+namespace AISmart.Agent.GEvents;
 
 [GenerateSerializer]
-public  class CreateTransactionGEvent
+public  class CreateTransactionGEvent: TransactionGEvent
 {
-    [Id(0)] public Guid Id { get; set; }
     [Id(1)] public string ChainId { get; set; }
     [Id(2)] public string SenderName{ get; set; }
     [Id(3)] public  string ContractAddress { get; set; }
