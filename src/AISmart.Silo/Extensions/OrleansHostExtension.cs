@@ -5,14 +5,15 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Orleans.Configuration;
 using Orleans.Providers.MongoDB.Configuration;
+using Orleans.Serialization;
 
-namespace AISmart.Silo.Extensions
+namespace AISmart.Silo.Extensions;
+
+public static class OrleansHostExtension
 {
-    public static class OrleansHostExtension
+    public static IHostBuilder UseOrleansConfiguration(this IHostBuilder hostBuilder)
     {
-        public static IHostBuilder UseOrleansConfiguration(this IHostBuilder hostBuilder)
-        {
-            return hostBuilder.UseOrleans((context, siloBuilder) =>
+        return hostBuilder.UseOrleans((context, siloBuilder) =>
             {
                 var configSection = context.Configuration.GetSection("Orleans");
                 var isRunningInKubernetes = configSection.GetValue<bool>("IsRunningInKubernetes");
@@ -57,6 +58,12 @@ namespace AISmart.Silo.Extensions
                         options.ClusterId = clusterId;
                         options.ServiceId = serviceId;
                     })
+                    .Configure<ExceptionSerializationOptions>(options =>
+                    {
+                        options.SupportedNamespacePrefixes.Add("Volo.Abp");
+                        options.SupportedNamespacePrefixes.Add("Newtonsoft.Json");
+                        options.SupportedNamespacePrefixes.Add("Autofac.Core");
+                    })
                     .AddActivityPropagation()
                     .UseDashboard(options =>
                     {
@@ -68,9 +75,11 @@ namespace AISmart.Silo.Extensions
                         options.CounterUpdateIntervalMs =
                             configSection.GetValue<int>("DashboardCounterUpdateIntervalMs");
                     })
+                    .AddLogStorageBasedLogConsistencyProvider()
+                    .AddMemoryStreams("AISmart")
+                    .AddMemoryGrainStorage("PubSubStore")
                     .ConfigureLogging(logging => { logging.SetMinimumLevel(LogLevel.Debug).AddConsole(); });
             })
             .UseConsoleLifetime();
-        }
     }
 }
