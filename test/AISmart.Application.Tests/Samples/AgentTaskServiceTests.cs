@@ -57,10 +57,13 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         _clusterClient = GetRequiredService<IClusterClient>();
         _grainFactory = GetRequiredService<IGrainFactory>();
         
+        _publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
+
+        
         _xAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid(),typeof(XAgent).Namespace);
-        _xAgent.ActivateAsync();
+        // _xAgent.ActivateAsync();
         _marketAgent = _clusterClient.GetGrain<IAgent>(Guid.NewGuid(),typeof(MarketLeaderAgent).Namespace);
-        _marketAgent.ActivateAsync();
+        // _marketAgent.ActivateAsync();
         //
         // _marketAgent = _clusterClient.GetGrain<AISmart.Agents.IAgent>(Guid.NewGuid());
         // _marketAgent.ActivateAsync();
@@ -76,7 +79,7 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         // _developerAgent = _grainFactory.GetGrain<IDeveloperAgent>(Guid.NewGuid(),"AISmart.Application.Grains.Agents.Developer");
         // _developerAgent.ActivateAsync();
         _developerAgent2  = _grainFactory.GetGrain<IAgent>(Guid.NewGuid(),typeof(DeveloperAgent).Namespace);
-        _developerAgent2.ActivateAsync();
+        // _developerAgent2.ActivateAsync();
         // _tgTemplateId = Guid.NewGuid();
         // _tgAgent = _clusterClient.GetGrain<ITelegramAgent>(_tgTemplateId);
         
@@ -91,7 +94,6 @@ public class AgentTaskServiceTests : AISmartApplicationTestBase
         
         // _marketOperatorTemplateId = Guid.NewGuid();
         // _marketOperatorAgent = _clusterClient.GetGrain<IMarketOperatorAgent>(_marketOperatorTemplateId);
-        _publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
     }
 
     [Fact]

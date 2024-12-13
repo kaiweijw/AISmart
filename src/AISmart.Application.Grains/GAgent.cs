@@ -37,12 +37,13 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         return StreamId;
     }
 
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
         StreamId = StreamId.Create(CommonConstants.StreamNamespace, CommonConstants.StreamGuid);
         StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
         var stream = StreamProvider.GetStream<EventWrapperBase>(StreamId);
-        await stream.SubscribeAsync(OnNextAsync);
+        stream.SubscribeAsync(OnNextAsync);
+        return Task.CompletedTask;
     }
 
     protected async Task PublishAsync<T>(T @event) where T : GEvent
