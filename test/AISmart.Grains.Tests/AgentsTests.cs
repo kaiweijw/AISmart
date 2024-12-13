@@ -1,9 +1,7 @@
 using AISmart.Agents;
 using AISmart.Agents.X.Events;
-using AISmart.Application.Grains.Agents.Sender;
 using AISmart.Application.Grains.Agents.X;
 using AISmart.Dapr;
-using AISmart.Domain.Grains.Event;
 using Orleans.TestKit;
 using Shouldly;
 
@@ -34,5 +32,6 @@ public class PipelineTest : TestKitBase
 
         var state = await xAgent.GetStateAsync();
         state.ThreadIds.Count.ShouldBe(1);
+        state.ThreadIds.First().ShouldBe("mocked_id");
     }
 }

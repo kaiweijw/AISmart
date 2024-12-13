@@ -34,9 +34,10 @@ public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>
         return Task.CompletedTask;
     }
 
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         GrainTracker.DeveloperAgents.Enqueue(this);
-        return base.OnActivateAsync(cancellationToken);
+        await base.OnActivateAsync(cancellationToken);
+        await SubscribeAsync<ImplementationEvent>(ExecuteAsync);
     }
 }
