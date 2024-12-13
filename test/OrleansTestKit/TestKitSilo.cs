@@ -28,11 +28,7 @@ public sealed class TestKitSilo
 
     private readonly TestGrainRuntime _grainRuntime;
 
-    /// <summary>
-    ///     Flag indicating if a grain has already been created in this test silo. Since this is all mocked up only the
-    ///     grain under test should be real, therefore only a single grain should ever be created.
-    /// </summary>
-    private bool _isGrainCreated;
+    private readonly Dictionary<Type, IGrainBase> _createdGrains = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestKitSilo"/> class.
@@ -210,7 +206,8 @@ public sealed class TestKitSilo
                 ObservableLifecycle = _grainLifecycle,
             };
 
-            context.GrainInstance = _grainCreator.CreateGrainInstance<T>(context);
+            //context.GrainInstance = _grainCreator.CreateGrainInstance<T>(context);
+            context.GrainInstance = new Mock<IGrainBase>().Object;
 
             // make context injectable so grain dependency components can inject IGrainContext directly themselves
             ServiceProvider.AddService<IGrainContext>(context);
@@ -227,21 +224,17 @@ public sealed class TestKitSilo
     /// <param name="identity">The grain identity</param>
     /// <param name="cancellation">Cancellation token</param>
     /// <returns>The grain</returns>
-    /// <exception cref="Exception">Only one grain can be created or a failure occurred</exception>
     public async Task<T> CreateGrainAsync<T>(IdSpan identity, CancellationToken cancellation = default)
         where T : IGrainBase
     {
-        // if (_isGrainCreated)
-        // {
-        //     throw new Exception(
-        //         "A grain has already been created in this silo. Only 1 grain per test silo should ever be created. Add grain probes for supporting grains.");
-        // }
+        if (_createdGrains.ContainsKey(typeof(T)))
+        {
+            return (T)_createdGrains[typeof(T)];
+        }
 
         // Add state attribute mapping for storage facets
         _ = this.AddService<IAttributeToFactoryMapper<PersistentStateAttribute>>(StorageManager
             .StateAttributeFactoryMapper);
-
-        _isGrainCreated = true;
 
         var grainContext = GetOrAddGrainContext<T>(identity);
 
@@ -272,6 +265,8 @@ public sealed class TestKitSilo
 
         await grain.OnActivateAsync(cancellation).ConfigureAwait(false);
         _activatedGrains.Add(grain);
+
+        _createdGrains[typeof(T)] = grain;
 
         return (T)grain;
     }
