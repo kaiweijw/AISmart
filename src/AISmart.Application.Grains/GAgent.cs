@@ -21,10 +21,9 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
     
-    protected GAgent(ILogger logger, IClusterClient clusterClient)
+    protected GAgent(ILogger logger)
     {
         Logger = logger;
-        _clusterClient = clusterClient;
     }
     
     public Task ActivateAsync()

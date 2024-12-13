@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AISmart.Application.Contracts\AISmart.Application.Contracts.csproj" />
+    <ProjectReference Include="..\AISmart.Application\AISmart.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
