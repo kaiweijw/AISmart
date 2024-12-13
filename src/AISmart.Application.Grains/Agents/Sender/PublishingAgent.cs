@@ -18,7 +18,7 @@ public class EmptyEvent : GEvent
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class PublishingAgent : GAgent<PublishingAgentState, EmptyEvent>, IPublishingAgent
 {
-    public PublishingAgent(ILogger<PublishingAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public PublishingAgent(ILogger<PublishingAgent> logger) : base(logger)
     {
     }
 

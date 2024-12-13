@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AISmart.Application\AISmart.Application.csproj" />
+    <ProjectReference Include="..\..\src\AISmart.GAgent.Twitter\AISmart.GAgent.Twitter.csproj" />
     <ProjectReference Include="..\AISmart.Domain.Tests\AISmart.Domain.Tests.csproj" />
     <ProjectReference Include="..\AISmart.Orleans.TestBase\AISmart.Orleans.TestBase.csproj" />
   </ItemGroup>
@@ -28,6 +29,12 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AISmart.Application">
+      <HintPath>bin\Debug\net8.0\AISmart.Application.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

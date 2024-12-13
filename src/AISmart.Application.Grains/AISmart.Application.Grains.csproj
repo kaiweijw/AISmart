@@ -23,4 +23,8 @@
         <ProjectReference Include="..\AISmart.Application.Contracts\AISmart.Application.Contracts.csproj" />
         <ProjectReference Include="..\AISmart.Domain.Grains\AISmart.Domain.Grains.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Event\" />
+    </ItemGroup>
 </Project>
