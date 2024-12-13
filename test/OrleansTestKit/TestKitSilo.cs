@@ -1,4 +1,6 @@
 ﻿using System.Linq.Expressions;
+using AISmart.Mock;
+using AISmart.Provider;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Orleans.EventSourcing;
@@ -55,6 +57,8 @@ public sealed class TestKitSilo
             new TestGrainRuntime(GrainFactory, TimerRegistry, ReminderRegistry, ServiceProvider, StorageManager);
         ServiceProvider.AddService<IGrainRuntime>(GrainRuntime);
         _grainCreator = new TestGrainCreator(GrainRuntime, ReminderRegistry, ServiceProvider);
+
+        ServiceProvider.AddService<IAElfNodeProvider>(new MockAElfNodeProvider());
 
         var provider = new ServiceCollection()
             .AddSingleton<GrainTypeResolver>()
@@ -200,14 +204,10 @@ public sealed class TestKitSilo
             {
                 GrainId = grainId,
                 ActivationServices = ServiceProvider,
-
-                // GrainIdentity = identity,
                 GrainType = typeof(T),
                 ObservableLifecycle = _grainLifecycle,
+                GrainInstance = new Mock<IGrainBase>().Object
             };
-
-            //context.GrainInstance = _grainCreator.CreateGrainInstance<T>(context);
-            context.GrainInstance = new Mock<IGrainBase>().Object;
 
             // make context injectable so grain dependency components can inject IGrainContext directly themselves
             ServiceProvider.AddService<IGrainContext>(context);
@@ -269,5 +269,10 @@ public sealed class TestKitSilo
         _createdGrains[typeof(T)] = grain;
 
         return (T)grain;
+    }
+
+    public bool IsGrainTypeCreated(Type grainType)
+    {
+        return _createdGrains.ContainsKey(grainType);
     }
 }
