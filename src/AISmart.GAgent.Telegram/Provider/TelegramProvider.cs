@@ -153,7 +153,9 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
     public async Task TestUpdatesMessagesAsync(TelegramUpdateDto updateMessage)
     {
         _logger.LogDebug("GetUpdatesMessagesAsync:{message}",JsonConvert.SerializeObject(updateMessage));
-        if (updateMessage.Message != null && updateMessage.Message.Chat != null)
+        // To filter only messages that mention the bot, check if message.Entities.type == "mention".
+        // Group message auto-reply, just add the bot as a group admin.
+        if (updateMessage.Message != null)
         {
             await SendMessageAsync("Test",updateMessage.Message.Chat.Id.ToString(), "hello test message",new ReplyParamDto
             {

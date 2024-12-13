@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.GAgent.Twitter", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.GAgent.Telegram", "src\AISmart.GAgent.Telegram\AISmart.GAgent.Telegram.csproj", "{3DBEFD1D-29AF-4A7A-AC6D-6C844BA27241}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.GAgent.Pumpfun", "src\AISmart.GAgent.Pumpfun\AISmart.GAgent.Pumpfun.csproj", "{06B4C285-3678-417B-99A5-D471BB70DA83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -151,6 +153,10 @@ Global
 		{3DBEFD1D-29AF-4A7A-AC6D-6C844BA27241}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DBEFD1D-29AF-4A7A-AC6D-6C844BA27241}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DBEFD1D-29AF-4A7A-AC6D-6C844BA27241}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06B4C285-3678-417B-99A5-D471BB70DA83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06B4C285-3678-417B-99A5-D471BB70DA83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06B4C285-3678-417B-99A5-D471BB70DA83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06B4C285-3678-417B-99A5-D471BB70DA83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,6 +185,7 @@ Global
 		{DF51070F-0462-44B6-8A50-3270FBAAC230} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 		{FC90D79E-F03C-49F0-98DC-9AF61DA1BE19} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 		{3DBEFD1D-29AF-4A7A-AC6D-6C844BA27241} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
+		{06B4C285-3678-417B-99A5-D471BB70DA83} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28315BFD-90E7-4E14-A2EA-F3D23AF4126F}
