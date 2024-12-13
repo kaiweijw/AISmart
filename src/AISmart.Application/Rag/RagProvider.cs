@@ -11,11 +11,11 @@ public class RagProvider : IRagProvider
     private readonly IEmbeddingProvider _embeddingProvider;
     private readonly IVectorDatabase _vectorDatabase;
 
-    public RagProvider(IChunker chunker, IEmbeddingProvider embeddingProvider, IVectorDatabase vectorDatabase)
+    public RagProvider()
     {
-        _chunker = chunker;
-        _embeddingProvider = embeddingProvider;
-        _vectorDatabase = vectorDatabase;
+        _chunker = new SimpleChunker();
+        _embeddingProvider = new OpenAIEmbeddingProvider();
+        _vectorDatabase = new QdrantVectorDatabase();
     }
 
     public async Task StoreTextAsync(string text)
