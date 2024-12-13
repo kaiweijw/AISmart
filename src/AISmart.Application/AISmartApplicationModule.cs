@@ -1,5 +1,6 @@
-﻿using Volo.Abp.Account;
-using Volo.Abp.AspNetCore.Mvc.Dapr.EventBus;
+﻿using AISmart.Application.Grains;
+using Volo.Abp.Account;
+using Volo.Abp.AspNetCore.Mvc.Dapr;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.Dapr;
 using Volo.Abp.Identity;
@@ -15,8 +16,9 @@ namespace AISmart;
     typeof(AbpIdentityApplicationModule),
     typeof(AbpPermissionManagementApplicationModule),
     typeof(AbpDaprModule),
-    typeof(AbpAspNetCoreMvcDaprEventBusModule)
-    )]
+    typeof(AbpAspNetCoreMvcDaprModule),
+    typeof(AIApplicationGrainsModule)
+)]
 public class AISmartApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
@@ -25,5 +27,6 @@ public class AISmartApplicationModule : AbpModule
         {
             options.AddMaps<AISmartApplicationModule>();
         });
+        
     }
 }

@@ -9,11 +9,11 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Orleans.TestingHost" Version="7.2.6" />
         <PackageReference Include="Volo.Abp.ObjectMapping" Version="8.2.0" />
+        <PackageReference Include="Volo.Abp.EventBus" Version="8.2.0" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\AISmart.TestBase\AISmart.TestBase.csproj" />
-        <ProjectReference Include="..\..\src\AISmart.Application\AISmart.Application.csproj" />
         <ProjectReference Include="..\..\src\AISmart.Application\AISmart.Application.csproj" />
     </ItemGroup>
 
