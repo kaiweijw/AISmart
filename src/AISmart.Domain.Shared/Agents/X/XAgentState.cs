@@ -1,4 +1,7 @@
-namespace AISmart.Application.Grains.Agents.X;
+using System.Collections.Generic;
+using Orleans;
+
+namespace AISmart.Agents.X;
 
 [GenerateSerializer]
 public class XAgentState

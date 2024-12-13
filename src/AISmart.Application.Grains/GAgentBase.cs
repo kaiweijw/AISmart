@@ -7,11 +7,11 @@ using Orleans.Streams;
 
 namespace AISmart.Application.Grains;
 
-public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateAgent<TState>
+public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateAgent<TState>
     where TState : class, new()
     where TEvent : GEvent
 {
-    protected IStreamProvider? StreamProvider { get; private set; } = null;
+    private IStreamProvider? StreamProvider { get; set; } = null;
     
     protected readonly ILogger Logger;
     
@@ -21,7 +21,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
     
-    protected GAgent(ILogger logger, IClusterClient clusterClient)
+    protected GAgentBase(ILogger logger, IClusterClient clusterClient)
     {
         Logger = logger;
         _clusterClient = clusterClient;
@@ -49,38 +49,38 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         return true;
     }
 
-    public async Task<bool> UnsubscribeFrom(IAgent agent)
+    public Task<bool> UnsubscribeFrom(IAgent agent)
     {
         var agentGuid = agent.GetPrimaryKey();
         if (!_subscriptions.ContainsKey(agentGuid))
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         _subscriptions.Remove(agentGuid);
         //TODO: Unsubscribe from stream
-        return true;
+        return Task.FromResult(true);
     }
 
-    public async Task<bool> PublishTo(IAgent agent)
+    public Task<bool> PublishTo(IAgent agent)
     {
         StreamProvider ??= this.GetStreamProvider(CommonConstants.StreamProvider);
 
         var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        return _publishers.TryAdd(agentGuid, stream);
+        return Task.FromResult(_publishers.TryAdd(agentGuid, stream));
     }
 
-    public async Task<bool> UnpublishFrom(IAgent agent)
+    public Task<bool> UnpublishFrom(IAgent agent)
     {
         if (!_publishers.ContainsKey(agent.GetPrimaryKey()))
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         _publishers.Remove(agent.GetPrimaryKey());
-        return true;
+        return Task.FromResult(true);
     }
 
     public async Task Register(IAgent agent)
@@ -117,10 +117,10 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     {
     }
 
-    protected async Task SubscribeAsync<T>(Func<T, Task> onEvent)
+    protected Task SubscribeAsync<T>(Func<T, Task> onEvent) where T : EventBase
     {
         _subscriptionHandlers.Add(OnNextWrapperAsync);
-        return;
+        return Task.CompletedTask;
 
         Task OnNextWrapperAsync(EventWrapperBase @event, StreamSequenceToken token = null)
         {
@@ -144,7 +144,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         return Task.FromResult(State);
     }
 
-    protected async Task PublishAsync<T>(T @event) where T : GEvent
+    protected async Task PublishAsync<T>(T @event) where T : EventBase
     {
         if(_publishers.Count == 0)
         {
@@ -159,7 +159,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         }
     }
 
-    public async Task AckAsync(EventWrapper<TEvent> eventWrapper)
+    private async Task AckAsync(EventWrapper<TEvent> eventWrapper)
     {
         // var pubAgent = _clusterClient.GetGrain<IAgent<TState>>(eventWrapper.GrainId);
         //
@@ -175,7 +175,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         // await ((pubAgent as GAgent<TState,TEvent>)!).DoAckAsync(eventWrapper);
     }
 
-    public async Task DoAckAsync(EventWrapper<TEvent> eventWrapper)
+    private async Task DoAckAsync(EventWrapper<TEvent> eventWrapper)
     {
         // eventWrapper.count ++;
         //
@@ -214,24 +214,6 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     // agentB sends to agentC to do transaction on chain
     
     // how does dependency work between agents? just pub/sub messages enough?
-    
-
-    protected abstract Task ExecuteAsync(TEvent eventData);
-    
-    protected abstract Task CompleteAsync(TEvent eventData);
-
-    
-    private async Task OnNextAsync(EventWrapperBase @event, StreamSequenceToken token = null)
-    {
-        Logger.LogInformation("Received message: {@Message}", @event);
-        if(@event is EventWrapper<TEvent> eventWrapper)
-        {
-            Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
-
-            await ExecuteAsync(eventWrapper.Event);
-            await DoAckAsync(eventWrapper);
-        }
-    }
     
     private async Task SubscribeAsync(IAsyncStream<EventWrapperBase> stream)
     {

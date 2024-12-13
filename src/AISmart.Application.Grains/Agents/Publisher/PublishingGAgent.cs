@@ -1,24 +1,21 @@
 using AISmart.Agents;
+using AISmart.Agents.Publisher;
 using AISmart.Sender;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
-namespace AISmart.Application.Grains.Agents.Sender;
+namespace AISmart.Application.Grains.Agents.Publisher;
 
 [GenerateSerializer]
 public class PublishingAgentState
 {
 }
 
-public class EmptyEvent : GEvent
-{
-}
-
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class PublishingAgent : GAgent<PublishingAgentState, EmptyEvent>, IPublishingAgent
+public class PublishingGAgent : GAgentBase<PublishingAgentState, PublishingGEvent>, IPublishingAgent
 {
-    public PublishingAgent(ILogger<PublishingAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public PublishingGAgent(ILogger<PublishingGAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
     }
 
@@ -27,17 +24,7 @@ public class PublishingAgent : GAgent<PublishingAgentState, EmptyEvent>, IPublis
         return Task.FromResult("Agent to be used for publishing new events.");
     }
 
-    protected override Task ExecuteAsync(EmptyEvent eventData)
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override Task CompleteAsync(EmptyEvent eventData)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task PublishEventAsync<T>(T @event) where T : GEvent
+    public async Task PublishEventAsync<T>(T @event) where T : EventBase
     {
         if (@event == null)
         {

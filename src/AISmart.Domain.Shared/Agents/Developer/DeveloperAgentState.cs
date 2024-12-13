@@ -1,4 +1,7 @@
-namespace AISmart.Application.Grains.Agents.Developer;
+using System.Collections.Generic;
+using Orleans;
+
+namespace AISmart.Agents.Developer;
 
 [GenerateSerializer]
 public class DeveloperAgentState

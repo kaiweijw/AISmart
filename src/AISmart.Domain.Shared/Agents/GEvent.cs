@@ -2,7 +2,7 @@ using Orleans;
 
 namespace AISmart.Agents;
 
-[GenerateSerializer]
+[GenerateSerializer] 
 public abstract class GEvent
 {
 }
