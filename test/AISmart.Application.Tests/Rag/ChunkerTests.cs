@@ -29,17 +29,4 @@ public class ChunkerTests : AISmartApplicationTestBase
         Assert.True(chunks.Count > 0);
     }
     
-    [Fact]
-    public async Task TestBaseChunk()
-    {
-        var configuration = ServiceProvider.GetRequiredService<IConfiguration>();
-        var apikey = configuration["Rag:APIKey"];
-        var embeddingProvider = new OpenAIEmbeddingProvider(apikey);
-        
-        string textContent = "Test chunk content.";
-        
-        float[] results = await embeddingProvider.GetEmbeddingAsync(textContent);
-
-        var s = 1;
-    }
 }
