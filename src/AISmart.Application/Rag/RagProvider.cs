@@ -19,7 +19,7 @@ public class RagProvider : IRagProvider
 
     public async Task StoreTextAsync(string text)
     {
-        var chunks = await _chunker.SmartChunkTextAsync(text, 4000);
+        var chunks = await _chunker.Chunk(text, 4000);
         foreach (var chunk in chunks)
         {
             var embedding = await _embeddingProvider.GetEmbeddingAsync(chunk);
@@ -33,7 +33,7 @@ public class RagProvider : IRagProvider
             
         foreach (var text in texts)
         {
-            var chunks = await _chunker.SmartChunkTextAsync(text, 4000);
+            var chunks = await _chunker.Chunk(text, 4000);
                 
             foreach (var chunk in chunks)
             {
