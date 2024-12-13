@@ -15,6 +15,23 @@ public class ChunkerTests : AISmartApplicationTestBase
     [Fact]
     public async Task TestBaseChunk()
     {
+        SimpleChunker simpleChunker = new SimpleChunker();
+        string text = "Retrieval-Augmented Generation (RAG) is a technique that enhances language model generation by incorporating external knowledge" +
+        "Yet while many critics are dismayed at the prospect, few should be surprised given the influence the kingdom's unprecedented investment in sport has secured." +
+        "With RAG, the LLM is able to leverage knowledge and information that is not necessarily in its weights by providing it access to external knowledge sources such as databases" +
+        "Fifa has defended a fast-tracked process that many argue was lacking in transparency and accountability" +
+        "It leverages a retriever to find relevant contexts to condition the LLM, in this way, RAG is able to augment the knowledge-base of an LLM with relevant document" +
+            "So is the tournament being used to help transform Saudi Arabia's reputation, or can it be a catalyst for social reform? And what does this tell us about Fifa and football more widely?";
+
+        Task<List<string>> result = simpleChunker.Chunk(text, 512);
+            
+        List<string> chunks = await result;
+        Assert.True(chunks.Count > 0);
+    }
+    
+    [Fact]
+    public async Task TestBaseChunk()
+    {
         var configuration = ServiceProvider.GetRequiredService<IConfiguration>();
         var apikey = configuration["Rag:APIKey"];
         var embeddingProvider = new OpenAIEmbeddingProvider(apikey);
