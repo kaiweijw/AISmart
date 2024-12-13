@@ -57,8 +57,8 @@ public class AgentsTests : TestKitBase
     [Fact]
     public async Task SendTransactionTest()
     {
-        string chainId = "AELF";
-        string senderName = "Test";
+        const string chainId = "AELF";
+        const string senderName = "Test";
         var createTransactionEvent = new CreateTransactionGEvent
         {
             ChainId = chainId,
@@ -72,16 +72,9 @@ public class AgentsTests : TestKitBase
         Silo.AddProbe<ITransactionGrain>(_ => txGrain);
         var publishingAgent = await Silo.CreateGrainAsync<PublishingAgent>(guid);
         Silo.AddProbe<IPublishingAgent>(_ => publishingAgent);
-        var groupGAgent = await Silo.CreateGrainAsync<GroupAgent>(guid);
-        await groupGAgent.Register(aelfGAgent);
-        await publishingAgent.PublishTo(groupGAgent);
-
-        var streamId = StreamId.Create(CommonConstants.StreamNamespace, guid);
-        var stream = Silo.StreamProviderManager.GetProvider("")
-            .GetStream<EventWrapperBase>(streamId);
 
         await aelfGAgent.ExecuteTransactionAsync(createTransactionEvent);
- 
+
         var aelfGAgentState = await aelfGAgent.GetAElfAgentDto();
         aelfGAgentState.PendingTransactions.Count.ShouldBe(1);
     }

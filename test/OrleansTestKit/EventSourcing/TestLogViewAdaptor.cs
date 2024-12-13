@@ -1,3 +1,4 @@
+using AISmart.Agent;
 using Orleans.EventSourcing;
 using Orleans.Storage;
 
@@ -59,6 +60,17 @@ public class TestLogViewAdaptor<TView, TEntry> : ILogViewAdaptor<TView, TEntry>
     {
         _confirmedVersion = _logEntries.Count;
         _confirmedView = _tentativeView;
+        if (_tentativeView is AElfAgentGState tentativeState)
+        {
+            foreach (var logEntry in _logEntries)
+            {
+                var method = typeof(AElfAgentGState).GetMethod("Apply", new[] { logEntry.GetType() });
+                if (method != null)
+                {
+                    method.Invoke(tentativeState, [logEntry]);
+                }
+            }
+        }
         return Task.CompletedTask;
     }
 
