@@ -1,3 +1,4 @@
+using System.Reflection;
 using AISmart.Agents;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
@@ -42,23 +43,69 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         StreamId = StreamId.Create(CommonConstants.StreamNamespace, CommonConstants.StreamGuid);
         StreamProvider = this.GetStreamProvider(CommonConstants.StreamProvider);
         var stream = StreamProvider.GetStream<EventWrapperBase>(StreamId);
+        
         await stream.SubscribeAsync(OnNextAsync);
     }
 
-    protected async Task PublishAsync<T>(T @event) where T : GEvent
-    {
-        var stream = StreamProvider?.GetStream<EventWrapperBase>(StreamId);
 
-        if (stream == null)
+    private Dictionary<Type, IAsyncStream<EventWrapperBase>> dictionary { get; } = new Dictionary<Type, IAsyncStream<EventWrapperBase>>();
+
+
+    protected async Task PublishAsync<T>(T @event)
+    {
+        if (dictionary.TryGetValue(typeof(T), out IAsyncStream<EventWrapperBase> stream) )
+        {
+        }
+        else
         {
             Logger.LogError("StreamProvider is null");
-            return;
+            stream = StreamProvider?.GetStream<EventWrapperBase>(typeof(T).FullName);
+            dictionary.Add(typeof(T),stream);
         }
+        
         var eventWrapper = new EventWrapper<T>(@event, this.GetGrainId());
         
         await stream.OnNextAsync(eventWrapper);
-
+        
     }
+
+    public Task SubscribeAsync<T>(T @event)
+    {
+
+        if (dictionary.TryGetValue(typeof(T), out IAsyncStream<EventWrapperBase> stream) )
+        {
+            stream.SubscribeAsync(OnNextAsync);
+        }
+
+        return Task.CompletedTask;
+    }
+    
+    
+    
+    
+    protected async Task PublishAsync2<T>(T @event)
+    {
+       
+        Logger.LogError("StreamProvider is null");
+        var stream = StreamProvider?.GetStream<EventWrapperBase>(this.GetGrainId().ToString());
+
+        var eventWrapper = new EventWrapper<T>(@event, this.GetGrainId());
+        await stream.OnNextAsync(eventWrapper);
+        
+    }
+
+    public Task SubscribeAsync2(IAgent agent)
+    {
+        
+        var stream = StreamProvider?.GetStream<EventWrapperBase>(agent.GetGrainId().ToString());
+
+        stream.SubscribeAsync(OnNextAsync);
+
+        return Task.CompletedTask;
+    }
+
+    
+    
 
     public async Task AckAsync(EventWrapper<TEvent> eventWrapper)
     {
@@ -118,19 +165,41 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     
 
     protected abstract Task ExecuteAsync(TEvent eventData);
-    
+
+
     protected abstract Task CompleteAsync(TEvent eventData);
 
-    
+
     private async Task OnNextAsync(EventWrapperBase @event, StreamSequenceToken token = null)
     {
         Logger.LogInformation("Received message: {@Message}", @event);
-        if(@event is EventWrapper<TEvent> eventWrapper)
-        {
-            Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
 
-            await ExecuteAsync(eventWrapper.Event);
-            await DoAckAsync(eventWrapper);
+        var eventWrapperType = @event.GetType();
+        if (eventWrapperType.IsGenericType && eventWrapperType.GetGenericTypeDefinition() == typeof(EventWrapper<>))
+        {
+
+            var methods = this.GetType()
+                .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                .Where(m => m.Name == "ExecuteAsync");
+
+
+            var eventProperty = eventWrapperType.GetProperty("Event");
+
+            if (eventProperty != null)
+            {
+                var eventType = eventProperty.PropertyType;
+
+                foreach (var method in methods)
+                {
+                    var parameters = method.GetParameters();
+
+                    if (parameters.Length == 1 && parameters[0].ParameterType == eventType)
+                    {
+                        await (Task)method.Invoke(this, new object[] { eventProperty });
+                        return;
+                    }
+                }
+            }
         }
     }
 }

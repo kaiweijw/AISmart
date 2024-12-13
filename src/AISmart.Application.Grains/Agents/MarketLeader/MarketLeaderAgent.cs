@@ -26,4 +26,6 @@ public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
     {
         return Task.CompletedTask;
     }
+
+
 }
