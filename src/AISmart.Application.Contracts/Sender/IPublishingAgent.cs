@@ -4,7 +4,7 @@ using Orleans;
 
 namespace AISmart.Sender;
 
-public interface IPublishingAgent : IGrainWithGuidKey
+public interface IPublishingAgent : IAgent
 {
     Task PublishEventAsync<T>(T @event) where T : GEvent;
 }
