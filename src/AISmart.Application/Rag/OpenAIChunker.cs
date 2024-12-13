@@ -87,7 +87,6 @@ public class OpenAIChunker : IChunker
         // Initialize the OpenAI API client
         var openai = new OpenAIAPI(_apiKey);
 
-        // 定义 Prompt 模板
         var prompt = $"Summarize the following text:\n\n{text}";
 
         var response = await openai.Completions.CreateCompletionAsync(
