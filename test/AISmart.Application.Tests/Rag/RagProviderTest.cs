@@ -22,7 +22,7 @@ public class RagProviderTest : AISmartApplicationTestBase
         var endpoint = configuration["AzureService:endpoint"];
         var azureKey = configuration["AzureService:apiKey"];
         
-        var chunker = new SimpleChunker(endpoint, azureKey); 
+        var chunker = new MicrosoftChunker(endpoint, azureKey); 
         var embeddingProvider = new OpenAIEmbeddingProvider(apiKey); 
         var vectorDatabase = new QdrantVectorDatabase(_qdrantUrl, _collectionName);
 
