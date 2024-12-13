@@ -5,12 +5,14 @@ using AISmart.Agent.Event;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
 using AISmart.Application.Grains;
+using AISmart.Dto;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Providers;
 
 namespace AISmart.Agent;
 
+[StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, TransactionGEvent>(logger), IAElfAgent
 {
@@ -20,9 +22,10 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
     }
 
 
-    protected  Task ExecuteAsync(CreateTransactionGEvent gEventData)
+    protected async Task ExecuteAsync(CreateTransactionGEvent gEventData)
     {
         base.RaiseEvent(gEventData);
+        await ConfirmEvents();
         _= GrainFactory.GetGrain<ITransactionGrain>(gEventData.Id).SendAElfTransactionAsync(
             new SendTransactionDto
             {
@@ -34,7 +37,6 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
                 Param = gEventData.Param
             });
         Logger.LogInformation("ExecuteAsync: AElf {MethodName}", gEventData.MethodName);
-        return Task.CompletedTask;
     }
     
     protected  Task ExecuteAsync(SendTransactionCallBackSEvent gEventData)
@@ -93,6 +95,14 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
         await ExecuteAsync( gEventData);
     }
 
+    public async Task<AElfAgentGState> GetAElfAgentDto()
+    {
+        AElfAgentDto aelfAgentDto = new AElfAgentDto();
+        aelfAgentDto.Id = State.Id;
+        aelfAgentDto.PendingTransactions = State.PendingTransactions;
+        return aelfAgentDto;
+    }
+
 
     protected override Task ExecuteAsync(TransactionGEvent eventData)
     {
@@ -108,4 +118,5 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
 public interface IAElfAgent : IGrainWithGuidKey
 { 
     Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData);
+    Task<AElfAgentGState> GetAElfAgentDto();
 }
