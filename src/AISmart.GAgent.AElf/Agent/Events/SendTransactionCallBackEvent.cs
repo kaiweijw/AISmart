@@ -6,7 +6,7 @@ using Orleans;
 namespace AISmart.Agent.Event;
 
 [GenerateSerializer]
-public  class SendTransactionCallBackEvent :EventBase
+public  class SendTransactionCallBackEvent :BaseEvent
 {
     [Id(0)] public Guid Id { get; set; }
     

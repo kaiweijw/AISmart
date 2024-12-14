@@ -114,7 +114,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
     }
 
-    protected Task SubscribeAsync<T>(Func<T, Task> onEvent) where T : EventBase
+    protected Task SubscribeAsync<T>(Func<T, Task> onEvent) where T : BaseEvent
     {
         _subscriptionHandlers.Add(OnNextWrapperAsync);
         return Task.CompletedTask;
@@ -141,7 +141,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         return Task.FromResult(State);
     }
 
-    protected async Task PublishAsync<T>(T @event) where T : EventBase
+    protected async Task PublishAsync<T>(T @event) where T : BaseEvent
     {
         if(_publishers.Count == 0)
         {
