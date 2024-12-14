@@ -10,7 +10,7 @@ namespace AISmart.Application.Grains.Agents.Group;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
 {
-    public GroupGAgent(ILogger<DeveloperGAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public GroupGAgent(ILogger<GroupGAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
     }
 

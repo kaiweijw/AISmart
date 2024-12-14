@@ -14,5 +14,5 @@ public  class SendTransactionCallBackSEvent :EventBase
     
     [Id(2)] public string TransactionId { get; set; }
     [Id(3)] public string ChainId { get; set; }
-    [Id(3)] public Guid CreateTransactionGEventId { get; set; }
+    [Id(4)] public Guid CreateTransactionGEventId { get; set; }
 }
