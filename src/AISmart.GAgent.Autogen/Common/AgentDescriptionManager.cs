@@ -61,7 +61,7 @@ public class AgentDescriptionManager : ISingletonDependency
 
         foreach (var classType in agentList)
         {
-            if (!classType.IsClass && !classType.IsSealed && !classType.IsAssignableFrom(typeof(GAgent<,>)))
+            if (!classType.IsClass && !classType.IsSealed && !classType.IsAssignableFrom(typeof(GAgentBase<,>)))
             {
                 continue;
             }

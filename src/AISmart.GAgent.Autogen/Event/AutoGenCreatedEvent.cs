@@ -2,7 +2,7 @@ using System;
 
 namespace AISmart.Agents.AutoGen;
 
-public class AutoGenCreatedEvent: GEvent
+public class AutoGenCreatedEvent: EventBase
 {
     public Guid EventId { get; set; }
     

@@ -12,7 +12,7 @@ namespace AISmart.GAgent.Autogen;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class AutogenGAgent : GAgent<AutoGenAgentState, BaseEvent>
+public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>
 {
     private readonly IRagProvider _ragProvider;
     private readonly AutoGenExecutor _executor;
@@ -25,16 +25,6 @@ public class AutogenGAgent : GAgent<AutoGenAgentState, BaseEvent>
     }
 
     public override Task<string> GetDescriptionAsync()
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override Task ExecuteAsync(BaseEvent eventData)
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override Task CompleteAsync(BaseEvent eventData)
     {
         throw new NotImplementedException();
     }

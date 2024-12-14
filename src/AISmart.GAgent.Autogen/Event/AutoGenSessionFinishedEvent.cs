@@ -2,7 +2,7 @@ using AISmart.Agents;
 
 namespace AISmart.GAgent.Autogen.Event;
 
-public class AutoGenSessionFinishedEvent : GEvent
+public class AutoGenSessionFinishedEvent : EventBase
 {
     public Guid TaskId { get; set; }
     public TaskExecuteStatus ExecuteStatus { get; set; }

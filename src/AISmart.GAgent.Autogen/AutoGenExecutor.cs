@@ -174,7 +174,7 @@ public class AutoGenExecutor : ISingletonDependency
         }
 
         var publishGrain = _clusterClient.GetGrain<IPublishingAgent>(_publishGrainId);
-        await publishGrain.PublishEventAsync(eventData as GEvent);
+        await publishGrain.PublishEventAsync(eventData as EventBase);
 
         return JsonSerializer.Serialize(new HandleEventAsyncSchema()
             { EventName = eventName, Parameters = parameters });
