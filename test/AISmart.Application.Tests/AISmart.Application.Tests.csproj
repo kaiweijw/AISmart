@@ -30,4 +30,9 @@
     </Content>
   </ItemGroup>
 
+  <PropertyGroup>
+    <WarningsAsErrors></WarningsAsErrors>
+    <NoWarn>SKEXP0010;SKEXP0001;SKEXP0020;SKEXP0001</NoWarn> 
+  </PropertyGroup>
+
 </Project>
