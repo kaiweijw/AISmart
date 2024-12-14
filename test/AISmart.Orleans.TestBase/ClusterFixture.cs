@@ -75,8 +75,11 @@ public class ClusterFixture : IDisposable, ISingletonDependency
             })
             .AddMemoryStreams("AISmart")
             .AddMemoryGrainStorage("PubSubStore")
-            //.AddMemoryGrainStorageAsDefault()
+            .AddCustomStorageBasedLogConsistencyProvider("CustomStorage")
             .AddLogStorageBasedLogConsistencyProvider("LogStorage");
+
+            //.AddMemoryGrainStorageAsDefault()
+            // .AddLogStorageBasedLogConsistencyProvider("LogStorage")
         }
     }
 
