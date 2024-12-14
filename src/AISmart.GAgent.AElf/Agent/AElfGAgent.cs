@@ -10,7 +10,7 @@ using Orleans;
 using Orleans.Providers;
 
 namespace AISmart.Agent;
-
+[StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, TransactionGEvent>(logger), IAElfAgent
 {
