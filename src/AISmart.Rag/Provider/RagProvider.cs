@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 using AISmart.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Volo.Abp.DependencyInjection;
 
 namespace AISmart.Provider;
 
-public class RagProvider : IRagProvider
+public class RagProvider : IRagProvider, ISingletonDependency
 {
     private readonly IChunker _chunker;
     private readonly IEmbeddingProvider _embeddingProvider;
