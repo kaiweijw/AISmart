@@ -1,5 +1,3 @@
-using AISmart.Agents.ImplementationAgent.Events;
-using AISmart.Application.Grains.Agents.Developer;
 using AISmart.Application.Grains.Agents.Sender;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
@@ -10,7 +8,7 @@ namespace AISmart.Application.Grains.Agents.Group;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class GroupAgent : GAgent<GroupAgentState, EmptyEvent>
 {
-    public GroupAgent(ILogger<DeveloperAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public GroupAgent(ILogger<GroupAgent> logger) : base(logger)
     {
     }
 

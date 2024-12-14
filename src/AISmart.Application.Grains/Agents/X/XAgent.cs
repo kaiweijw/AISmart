@@ -9,7 +9,7 @@ namespace AISmart.Application.Grains.Agents.X;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
 {
-    public XAgent(ILogger<XAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public XAgent(ILogger<XAgent> logger) : base(logger)
     {
     }
 
@@ -40,6 +40,7 @@ public class XAgent : GAgent<XAgentState, XThreadCreatedEvent>
         };
         await PublishAsync(publishEvent);
     }
+    
 
     protected override Task CompleteAsync(XThreadCreatedEvent eventData)
     {

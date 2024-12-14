@@ -9,7 +9,7 @@ namespace AISmart.Application.Grains.Agents.Investment;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>, IInvestmentStateAgent<InvestmentAgentState>
 {
-    public InvestmentAgent(ILogger<InvestmentAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public InvestmentAgent(ILogger<InvestmentAgent> logger) : base(logger)
     {
     }
 
