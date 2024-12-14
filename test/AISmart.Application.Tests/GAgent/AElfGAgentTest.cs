@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agent.Event;
 using AISmart.Agent.GEvents;
+using AISmart.Agent.Grains;
 using Orleans;
 using Xunit;
 using Xunit.Abstractions;
@@ -34,6 +35,22 @@ public class AElfGAgentTests : AISmartApplicationTestBase
                 await _clusterClient.GetGrain<IAElfAgent>(guid).ExecuteTransactionAsync(createTransactionEvent);
                var transaction = await _clusterClient.GetGrain<IAElfAgent>(guid).GetAElfAgentDto();
                 _output.WriteLine("TransactionId: " + transaction.PendingTransactions.Count);
+    }
+    
+    [Fact]
+    public async Task GetTransactionResultTest()
+    {
+        string chainId = "AELF";
+        var guid = Guid.NewGuid();
+       _= _clusterClient.GetGrain<ITransactionGrain>(guid).LoadAElfTransactionResultAsync(new QueryTransactionDto(){
+            ChainId = chainId,
+            TransactionId = "TransactionId1"
+        });
+       _=  _clusterClient.GetGrain<ITransactionGrain>(guid).LoadAElfTransactionResultAsync(new QueryTransactionDto(){
+            ChainId = chainId,
+            TransactionId = "TransactionId2"
+        });
+       await Task.Delay(200000);
     }
 
 }
