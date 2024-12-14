@@ -1,4 +1,7 @@
-namespace AISmart.Application.Grains.Agents.MarketLeader;
+using System.Collections.Generic;
+using Orleans;
+
+namespace AISmart.Agents.Investment;
 
 [GenerateSerializer]
 public class InvestmentAgentState

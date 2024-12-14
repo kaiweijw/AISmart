@@ -2,6 +2,11 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AISmart.Agents;
+using AISmart.Agents.Developer;
+using AISmart.Agents.Group;
+using AISmart.Agents.Investment;
+using AISmart.Agents.MarketLeader;
+using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
 using AISmart.Application.Grains;
 using AISmart.Application.Grains.Agents.Developer;
@@ -18,7 +23,7 @@ using Xunit.Abstractions;
 
 namespace AISmart.Samples
 {
-    public class XAgentTests : AISmartApplicationTestBase, IAsyncLifetime
+    public class XgAgentTests : AISmartApplicationTestBase, IAsyncLifetime
     {
         private readonly IClusterClient _clusterClient;
         protected readonly IGrainFactory _grainFactory;
@@ -30,7 +35,7 @@ namespace AISmart.Samples
         private IStateAgent<GroupAgentState> _groupStateAgent;
         private IPublishingAgent _publishingAgent;
 
-        public XAgentTests(ITestOutputHelper output)
+        public XgAgentTests(ITestOutputHelper output)
         {
             _clusterClient = GetRequiredService<IClusterClient>();
             _grainFactory = GetRequiredService<IGrainFactory>();

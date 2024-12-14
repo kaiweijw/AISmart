@@ -1,4 +1,6 @@
-using AISmart.Application.Grains.Agents.Sender;
+using AISmart.Agents.Group;
+using AISmart.Agents.ImplementationAgent.Events;
+using AISmart.Application.Grains.Agents.Developer;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
@@ -6,26 +8,15 @@ namespace AISmart.Application.Grains.Agents.Group;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class GroupAgent : GAgent<GroupAgentState, EmptyEvent>
+public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
 {
-    public GroupAgent(ILogger<GroupAgent> logger) : base(logger)
+    public GroupGAgent(ILogger<GroupGAgent> logger) : base(logger)
     {
     }
 
     public override Task<string> GetDescriptionAsync()
     {
         return Task.FromResult("An agent to inform other agents when a social event is published.");
-    }
-
-    protected override Task ExecuteAsync(EmptyEvent eventData)
-    {
-        //Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: DeveloperAgent analyses content:{eventData.Content}");
-        return Task.CompletedTask;
-    }
-
-    protected override Task CompleteAsync(EmptyEvent eventData)
-    {
-        return Task.CompletedTask;
     }
 
     protected override Task OnRegisterAgentAsync(Guid agentGuid)
