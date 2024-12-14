@@ -107,7 +107,10 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
     private TLogView ApplyUpdatesToState(TLogView state, IReadOnlyList<TLogEntry> updates)
     {
         var apply = typeof(TLogView).GetMethod("Apply", new[] { updates[0].GetType() });
-        apply.Invoke(State, new object[] { updates[0] });
+        foreach (var updateEntry in updates)
+        {
+            apply.Invoke(State, new object[] { updateEntry });
+        }
         return State; 
     }
 
