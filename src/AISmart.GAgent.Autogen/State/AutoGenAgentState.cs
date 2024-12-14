@@ -76,8 +76,8 @@ public class AutoGenAgentStateInfo
     [Id(2)] public long SessionStartTime { get; set; }
     [Id(3)] public SessionStateEnum SessionStateEnum { get; set; } = SessionStateEnum.Processing;
     [Id(4)] public string CurrentCall { get; set; }
-    [Id(4)] public string Summary { get; set; }
-    [Id(5)] public string BreakReason { get; set; }
+    [Id(5)] public string Summary { get; set; }
+    [Id(6)] public string BreakReason { get; set; }
 }
 
 [GenerateSerializer]
