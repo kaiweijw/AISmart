@@ -1,4 +1,3 @@
-using AISmart.Agent;
 using Orleans.EventSourcing;
 using Orleans.Storage;
 
@@ -60,18 +59,46 @@ public class TestLogViewAdaptor<TView, TEntry> : ILogViewAdaptor<TView, TEntry>
     {
         _confirmedVersion = _logEntries.Count;
         _confirmedView = _tentativeView;
-        if (_tentativeView is AElfAgentGState tentativeState)
+        foreach (var logEntry in _logEntries)
         {
-            foreach (var logEntry in _logEntries)
-            {
-                var method = typeof(AElfAgentGState).GetMethod("Apply", new[] { logEntry.GetType() });
-                if (method != null)
-                {
-                    method.Invoke(tentativeState, [logEntry]);
-                }
-            }
+            PerformSubmit(DateTime.UtcNow, logEntry);
+            //_hostGrain.UpdateView(_confirmedView, logEntry);
         }
         return Task.CompletedTask;
+    }
+
+    private const int Unconditional = -1;
+
+    private void PerformSubmit(DateTime time, TEntry logEntry, int conditionalPosition = Unconditional, TaskCompletionSource<bool> resultPromise = null)
+    {
+        // var entry = new SubmissionEntry<TEntry>
+        // {
+        //     Entry = logEntry,
+        //     SubmissionTime = time,
+        //     ResultPromise = resultPromise,
+        //     ConditionalPosition = conditionalPosition
+        // };
+
+        if (_tentativeView != null)
+        {
+            try
+            {
+                _hostGrain.UpdateView(_tentativeView, logEntry);
+            }
+            catch (Exception e)
+            {
+                _services.CaughtUserCodeException("UpdateView", nameof(PerformSubmit), e);
+            }
+        }
+
+        try
+        {
+            _hostGrain.OnViewChanged(true, false);
+        }
+        catch (Exception e)
+        {
+            _services.CaughtUserCodeException("OnViewChanged", nameof(PerformSubmit), e);
+        }
     }
 
     public Task Synchronize()
