@@ -1,4 +1,6 @@
-namespace AISmart.Application.Grains.Agents.Group;
+using Orleans;
+
+namespace AISmart.Agents.Group;
 
 [GenerateSerializer]
 public class GroupAgentState

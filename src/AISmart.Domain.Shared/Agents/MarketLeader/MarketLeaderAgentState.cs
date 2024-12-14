@@ -1,4 +1,7 @@
-namespace AISmart.Application.Grains.Agents.MarketLeader;
+using System.Collections.Generic;
+using Orleans;
+
+namespace AISmart.Agents.MarketLeader;
 
 [GenerateSerializer]
 public class MarketLeaderAgentState

@@ -3,7 +3,7 @@ using Orleans;
 namespace AISmart.Agents.X.Events;
 
 [GenerateSerializer]
-public class XThreadCreatedEvent : GEvent
+public class XThreadCreatedEvent : EventBase
 {
     /// <summary>
     /// 
