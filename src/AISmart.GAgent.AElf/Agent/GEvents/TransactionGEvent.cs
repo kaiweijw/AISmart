@@ -6,5 +6,5 @@ namespace AISmart.Agent.GEvents;
 [GenerateSerializer]
 public class TransactionGEvent : GEvent
 {
-    [Id(0)] public Guid Id { get; set; }
+    [Id(0)] public Guid Id { get; set; } = Guid.NewGuid();
 }

@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AISmart.Agent.Event;
+using AISmart.Agent.Events;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
 using AISmart.Application.Grains;
@@ -26,14 +27,21 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
     }
 
 
-    protected async Task ExecuteAsync(CreateTransactionGEvent gEventData)
+    protected async Task ExecuteAsync(CreateTransactionEvent gEventData)
     {
-        base.RaiseEvent(gEventData);
+       var gEvent = new CreateTransactionGEvent
+        {
+            ChainId = gEventData.ChainId,
+            SenderName = gEventData.SenderName,
+            ContractAddress = gEventData.ContractAddress,
+            MethodName = gEventData.MethodName,
+        };
+        base.RaiseEvent(gEvent);
         await ConfirmEvents();
-        _= GrainFactory.GetGrain<ITransactionGrain>(gEventData.Id).SendAElfTransactionAsync(
+        _= GrainFactory.GetGrain<ITransactionGrain>(gEvent.Id).SendAElfTransactionAsync(
             new SendTransactionDto
             {
-                Id = gEventData.Id,
+                Id = gEvent.Id,
                 ChainId = gEventData.ChainId,
                 SenderName = gEventData.SenderName,
                 ContractAddress = gEventData.ContractAddress,
@@ -43,7 +51,7 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         Logger.LogInformation("ExecuteAsync: AElf {MethodName}", gEventData.MethodName);
     }
     
-    protected  Task ExecuteAsync(SendTransactionCallBackSEvent gEventData)
+    protected  Task ExecuteAsync(SendTransactionCallBackEvent gEventData)
     {
         base.RaiseEvent(new SendTransactionGEvent
         {
@@ -64,7 +72,7 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
 
    
 
-    protected async Task ExecuteAsync(QueryTransactionCallBackSEvent gEventData)
+    protected async Task ExecuteAsync(QueryTransactionCallBackEvent gEventData)
     {
         if (gEventData.IsSuccess)
         {
@@ -88,10 +96,9 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
          await base.OnActivateAsync(cancellationToken);
-         //await SubscribeAsync<CreateTransactionGEvent>(ExecuteAsync);
-         //await SubscribeAsync<SendTransactionGEvent>(ExecuteAsync);
-         await SubscribeAsync<SendTransactionCallBackSEvent>(ExecuteAsync);
-         await SubscribeAsync<QueryTransactionCallBackSEvent>(ExecuteAsync);
+         await SubscribeAsync<CreateTransactionEvent>(ExecuteAsync);
+         await SubscribeAsync<SendTransactionCallBackEvent>(ExecuteAsync);
+         await SubscribeAsync<QueryTransactionCallBackEvent>(ExecuteAsync);
     }
 
     public async Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData)
