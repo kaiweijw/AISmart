@@ -1,4 +1,7 @@
+using AISmart.Agents.Service;
 using AISmart.Options;
+using AISmart.Service;
+using AISmart.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.EventBus;
@@ -19,6 +22,10 @@ public class AISmartApplicationTestModule : AbpModule
         base.ConfigureServices(context);
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
         var configuration = context.Services.GetConfiguration();
-        Configure<ChatConfigOptions>(configuration.GetSection("Chat"));   
+        Configure<ChatConfigOptions>(configuration.GetSection("Chat"));
+
+        context.Services.AddTransient<IGAgentAppService, GAgentAppService>();
+        context.Services.AddTransient<IEventAppService, EventAppService>();
+        context.Services.AddTransient<IGroupAppService, GroupAppService>();
     }
 }

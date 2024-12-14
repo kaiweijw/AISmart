@@ -26,8 +26,4 @@
         <PackageReference Include="AElf.OpenTelemetry" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Agents\Service\" />
-    </ItemGroup>
-
 </Project>
