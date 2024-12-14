@@ -17,7 +17,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     // need to use persistent storage to store this
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
-    private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
+    private readonly List<EventBaseAsyncObserver> _observers = new();
     
     protected GAgentBase(ILogger logger)
     {
@@ -116,22 +116,18 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     protected Task SubscribeAsync<T>(Func<T, Task> onEvent) where T : EventBase
     {
-        _subscriptionHandlers.Add(OnNextWrapperAsync);
-        return Task.CompletedTask;
-
-        Task OnNextWrapperAsync(EventWrapperBase @event, StreamSequenceToken token = null)
+        var observer = new EventBaseAsyncObserver(async @event =>
         {
             Logger.LogInformation("Received message: {@Message}", @event);
-            if(@event is EventWrapper<T> eventWrapper)
+            if (@event is EventWrapper<T> eventWrapper)
             {
                 Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
-
-                onEvent(eventWrapper.Event);
+                await onEvent(eventWrapper.Event);
                 //await DoAckAsync(eventWrapper);
             }
-
-            return Task.CompletedTask;
-        }
+        });
+        _observers.Add(observer);
+        return Task.CompletedTask;
     }
     
     public abstract Task<string> GetDescriptionAsync();
@@ -214,7 +210,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     
     private async Task SubscribeAsync(IAsyncStream<EventWrapperBase> stream)
     {
-        foreach (var handler in _subscriptionHandlers)
+        foreach (var handler in _observers)
         {
             await stream.SubscribeAsync(handler);
         }
