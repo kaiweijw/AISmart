@@ -1,15 +1,15 @@
 using AISmart.Agents.ImplementationAgent.Events;
-using AISmart.Application.Grains.Agents.X;
+using AISmart.Agents.Investment;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
-namespace AISmart.Application.Grains.Agents.Developer;
+namespace AISmart.Application.Grains.Agents.Investment;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>
+public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEvent>, IInvestmentStateAgent<InvestmentAgentState>
 {
-    public DeveloperAgent(ILogger<DeveloperAgent> logger, IClusterClient clusterClient) : base(logger)
+    public InvestmentGAgent(ILogger<InvestmentGAgent> logger) : base(logger)
     {
     }
 
@@ -18,25 +18,26 @@ public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
-    protected override Task ExecuteAsync(ImplementationEvent eventData)
+    public Task<InvestmentAgentState> GetStateAsync()
     {
-        Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: DeveloperAgent analyses content:{eventData.Content}");
+        return Task.FromResult(State);
+    }
+
+    private Task ExecuteAsync(ImplementationEvent eventData)
+    {
         if (State.Content.IsNullOrEmpty())
         {
             State.Content = [];
         }
-        State.Content.Add(eventData.Content);
-        return Task.CompletedTask;
-    }
 
-    protected override Task CompleteAsync(ImplementationEvent eventData)
-    {
+        State.Content.Add(eventData.Content);
+        Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: InvestmentAgent analyses content:{eventData.Content}");
         return Task.CompletedTask;
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        GrainTracker.DeveloperAgents.Enqueue(this);
+        GrainTracker.InvestmentAgents.Enqueue(this);
         await base.OnActivateAsync(cancellationToken);
         await SubscribeAsync<ImplementationEvent>(ExecuteAsync);
     }
