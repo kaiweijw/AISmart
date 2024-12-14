@@ -12,8 +12,12 @@ using Orleans.Providers;
 namespace AISmart.Agent;
 
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, TransactionGEvent>(logger), IAElfAgent
+public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfAgent
 {
+    public AElfGAgent(ILogger<AElfGAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    {
+    }
+    
     public override Task<string> GetDescriptionAsync()
     {
         return Task.FromResult("An agent to inform other agents when a aelf thread is published.");
@@ -82,8 +86,8 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
          await base.OnActivateAsync(cancellationToken);
-         await SubscribeAsync<CreateTransactionGEvent>(ExecuteAsync);
-         await SubscribeAsync<SendTransactionGEvent>(ExecuteAsync);
+         //await SubscribeAsync<CreateTransactionGEvent>(ExecuteAsync);
+         //await SubscribeAsync<SendTransactionGEvent>(ExecuteAsync);
          await SubscribeAsync<SendTransactionCallBackSEvent>(ExecuteAsync);
          await SubscribeAsync<QueryTransactionCallBackSEvent>(ExecuteAsync);
     }
@@ -94,12 +98,7 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
     }
 
 
-    protected override Task ExecuteAsync(TransactionGEvent eventData)
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override Task CompleteAsync(TransactionGEvent eventData)
+    protected Task ExecuteAsync(TransactionGEvent eventData)
     {
         throw new NotImplementedException();
     }
