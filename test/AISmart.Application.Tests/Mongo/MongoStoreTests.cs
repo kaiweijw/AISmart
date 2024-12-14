@@ -8,6 +8,7 @@ using AISmart.Sender;
 using MongoDB.Driver;
 using Orleans;
 using Orleans.EventSourcing;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -62,19 +63,18 @@ namespace AISmart.Samples
         public async Task MongoStorage_Test()
         {
             
-            var stateWrapper = await _stateCollection.Find(FilterDefinition<MongoStateWrapper<PublishAgentState>>.Empty)
+            var mongoStateWrapper = await _stateCollection.Find(FilterDefinition<MongoStateWrapper<PublishAgentState>>.Empty)
                 .SortByDescending(s => s.Version)
                 .FirstOrDefaultAsync();
 
-            int dbVersion = stateWrapper.Version;
-            PublishAgentState dbPublishAgentState = stateWrapper.State;
+            int mongoVersion = mongoStateWrapper.Version;
+            PublishAgentState mongoPublishAgentState = mongoStateWrapper.State;
             
             int grainVersion = await _publishingAgent.GetVersion();
             PublishAgentState grainState = await _publishingAgent.GetState();
             
-            Assert.Equal(grainVersion, dbVersion);
-            Assert.Equal(grainState.Content, dbPublishAgentState.Content);
-            
+            grainVersion.ShouldBeEquivalentTo(mongoVersion);
+            grainState.Content.ShouldBe(mongoPublishAgentState.Content);
             
 
             const string content = "BTC REACHED 100k WOOHOOOO!";
@@ -90,21 +90,20 @@ namespace AISmart.Samples
             int updatedGrainVersion = await _publishingAgent.GetVersion();
             PublishAgentState updatedGrainState = await _publishingAgent.GetState();
             
-            Assert.Equal(grainVersion+1, updatedGrainVersion);
-            Assert.Equal(content + " has been applied" , updatedGrainState.Content);
+            updatedGrainVersion.ShouldBeEquivalentTo(grainVersion+1);
+            updatedGrainState.Content.ShouldBe(content + " has been applied");
+           
             
             
-            
-            var updatedStateWrapper = await _stateCollection.Find(FilterDefinition<MongoStateWrapper<PublishAgentState>>.Empty)
+            var updatedMongoStateWrapper = await _stateCollection.Find(FilterDefinition<MongoStateWrapper<PublishAgentState>>.Empty)
                 .SortByDescending(s => s.Version)
                 .FirstOrDefaultAsync();
 
-            int updateDbVersion = updatedStateWrapper.Version;
-            PublishAgentState updatedDbStateWrapper = updatedStateWrapper.State;
+            int updateMongoVersion = updatedMongoStateWrapper.Version;
+            PublishAgentState updatedMongoState = updatedMongoStateWrapper.State;
             
-            Assert.Equal(dbVersion+1, updateDbVersion);
-            Assert.Equal(content + " has been applied" , updatedDbStateWrapper.Content);
-            
+            updateMongoVersion.ShouldBeEquivalentTo(mongoVersion+1);
+            updatedMongoState.Content.ShouldBe(content + " has been applied");
         }
     }
 }
