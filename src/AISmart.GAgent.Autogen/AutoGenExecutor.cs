@@ -23,12 +23,13 @@ public class AutoGenExecutor : ISingletonDependency
     private readonly AgentDescriptionManager _agentDescriptionManager;
     private readonly IClusterClient _clusterClient;
     private readonly ILogger<AutoGenExecutor> _logger;
-    private readonly Guid _publishGrainId = new Guid(); 
+    private readonly Guid _publishGrainId = new Guid();
     private const string AgentName = "admin";
     private const string FinishFlag = "complete";
     private const string BreakFlag = "break";
 
-    public AutoGenExecutor(ILogger<AutoGenExecutor> logger,IClusterClient clusterClient, AgentDescriptionManager agentDescriptionManager)
+    public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IClusterClient clusterClient,
+        AgentDescriptionManager agentDescriptionManager)
     {
         _logger = logger;
         _clusterClient = clusterClient;
@@ -46,12 +47,14 @@ public class AutoGenExecutor : ISingletonDependency
         var responseStr = response.GetContent();
         if (responseStr.IsNullOrEmpty())
         {
-            _logger.LogDebug($"[AutoGenExecutor] autoGen response is null, History:{JsonSerializer.Serialize(history)}");
+            _logger.LogDebug(
+                $"[AutoGenExecutor] autoGen response is null, History:{JsonSerializer.Serialize(history)}");
             return;
         }
+
         if (responseStr.Contains(FinishFlag))
         {
-            var completeEvent = JsonSerializer.Deserialize<CompleteEvent>(responseStr);
+            var completeEvent = JsonSerializer.Deserialize<EventComplete>(responseStr);
             if (completeEvent != null)
             {
                 var publishGrain = _clusterClient.GetGrain<IPublishingAgent>(_publishGrainId);
@@ -59,18 +62,19 @@ public class AutoGenExecutor : ISingletonDependency
                 {
                     TaskId = taskId,
                     ExecuteStatus = TaskExecuteStatus.Finish,
-                    EndContent = completeEvent.Summary,
+                    EndContent = completeEvent.Complete,
                 });
                 return;
             }
-            
-            _logger.LogDebug($"[AutoGenExecutor] response is finished,but Deserialize error, History:{JsonSerializer.Serialize(history)} response:{responseStr}");
+
+            _logger.LogDebug(
+                $"[AutoGenExecutor] response is finished,but Deserialize error, History:{JsonSerializer.Serialize(history)} response:{responseStr}");
         }
         else if (responseStr.Contains(BreakFlag))
         {
             var breakInfo = JsonSerializer.Deserialize<EventBreak>(responseStr);
             if (breakInfo != null)
-            { 
+            {
                 var publishGrain = _clusterClient.GetGrain<IPublishingAgent>(_publishGrainId);
                 await publishGrain.PublishEventAsync(new AutoGenSessionFinishedEvent()
                 {
@@ -80,8 +84,9 @@ public class AutoGenExecutor : ISingletonDependency
                 });
                 return;
             }
-            
-            _logger.LogDebug($"[AutoGenExecutor] response is break,but Deserialize error, History:{JsonSerializer.Serialize(history)} response:{responseStr}");
+
+            _logger.LogDebug(
+                $"[AutoGenExecutor] response is break,but Deserialize error, History:{JsonSerializer.Serialize(history)} response:{responseStr}");
         }
     }
 

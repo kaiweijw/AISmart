@@ -16,7 +16,7 @@ public class AgentDescriptionManager : ISingletonDependency
 
     public AgentDescriptionManager()
     {
-        _agentDescription = GenerateAgentDescription();
+        _agentDescription = GetAllAgentDescription();
         _autoGenAgentEventDescription = AssembleAgentEventDescription();
     }
 
@@ -30,14 +30,38 @@ public class AgentDescriptionManager : ISingletonDependency
         return _autoGenAgentEventDescription;
     }
 
-    private Dictionary<string, AgentDescription> GenerateAgentDescription()
+    private Dictionary<string, AgentDescription> GetAllAgentDescription()
     {
-        var agentList = Assembly.GetAssembly(typeof(GAgent<,>));
         var result = new Dictionary<string, AgentDescription>();
 
-        foreach (var classType in agentList.GetTypes())
+        string currentDirectory = Directory.GetCurrentDirectory();
+        string[] dllFiles = Directory.GetFiles(currentDirectory, "*.dll");
+        foreach (var dllFilePath in dllFiles)
         {
-            if (!classType.IsClass && !classType.IsSealed)
+            Assembly assembly = Assembly.LoadFrom(dllFilePath);
+            var dllAgentDescription = GenerateAgentDescription(assembly);
+            foreach (var description in dllAgentDescription)
+            {
+                if (result.ContainsKey(description.Key))
+                {
+                    throw new Exception($"Agent name:{description.Key} has exist");
+                }
+
+                result.Add(description.Key, description.Value);
+            }
+        }
+
+        return result;
+    }
+
+    private Dictionary<string, AgentDescription> GenerateAgentDescription(Assembly assembly)
+    {
+        var agentList = assembly.GetTypes();
+        var result = new Dictionary<string, AgentDescription>();
+
+        foreach (var classType in agentList)
+        {
+            if (!classType.IsClass && !classType.IsSealed && !classType.IsAssignableFrom(typeof(GAgent<,>)))
             {
                 continue;
             }
