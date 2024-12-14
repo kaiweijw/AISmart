@@ -21,7 +21,7 @@ public class SenderAgentState
 
     public void Apply(XThreadCreatedEvent xThreadCreatedEvent)
     {
-        
+        Content = xThreadCreatedEvent.Content + " has been applyed";
     }
 }
 

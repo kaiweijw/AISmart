@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-// 假设 TLogView 和 TLogEntry 是已定义的类
 public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEntry>, ICustomStorageInterface<TLogView,TLogEntry>,IGrainWithIntegerKey where TLogView : class, new() where TLogEntry : class
 {
     private readonly IMongoCollection<MongoStateWrapper<TLogView>> _stateCollection;
@@ -84,7 +83,6 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
 
             await _stateCollection.InsertOneAsync(newStateWrapper);
 
-            // 将事件存储到事件集合中（可选）
             foreach (var update in updates)
             {
                 var eventWrapper = new MongoEventWrapper<TLogEntry>
@@ -105,14 +103,12 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
 
     private TLogView ApplyUpdatesToState(TLogView state, IReadOnlyList<TLogEntry> updates)
     {
-        // 在这里实现将事件应用于状态的逻辑
-        // 取决于你的具体业务逻辑
+       
 
-        return state; // 返回更新后的状态
+        return state; 
     }
 }
 
-// MongoDB 文档包装器类
 public class MongoStateWrapper<T>
 {
     public int Version { get; set; }
