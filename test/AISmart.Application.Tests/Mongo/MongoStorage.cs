@@ -1,4 +1,7 @@
 using System.Threading;
+using Google.Cloud.AIPlatform.V1;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using Orleans;
 using Orleans.EventSourcing;
 using Orleans.EventSourcing.CustomStorage;
@@ -72,7 +75,7 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
 
         try
         {
-            var newState = ApplyUpdatesToState(new TLogView(), updates);
+            var newState = ApplyUpdatesToState(stateWrapper.State, updates);
             var newVersion = currentVersion + 1;
 
             var newStateWrapper = new MongoStateWrapper<TLogView>
@@ -103,20 +106,27 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
 
     private TLogView ApplyUpdatesToState(TLogView state, IReadOnlyList<TLogEntry> updates)
     {
-       
-
-        return state; 
+        var apply = typeof(TLogView).GetMethod("Apply", new[] { updates[0].GetType() });
+        apply.Invoke(State, new object[] { updates[0] });
+        return State; 
     }
+
 }
 
 public class MongoStateWrapper<T>
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
     public int Version { get; set; }
     public T State { get; set; }
 }
 
 public class MongoEventWrapper<T>
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
     public int Version { get; set; }
     public T Event { get; set; }
 }
