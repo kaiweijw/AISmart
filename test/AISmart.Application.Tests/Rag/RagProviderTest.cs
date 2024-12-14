@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AISmart.Rag.Agent;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using AISmart.Provider;
 using Xunit;
 using Moq;
 
@@ -12,7 +10,15 @@ namespace AISmart.Rag;
 public class RagProviderTest : AISmartApplicationTestBase
 {
     private readonly string _qdrantUrl = "http://localhost:6333"; 
-    private readonly string _collectionName = "test_collection"; 
+    private readonly string _collectionName = "test_collection4"; 
+    
+    // private readonly ITwitterProvider _twitterProvider;
+    // private readonly ITestOutputHelper _output;
+    // public TwitterGAgentTest(ITestOutputHelper output)
+    // {
+    //     _twitterProvider = GetRequiredService<ITwitterProvider>();
+    //     _output = output;
+    // }
     
     [Fact]
     public async Task StoreBatchAsync_Test()

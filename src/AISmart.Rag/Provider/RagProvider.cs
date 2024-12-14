@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace AISmart.Provider;
 
-public class RagProvider
+public class RagProvider : IRagProvider
 {
     private readonly IChunker _chunker;
     private readonly IEmbeddingProvider _embeddingProvider;
