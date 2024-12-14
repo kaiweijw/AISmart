@@ -3,6 +3,7 @@ using AISmart.Agent.Event;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
 using AISmart.Agents;
+using AISmart.Agents.AutoGen;
 using AISmart.Agents.X.Events;
 using AISmart.Application.Grains.Agents.Developer;
 using AISmart.Application.Grains.Agents.Group;
@@ -11,6 +12,7 @@ using AISmart.Application.Grains.Agents.MarketLeader;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Application.Grains.Agents.X;
 using AISmart.Dapr;
+using AISmart.GAgent.Autogen;
 using AISmart.Sender;
 using Orleans.TestKit;
 using Shouldly;
@@ -77,5 +79,23 @@ public class AgentsTests : TestKitBase
 
         var aelfGAgentState = await aelfGAgent.GetAElfAgentDto();
         aelfGAgentState.PendingTransactions.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task AutogenGAgentTest()
+    {
+        var guid = Guid.NewGuid();
+        var autogenGAgent = await Silo.CreateGrainAsync<AutogenGAgent>(guid);
+        
+        var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
+        Silo.AddProbe<IPublishingAgent>(_ => publishingAgent);
+
+        await autogenGAgent.SubscribeTo(publishingAgent);
+        await publishingAgent.PublishTo(autogenGAgent);
+
+        await publishingAgent.PublishEventAsync(new AutoGenCreatedEvent
+        {
+            Content = "BTC REACHED 100k WOOHOOOO!"
+        });
     }
 }
