@@ -6,7 +6,7 @@ using Orleans;
 namespace AISmart.Agent.Event;
 
 [GenerateSerializer]
-public  class QueryTransactionCallBackSEvent : EventBase
+public  class QueryTransactionCallBackEvent : EventBase
 {
     [Id(0)] public Guid Id { get; set; }
     [Id(1)] public string ChainId { get; set; }
