@@ -16,7 +16,7 @@ namespace AISmart.Agent;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfAgent
 {
-    public AElfGAgent(ILogger<AElfGAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public AElfGAgent(ILogger<AElfGAgent> logger) : base(logger)
     {
     }
     

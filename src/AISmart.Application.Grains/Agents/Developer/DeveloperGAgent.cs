@@ -10,7 +10,7 @@ namespace AISmart.Application.Grains.Agents.Developer;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
 {
-    public DeveloperGAgent(ILogger<DeveloperGAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public DeveloperGAgent(ILogger<DeveloperGAgent> logger) : base(logger)
     {
     }
 

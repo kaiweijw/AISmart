@@ -8,7 +8,7 @@ using AISmart.Application.Grains.Agents.Developer;
 using AISmart.Application.Grains.Agents.Group;
 using AISmart.Application.Grains.Agents.Investment;
 using AISmart.Application.Grains.Agents.MarketLeader;
-using AISmart.Application.Grains.Agents.Sender;
+using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Application.Grains.Agents.X;
 using AISmart.Dapr;
 using AISmart.Sender;
@@ -22,12 +22,12 @@ public class AgentsTests : TestKitBase
     [Fact]
     public async Task GroupTest()
     {
-        var groupAgent = await Silo.CreateGrainAsync<GroupAgent>(Guid.NewGuid());
-        var publishingAgent = await Silo.CreateGrainAsync<PublishingAgent>(Guid.NewGuid());
-        var xAgent = await Silo.CreateGrainAsync<XAgent>(Guid.NewGuid());
-        var marketLeaderAgent = await Silo.CreateGrainAsync<MarketLeaderAgent>(Guid.NewGuid());
-        var developerAgent = await Silo.CreateGrainAsync<DeveloperAgent>(Guid.NewGuid());
-        var investmentAgent = await Silo.CreateGrainAsync<InvestmentAgent>(Guid.NewGuid());
+        var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
+        var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(Guid.NewGuid());
+        var xAgent = await Silo.CreateGrainAsync<XGAgent>(Guid.NewGuid());
+        var marketLeaderAgent = await Silo.CreateGrainAsync<MarketLeaderGAgent>(Guid.NewGuid());
+        var developerAgent = await Silo.CreateGrainAsync<DeveloperGAgent>(Guid.NewGuid());
+        var investmentAgent = await Silo.CreateGrainAsync<InvestmentGAgent>(Guid.NewGuid());
 
         await groupAgent.Register(xAgent);
         await groupAgent.Register(marketLeaderAgent);
@@ -70,7 +70,7 @@ public class AgentsTests : TestKitBase
         var aelfGAgent = await Silo.CreateGrainAsync<AElfGAgent>(guid);
         var txGrain = await Silo.CreateGrainAsync<TransactionGrain>(guid);
         Silo.AddProbe<ITransactionGrain>(_ => txGrain);
-        var publishingAgent = await Silo.CreateGrainAsync<PublishingAgent>(guid);
+        var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
         Silo.AddProbe<IPublishingAgent>(_ => publishingAgent);
 
         await aelfGAgent.ExecuteTransactionAsync(createTransactionEvent);

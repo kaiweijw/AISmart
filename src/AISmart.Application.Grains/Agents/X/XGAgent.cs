@@ -12,7 +12,7 @@ namespace AISmart.Application.Grains.Agents.X;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class XGAgent : GAgentBase<XAgentState, XGEvent>
 {
-    public XGAgent(ILogger<XGAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public XGAgent(ILogger<XGAgent> logger) : base(logger)
     {
     }
 

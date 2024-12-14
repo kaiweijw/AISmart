@@ -15,7 +15,7 @@ public class PublishingAgentState
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class PublishingGAgent : GAgentBase<PublishingAgentState, PublishingGEvent>, IPublishingAgent
 {
-    public PublishingGAgent(ILogger<PublishingGAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
+    public PublishingGAgent(ILogger<PublishingGAgent> logger) : base(logger)
     {
     }
 

@@ -14,17 +14,14 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     private IStreamProvider? StreamProvider { get; set; } = null;
     
     protected readonly ILogger Logger;
-    
-    private readonly IClusterClient _clusterClient;
     // need to use persistent storage to store this
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
     
-    protected GAgentBase(ILogger logger, IClusterClient clusterClient)
+    protected GAgentBase(ILogger logger)
     {
         Logger = logger;
-        _clusterClient = clusterClient;
     }
     
     public Task ActivateAsync()
