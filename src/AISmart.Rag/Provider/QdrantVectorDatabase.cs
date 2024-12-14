@@ -18,24 +18,19 @@ public class QdrantVectorDatabase : IVectorDatabase
     private readonly HttpClient _httpClient;
     private readonly string _collectionName;
     private const int DefaultVectorSize = 1536;
+    private readonly int _vectorSize;
 
-    public QdrantVectorDatabase()
+    public QdrantVectorDatabase(string url, string collectionName, int vectorSize)
     {
-        // _qdrantUrl = qdrantUrl;
-        // _collectionName = collectionName;
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables();
-
-        IConfiguration config = builder.Build();
-        _qdrantUrl = config["Rag:QdrantUrl"];;
-        _collectionName = config["Rag:CollectionName"];;
+        _qdrantUrl = url;
+        _collectionName = collectionName;
+        _vectorSize = vectorSize;
         _httpClient = new HttpClient();
     }
     
-    private async Task EnsureCollectionExistsAsync(int vectorSize)
+    private async Task EnsureCollectionExistsAsync()
     {
+        var vectorSize = _vectorSize == 0 ? DefaultVectorSize : _vectorSize;
         var existingCollections = await GetCollectionsAsync();
         if (!existingCollections.Contains(_collectionName))
         {
@@ -68,7 +63,7 @@ public class QdrantVectorDatabase : IVectorDatabase
 
     public async Task StoreAsync(string chunk, float[] embedding)
     {
-        await EnsureCollectionExistsAsync(DefaultVectorSize);
+        await EnsureCollectionExistsAsync();
         
         var requestBody = new
         {
@@ -90,7 +85,7 @@ public class QdrantVectorDatabase : IVectorDatabase
     
     public async Task StoreBatchAsync(IEnumerable<(float[] vector, string text)> points)
     {
-        await EnsureCollectionExistsAsync(DefaultVectorSize);
+        await EnsureCollectionExistsAsync();
         
         var requestBody = new
         {

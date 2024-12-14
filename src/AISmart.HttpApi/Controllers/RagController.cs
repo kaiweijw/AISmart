@@ -1,9 +1,11 @@
 using System.Threading.Tasks;
+using AISmart.Options;
 using AISmart.Provider;
 using AISmart.Rag.dto;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Volo.Abp;
 
 namespace AISmart.Controllers;
@@ -13,26 +15,22 @@ namespace AISmart.Controllers;
 [ControllerName("rag")]
 public class RagController
 {
-    private readonly ILogger<RagController> _logger;
     private readonly IRagProvider _ragProvider;
     
-    public RagController(ILogger<RagController> logger)
+    public RagController(ILogger<RagProvider> logger, IOptionsMonitor<RagOptions> ragOptions)
     {
-        _logger = logger;
-        _ragProvider = new RagProvider();
+        _ragProvider = new RagProvider(ragOptions, logger);
     }
     
     [HttpPost("add")]
     public Task Add( AddTextInput input)
     {
-        _logger.LogInformation("add {text}", input.Text);
         return _ragProvider.StoreTextAsync(input.Text);
     }
     
     [HttpGet("retrieve")]
     public Task<string> Retrieve( RetrieveInput input)
     {
-        _logger.LogInformation("retrieve {text}", input.Query);
         return _ragProvider.RetrieveAnswerAsync(input.Query);
     }
     

@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using AISmart.Options;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AISmart.Provider;
 
@@ -10,16 +13,21 @@ public class RagProvider : IRagProvider
     private readonly IChunker _chunker;
     private readonly IEmbeddingProvider _embeddingProvider;
     private readonly IVectorDatabase _vectorDatabase;
+    private readonly ILogger<RagProvider> _logger;
+    private readonly IOptionsMonitor<RagOptions> _ragOptions;
 
-    public RagProvider()
+    public RagProvider(IOptionsMonitor<RagOptions> ragOptions, ILogger<RagProvider> logger)
     {
+        var options = ragOptions.CurrentValue;
         _chunker = new SimpleChunker();
-        _embeddingProvider = new OpenAIEmbeddingProvider();
-        _vectorDatabase = new QdrantVectorDatabase();
+        _embeddingProvider = new OpenAIEmbeddingProvider(options.APIKey);
+        _vectorDatabase = new QdrantVectorDatabase(options.QdrantUrl, options.CollectionName, options.VectorSize);
+        _logger = logger;
     }
 
     public async Task StoreTextAsync(string text)
     {
+        _logger.LogInformation("store text {text}", text);
         var chunks = await _chunker.Chunk(text, 4000);
         foreach (var chunk in chunks)
         {
@@ -48,6 +56,7 @@ public class RagProvider : IRagProvider
 
     public async Task<string> RetrieveAnswerAsync(string query)
     {
+        _logger.LogInformation("retrieve text {query}", query);
         var queryEmbedding = await _embeddingProvider.GetEmbeddingAsync(query);
         var relevantChunks = await _vectorDatabase.RetrieveAsync(queryEmbedding, 3);
         return string.Join(" ", relevantChunks);

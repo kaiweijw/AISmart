@@ -13,16 +13,9 @@ public class OpenAIEmbeddingProvider : IEmbeddingProvider
     private readonly string _apiKey;
     private readonly HttpClient _httpClient;
 
-    public OpenAIEmbeddingProvider()
+    public OpenAIEmbeddingProvider(string apiKey)
     {
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables();
-
-        IConfiguration config = builder.Build();
-
-        _apiKey = config["Rag:APIKey"];
+        _apiKey = apiKey;
         _httpClient = new HttpClient();
     }
 
