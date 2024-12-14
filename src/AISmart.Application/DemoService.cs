@@ -1,10 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AISmart.Agents;
 using AISmart.Agents.Developer;
-using AISmart.Agents.ImplementationAgent.Events;
+using AISmart.Agents.Group;
+using AISmart.Agents.Investment;
 using AISmart.Agents.MarketLeader;
-using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
 using AISmart.Application.Grains.Agents.Developer;
@@ -33,21 +34,32 @@ public class DemoAppService : ApplicationService, IDemoAppService
     public async Task<string> PipelineDemoAsync(string content)
     {
         var xAgent = _clusterClient.GetGrain<IStateAgent<XAgentState>>(Guid.NewGuid(), typeof(XGAgent).Namespace);
-        await xAgent.ActivateAsync();
-
-        var marketLeaderAgent = _clusterClient.GetGrain<IStateAgent<MarketLeaderAgentState>>(Guid.NewGuid(), typeof(MarketLeaderGAgent).Namespace);
-        await marketLeaderAgent.ActivateAsync();
-
-        var developerAgent = _clusterClient.GetGrain<IStateAgent<DeveloperAgentState>>(Guid.NewGuid(), typeof(DeveloperGAgent).Namespace);
-        await developerAgent.ActivateAsync();
-
+        var marketLeaderAgent =
+            _clusterClient.GetGrain<IStateAgent<MarketLeaderAgentState>>(Guid.NewGuid(),
+                typeof(MarketLeaderGAgent).Namespace);
+        var developerAgent =
+            _clusterClient.GetGrain<IStateAgent<DeveloperAgentState>>(Guid.NewGuid(),
+                typeof(DeveloperGAgent).Namespace);
+        var investmentAgent =
+            _clusterClient.GetGrain<IStateAgent<InvestmentAgentState>>(Guid.NewGuid(),
+                typeof(DeveloperGAgent).Namespace);
         var publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
+        var groupAgent = _clusterClient.GetGrain<IStateAgent<GroupAgentState>>(Guid.NewGuid());
+
+        await groupAgent.Register(xAgent);
+        await groupAgent.Register(marketLeaderAgent);
+        await groupAgent.Register(developerAgent);
+        await groupAgent.Register(investmentAgent);
+
+        await publishingAgent.PublishTo(groupAgent);
+
         await publishingAgent.PublishEventAsync(new XThreadCreatedEvent
         {
             Id = "mock_x_thread_id",
             Content = content
         });
 
-        return content;
+        var investmentAgentState = await investmentAgent.GetStateAsync();
+        return investmentAgentState.Content.First();
     }
 }
