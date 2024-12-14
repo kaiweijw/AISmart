@@ -1,4 +1,5 @@
 using System.Threading;
+using Amazon.Runtime.Internal.Util;
 using Google.Cloud.AIPlatform.V1;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
@@ -6,6 +7,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using Orleans;
 using Orleans.EventSourcing;
 using Orleans.EventSourcing.CustomStorage;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace AISmart;
 
@@ -14,12 +16,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEntry>, ICustomStorageInterface<TLogView,TLogEntry>,IGrainWithIntegerKey where TLogView : class, new() where TLogEntry : class
+public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEntry>,
+    ICustomStorageInterface<TLogView, TLogEntry>,
+    IGrainWithIntegerKey where TLogView : class, new() where TLogEntry : class
 {
     private readonly IMongoCollection<MongoStateWrapper<TLogView>> _stateCollection;
     private readonly IMongoCollection<MongoEventWrapper<TLogEntry>> _eventCollection;
-    
-    protected readonly ILogger Logger;
+
+    private readonly ILogger<MongoStorage<TLogView, TLogEntry>> _logger;
 
 
     // public MongoStorage(string connectionString, string databaseName, string stateCollectionName, string eventCollectionName)
@@ -30,23 +34,23 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
     //     _stateCollection = database.GetCollection<MongoStateWrapper<TLogView>>(stateCollectionName);
     //     _eventCollection = database.GetCollection<MongoEventWrapper<TLogEntry>>(eventCollectionName);
     // }
-    
+
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask; // do not wait for initial load
     }
-    
-    public MongoStorage(ILogger logger)
+
+    public MongoStorage(ILogger<MongoStorage<TLogView, TLogEntry>> logger)
     {
-        Logger = logger;
+        _logger = (ILogger<MongoStorage<TLogView, TLogEntry>>?)logger;
         string connectionString = "mongodb://localhost:27017";
         string databaseName = "AISmart";
         string stateCollectionName = "state";
         string eventCollectionName = "event";
-        
+
         var client = new MongoClient(connectionString);
         var database = client.GetDatabase(databaseName);
-    
+
         _stateCollection = database.GetCollection<MongoStateWrapper<TLogView>>(stateCollectionName);
         _eventCollection = database.GetCollection<MongoEventWrapper<TLogEntry>>(eventCollectionName);
     }
@@ -54,22 +58,22 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
     public async Task<KeyValuePair<int, TLogView>> ReadStateFromStorage()
     {
         var stateWrapper = await _stateCollection.Find(FilterDefinition<MongoStateWrapper<TLogView>>.Empty)
-                                                 .SortByDescending(s => s.Version)
-                                                 .FirstOrDefaultAsync();
+            .SortByDescending(s => s.Version)
+            .FirstOrDefaultAsync();
 
         if (stateWrapper != null)
         {
             return new KeyValuePair<int, TLogView>(stateWrapper.Version, stateWrapper.State);
         }
-        
+
         return new KeyValuePair<int, TLogView>(0, default(TLogView));
     }
 
     public async Task<bool> ApplyUpdatesToStorage(IReadOnlyList<TLogEntry> updates, int expectedVersion)
     {
         var stateWrapper = await _stateCollection.Find(FilterDefinition<MongoStateWrapper<TLogView>>.Empty)
-                                                 .SortByDescending(s => s.Version)
-                                                 .FirstOrDefaultAsync();
+            .SortByDescending(s => s.Version)
+            .FirstOrDefaultAsync();
 
         int currentVersion = stateWrapper?.Version ?? 0;
 
@@ -103,9 +107,11 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
 
             return true;
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            Logger.LogError(exception,$"MongoStorage ApplyUpdatesToStorage error,currentVersion:{currentVersion} expectedVersion:{expectedVersion}");
+            _logger.LogError(ex,
+                "MongoStorage ApplyUpdatesToStorage error,currentVersion:{currentVersion} expectedVersion:{expectedVersion}",
+                currentVersion, expectedVersion);
             return false;
         }
     }
@@ -117,9 +123,9 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
         {
             apply.Invoke(State, new object[] { updateEntry });
         }
-        return State; 
-    }
 
+        return State;
+    }
 }
 
 public class MongoStateWrapper<T>
@@ -127,6 +133,7 @@ public class MongoStateWrapper<T>
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; }
+
     public int Version { get; set; }
     public T State { get; set; }
 }
@@ -136,6 +143,7 @@ public class MongoEventWrapper<T>
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; }
+
     public int Version { get; set; }
     public T Event { get; set; }
 }

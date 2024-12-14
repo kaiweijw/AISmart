@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using AISmart.Agents.X.Events;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Providers;
 
@@ -38,8 +39,11 @@ public class PublishAgentState
 [LogConsistencyProvider(ProviderName = "CustomStorage")]
 public class PublishAgent : MongoStorage<PublishAgentState, XThreadCreatedEvent>, ISenderAgent
 {
-    public PublishAgent() : base()
+    private readonly ILogger<PublishAgent> _logger;
+
+    public PublishAgent(ILogger<PublishAgent> logger) : base(logger)
     {
+        _logger = logger;
     }
     
 
