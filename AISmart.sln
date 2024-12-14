@@ -58,9 +58,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTestKit.Tests", "test\OrleansTestKit.Tests\OrleansTestKit.Tests.csproj", "{DC7427E4-A18F-4950-8EF4-010BE9FDAB1A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Agents.Tests", "test\AISmart.Agents.Tests\AISmart.Agents.Tests.csproj", "{8BC00124-97C4-46BB-A711-6B101309749A}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.AutoGen.Tests", "test\AISmart.AutoGen.Tests\AISmart.AutoGen.Tests.csproj", "{148533FE-CAD9-4F79-872C-3608F36C2E68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Grains.Tests", "test\AISmart.Grains.Tests\AISmart.Grains.Tests.csproj", "{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.AutoGen.Tests", "test\AISmart.AutoGen.Tests\AISmart.AutoGen.Tests.csproj", "{148533FE-CAD9-4F79-872C-3608F36C2E68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -176,10 +175,6 @@ Global
 		{148533FE-CAD9-4F79-872C-3608F36C2E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{148533FE-CAD9-4F79-872C-3608F36C2E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{148533FE-CAD9-4F79-872C-3608F36C2E68}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -212,7 +207,6 @@ Global
 		{DC7427E4-A18F-4950-8EF4-010BE9FDAB1A} = {04DBDB01-70F4-4E06-B468-8F87850B22BE}
 		{8BC00124-97C4-46BB-A711-6B101309749A} = {04DBDB01-70F4-4E06-B468-8F87850B22BE}
 		{148533FE-CAD9-4F79-872C-3608F36C2E68} = {04DBDB01-70F4-4E06-B468-8F87850B22BE}
-		{E7A5A02C-AC8D-4DE1-B35F-354CCCFE7007} = {04DBDB01-70F4-4E06-B468-8F87850B22BE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28315BFD-90E7-4E14-A2EA-F3D23AF4126F}
