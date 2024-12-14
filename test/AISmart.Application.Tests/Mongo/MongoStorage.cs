@@ -1,5 +1,6 @@
 using System.Threading;
 using Google.Cloud.AIPlatform.V1;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Orleans;
@@ -17,6 +18,9 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
 {
     private readonly IMongoCollection<MongoStateWrapper<TLogView>> _stateCollection;
     private readonly IMongoCollection<MongoEventWrapper<TLogEntry>> _eventCollection;
+    
+    protected readonly ILogger Logger;
+
 
     // public MongoStorage(string connectionString, string databaseName, string stateCollectionName, string eventCollectionName)
     // {
@@ -32,8 +36,9 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
         return Task.CompletedTask; // do not wait for initial load
     }
     
-    public MongoStorage()
+    public MongoStorage(ILogger logger)
     {
+        Logger = logger;
         string connectionString = "mongodb://localhost:27017";
         string databaseName = "AISmart";
         string stateCollectionName = "state";
@@ -98,8 +103,9 @@ public class MongoStorage<TLogView, TLogEntry> : JournaledGrain<TLogView, TLogEn
 
             return true;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Logger.LogError(exception,$"MongoStorage ApplyUpdatesToStorage error,currentVersion:{currentVersion} expectedVersion:{expectedVersion}");
             return false;
         }
     }
