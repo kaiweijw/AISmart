@@ -1,5 +1,6 @@
 using AISmart.Agent;
 using AISmart.Agent.Event;
+using AISmart.Agent.Events;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
 using AISmart.Agents;
@@ -59,7 +60,7 @@ public class AgentsTests : TestKitBase
     {
         const string chainId = "AELF";
         const string senderName = "Test";
-        var createTransactionEvent = new CreateTransactionGEvent
+        var createTransactionEvent = new CreateTransactionEvent
         {
             ChainId = chainId,
             SenderName = senderName,

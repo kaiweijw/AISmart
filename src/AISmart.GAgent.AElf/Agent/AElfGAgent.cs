@@ -5,7 +5,10 @@ using AISmart.Agent.Event;
 using AISmart.Agent.Events;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
+using AISmart.Agents;
+using AISmart.Agents.MarketLeader;
 using AISmart.Application.Grains;
+using AISmart.Application.Grains.Agents.MarketLeader;
 using AISmart.Dto;
 using Microsoft.Extensions.Logging;
 using Orleans;
@@ -101,7 +104,7 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
          await SubscribeAsync<QueryTransactionCallBackEvent>(ExecuteAsync);
     }
 
-    public async Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData)
+    public async Task ExecuteTransactionAsync(CreateTransactionEvent gEventData)
     {
         await ExecuteAsync( gEventData);
     }
@@ -113,16 +116,12 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         aelfAgentDto.PendingTransactions = State.PendingTransactions;
         return aelfAgentDto;
     }
-
-
-    protected Task ExecuteAsync(TransactionGEvent eventData)
-    {
-        throw new NotImplementedException();
-    }
+    
 }
 
 public interface IAElfAgent : IGrainWithGuidKey
 { 
-    Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData);
+    Task ExecuteTransactionAsync(CreateTransactionEvent gEventData);
     Task<AElfAgentGState> GetAElfAgentDto();
 }
+
