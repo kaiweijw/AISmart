@@ -134,6 +134,29 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         }
     }
     
+    protected Task SubscribeAsync<TEventWithResponse, TResponseEvent>(Func<TEventWithResponse, Task<TResponseEvent>> onEvent) 
+        where TEventWithResponse : EventWithResponseBase<TResponseEvent>
+        where TResponseEvent : EventBase
+    {
+        _subscriptionHandlers.Add(OnNextWrapperAsync);
+        return Task.CompletedTask;
+
+        async Task OnNextWrapperAsync(EventWrapperBase @event, StreamSequenceToken token = null)
+        {
+            Logger.LogInformation("Received message: {@Message}", @event);
+            if(@event is EventWrapper<TEventWithResponse> eventWrapper)
+            {
+                Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
+
+                var response = await onEvent(eventWrapper.Event);
+                
+                var responseWrapper = new EventWrapper<TResponseEvent>(response, eventWrapper.EventId);
+                
+                await PublishAsync(responseWrapper);
+            }
+        }
+    }
+    
     public abstract Task<string> GetDescriptionAsync();
     
     public Task<TState> GetStateAsync()
@@ -143,12 +166,17 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     protected async Task PublishAsync<T>(T @event) where T : EventBase
     {
+        var eventWrapper = new EventWrapper<T>(@event, Guid.NewGuid());
+        
+        await PublishAsync(eventWrapper);
+    }
+
+    private async Task PublishAsync<T>(EventWrapper<T> eventWrapper) where T : EventBase
+    {
         if(_publishers.Count == 0)
         {
             return;
         }
-        
-        var eventWrapper = new EventWrapper<T>(@event, this.GetGrainId());
         
         foreach (var publisher in _publishers.Select(kp => kp.Value))
         {
