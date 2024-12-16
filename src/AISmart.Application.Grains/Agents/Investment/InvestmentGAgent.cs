@@ -38,7 +38,7 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
         return Task.CompletedTask;
     }
 
-    public override async Task HandleEvent(EventWrapperBase item)
+    public override async Task HandleEventAsync(EventWrapperBase item)
     {
         if (item is EventWrapper<ImplementationEvent> wrapper)
         {

@@ -96,9 +96,20 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
     }
 
 
-    public override Task HandleEvent(EventWrapperBase item)
+    public override async Task HandleEventAsync(EventWrapperBase item)
     {
-        return Task.CompletedTask;
+        switch (item)
+        {
+            case EventWrapper<CreateTransactionEvent> wrapper:
+                await ExecuteAsync(wrapper.Event);
+                break;
+            case EventWrapper<SendTransactionCallBackEvent> wrapper:
+                await ExecuteAsync(wrapper.Event);
+                break;
+            case EventWrapper<QueryTransactionCallBackEvent> wrapper:
+                await ExecuteAsync(wrapper.Event);
+                break;
+        }
     }
 
     // public override async Task OnActivateAsync(CancellationToken cancellationToken)

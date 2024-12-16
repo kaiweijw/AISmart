@@ -47,7 +47,7 @@ public class XGAgent : GAgentBase<XAgentState, XGEvent>
         await PublishAsync(publishEvent);
     }
 
-    public override async Task HandleEvent(EventWrapperBase item)
+    public override async Task HandleEventAsync(EventWrapperBase item)
     {
         if (item is EventWrapper<XThreadCreatedEvent> wrapper)
         {

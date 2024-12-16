@@ -26,7 +26,7 @@ public class PublishingGAgent : GAgentBase<PublishingAgentState, PublishingGEven
         return Task.FromResult("Agent to be used for publishing new events.");
     }
 
-    public override Task HandleEvent(EventWrapperBase item)
+    public override Task HandleEventAsync(EventWrapperBase item)
     {
         return Task.CompletedTask;
     }

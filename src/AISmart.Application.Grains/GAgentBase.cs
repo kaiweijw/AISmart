@@ -218,19 +218,19 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         }
     }
 
-    public abstract Task HandleEvent(EventWrapperBase item);
+    public abstract Task HandleEventAsync(EventWrapperBase item);
 
-    private async Task HandleEvent(EventWrapperBase item, StreamSequenceToken? token)
+    private async Task HandleEventAsync(EventWrapperBase item, StreamSequenceToken? token)
     {
         Logger.LogInformation("Received message: {@Message}", item);
-        await HandleEvent(item);
+        await HandleEventAsync(item);
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, this.GetPrimaryKey());
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        await stream.SubscribeAsync(HandleEvent);
-        _subscriptionHandlers.Add(HandleEvent);
+        await stream.SubscribeAsync(HandleEventAsync);
+        _subscriptionHandlers.Add(HandleEventAsync);
     }
 }

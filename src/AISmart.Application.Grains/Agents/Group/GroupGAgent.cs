@@ -33,7 +33,7 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
         return Task.CompletedTask;
     }
 
-    public override Task HandleEvent(EventWrapperBase item)
+    public override Task HandleEventAsync(EventWrapperBase item)
     {
         return Task.CompletedTask;
     }
