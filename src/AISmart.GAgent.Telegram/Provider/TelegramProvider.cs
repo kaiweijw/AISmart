@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AISmart.Dto;
 using AISmart.Helper;
 using AISmart.Options;
+using AISmart.Telegram;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;

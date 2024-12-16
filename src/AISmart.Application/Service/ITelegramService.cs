@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using AISmart.Dto;
+using AISmart.Telegram;
 
 namespace AISmart.Service;
 

@@ -4,6 +4,7 @@ using AISmart.Dapr;
 using AISmart.Dto;
 using AISmart.Provider;
 using AISmart.Service;
+using AISmart.Telegram;
 using Asp.Versioning;
 using Dapr;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,7 @@ namespace AISmart.Controllers;
 [RemoteService]
 [Area("app")]
 [ControllerName("telegram")]
-public class TelegramController
+public class TelegramController: AISmartController
 {
     private readonly ILogger<TelegramController> _logger;
     private readonly ITelegramService _telegramService;
@@ -30,7 +31,7 @@ public class TelegramController
     [HttpPost("messages")]
     public async Task PostMessages([FromBody]TelegramUpdateDto updateMessage)
     {
-        _logger.LogDebug("Receive update message from telegram.{message}",JsonConvert.SerializeObject(updateMessage));
+        _logger.LogInformation("Receive update message from telegram.{message}",JsonConvert.SerializeObject(updateMessage));
         await _telegramService.ReceiveMessagesAsync(updateMessage);
     }
     

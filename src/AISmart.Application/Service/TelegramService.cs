@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agents;
 using AISmart.Agents.Group;
-using AISmart.Dto;
 using AISmart.Events;
 using AISmart.Sender;
+using AISmart.Telegram;
 using Orleans;
 using Volo.Abp.Application.Services;
 
@@ -26,7 +26,7 @@ public class TelegramService :  ApplicationService,ITelegramService
         // Group message auto-reply, just add the bot as a group admin.
         if (updateMessage.Message != null)
         {
-            var publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
+            var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
            
             await  publishingAgent.PublishEventAsync(new ReceiveMessageEvent
             {
@@ -40,10 +40,10 @@ public class TelegramService :  ApplicationService,ITelegramService
 
     public async Task SetGroupsAsync()
     {
-        var groupAgent = _clusterClient.GetGrain<IStateAgent<GroupAgentState>>(Guid.NewGuid());
-        var telegramAgent = _clusterClient.GetGrain<IStateAgent<TelegramGAgentState>>(Guid.NewGuid());
+        var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
+        var telegramAgent = _clusterClient.GetGrain<IStateGAgent<TelegramGAgentState>>(Guid.NewGuid());
         await groupAgent.Register(telegramAgent);
-        var publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
+        var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
         await publishingAgent.PublishTo(groupAgent);
     }
 }

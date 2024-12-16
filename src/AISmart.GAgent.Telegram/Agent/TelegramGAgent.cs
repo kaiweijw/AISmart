@@ -3,12 +3,11 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using AISmart.Agent.GEvents;
+using AISmart.Agents;
 using AISmart.Application.Grains;
 using AISmart.Events;
 using AISmart.Grains;
-using AISmart.Provider;
 using Microsoft.Extensions.Logging;
-using Orleans;
 using Orleans.Providers;
 
 namespace AISmart.Agent;
@@ -18,7 +17,7 @@ namespace AISmart.Agent;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, ITelegramGAgent
 {
-    public TelegramGAgent(ILogger logger) : base(logger)
+    public TelegramGAgent(ILogger<TelegramGAgent> logger) : base(logger)
     {
     }
 
@@ -67,7 +66,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
     
 }
 
-public interface ITelegramGAgent : IGrainWithGuidKey
+public interface ITelegramGAgent
 { 
    
 }
