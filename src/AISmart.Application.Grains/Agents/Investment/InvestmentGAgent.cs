@@ -27,7 +27,7 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
     }
 
     [EventHandler]
-    public async Task HandleEventAsync(ImplementationEvent eventData)
+    public async Task<WorkCompleteEvent> HandleEventAsync(ImplementationEvent eventData)
     {
         if (State.Content.IsNullOrEmpty())
         {
@@ -36,6 +36,11 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
 
         State.Content.Add(eventData.Content);
         Logger.LogInformation($"{GetType()} ExecuteAsync: InvestmentAgent analyses content:{eventData.Content}");
+
+        return new WorkCompleteEvent
+        {
+            Content = eventData.Content
+        };
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)

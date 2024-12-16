@@ -248,21 +248,32 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
             var observer = new EventWrapperBaseAsyncObserver(async item =>
             {
                 var eventType = item.GetType().GetProperty(nameof(EventWrapper<object>.Event))?.GetValue(item);
-                if (method.GetParameters()[0].ParameterType == eventType!.GetType())
+                var parameter = method.GetParameters()[0];
+                if (parameter.ParameterType == eventType!.GetType())
                 {
-                    var result = method.Invoke(this, [eventType]);
-                    if (method.ReturnType == typeof(Task))
+                    if (parameter.ParameterType.BaseType is { IsGenericType: true } &&
+                        parameter.ParameterType.BaseType.GetGenericTypeDefinition() == typeof(EventWithResponseBase<>))
                     {
-                        await (Task)result!;
-                    }
-                    else if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
-                    {
-                        var resultType = method.ReturnType.GetGenericArguments()[0];
-                        if (typeof(EventBase).IsAssignableFrom(resultType))
+                        // With response.
+                        if (method.ReturnType.IsGenericType &&
+                            method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
                         {
-                            var eventResult = await (dynamic)result!;
-                            await PublishAsync((EventBase)eventResult);
+                            var resultType = method.ReturnType.GetGenericArguments()[0];
+                            if (typeof(EventBase).IsAssignableFrom(resultType))
+                            {
+                                var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
+                                await PublishAsync((EventBase)eventResult);
+                            }
                         }
+                        else
+                        {
+                            throw new InvalidOperationException($"The event handler of {eventType.GetType()} need to have a return value.");
+                        }
+                    }
+                    else if (method.ReturnType == typeof(Task))
+                    {
+                        var result = method.Invoke(this, [eventType]);
+                        await (Task)result!;
                     }
                 }
             });
