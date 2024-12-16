@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using AISmart.Agents;
 using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
@@ -27,7 +28,8 @@ public class XGAgent : GAgentBase<XAgentState, XGEvent>
         return Task.CompletedTask;
     }
 
-    private async Task ExecuteAsync(XThreadCreatedEvent eventData)
+    [EventHandler]
+    public async Task HandleEventAsync(XThreadCreatedEvent eventData)
     {
         Logger.LogInformation($"{GetType()} ExecuteAsync: XAgent analyses content:{eventData.Content}");
         if (State.ThreadIds.IsNullOrEmpty())
@@ -48,6 +50,5 @@ public class XGAgent : GAgentBase<XAgentState, XGEvent>
     {
         GrainTracker.XAgents.Enqueue(this);
         await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<XThreadCreatedEvent>(ExecuteAsync);
     }
 }
