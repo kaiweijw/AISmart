@@ -33,18 +33,18 @@ public class DemoAppService : ApplicationService, IDemoAppService
 
     public async Task<string> PipelineDemoAsync(string content)
     {
-        var xAgent = _clusterClient.GetGrain<IStateAgent<XAgentState>>(Guid.NewGuid(), typeof(XGAgent).Namespace);
+        var xAgent = _clusterClient.GetGrain<IStateGAgent<XAgentState>>(Guid.NewGuid(), typeof(XGAgent).Namespace);
         var marketLeaderAgent =
-            _clusterClient.GetGrain<IStateAgent<MarketLeaderAgentState>>(Guid.NewGuid(),
+            _clusterClient.GetGrain<IStateGAgent<MarketLeaderAgentState>>(Guid.NewGuid(),
                 typeof(MarketLeaderGAgent).Namespace);
         var developerAgent =
-            _clusterClient.GetGrain<IStateAgent<DeveloperAgentState>>(Guid.NewGuid(),
+            _clusterClient.GetGrain<IStateGAgent<DeveloperAgentState>>(Guid.NewGuid(),
                 typeof(DeveloperGAgent).Namespace);
         var investmentAgent =
-            _clusterClient.GetGrain<IStateAgent<InvestmentAgentState>>(Guid.NewGuid(),
+            _clusterClient.GetGrain<IStateGAgent<InvestmentAgentState>>(Guid.NewGuid(),
                 typeof(DeveloperGAgent).Namespace);
-        var publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
-        var groupAgent = _clusterClient.GetGrain<IStateAgent<GroupAgentState>>(Guid.NewGuid());
+        var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
+        var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
 
         await groupAgent.Register(xAgent);
         await groupAgent.Register(marketLeaderAgent);

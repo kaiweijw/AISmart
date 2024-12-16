@@ -73,7 +73,7 @@ public class AgentsTests : TestKitBase
         var txGrain = await Silo.CreateGrainAsync<TransactionGrain>(guid);
         Silo.AddProbe<ITransactionGrain>(_ => txGrain);
         var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
-        Silo.AddProbe<IPublishingAgent>(_ => publishingAgent);
+        Silo.AddProbe<IPublishingGAgent>(_ => publishingAgent);
 
         await aelfGAgent.ExecuteTransactionAsync(createTransactionEvent);
 

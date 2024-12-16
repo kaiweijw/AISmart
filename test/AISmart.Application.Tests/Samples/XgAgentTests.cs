@@ -28,12 +28,12 @@ namespace AISmart.Samples
         private readonly IClusterClient _clusterClient;
         protected readonly IGrainFactory _grainFactory;
 
-        private IStateAgent<XAgentState> _xStateAgent;
-        private IStateAgent<MarketLeaderAgentState> _marketLeaderStateAgent;
-        private IStateAgent<DeveloperAgentState> _developerStateAgent;
-        private IStateAgent<InvestmentAgentState> _investmentStateAgent;
-        private IStateAgent<GroupAgentState> _groupStateAgent;
-        private IPublishingAgent _publishingAgent;
+        private IStateGAgent<XAgentState> _xStateGAgent;
+        private IStateGAgent<MarketLeaderAgentState> _marketLeaderStateGAgent;
+        private IStateGAgent<DeveloperAgentState> _developerStateGAgent;
+        private IStateGAgent<InvestmentAgentState> _investmentStateGAgent;
+        private IStateGAgent<GroupAgentState> _groupStateGAgent;
+        private IPublishingGAgent _publishingGAgent;
 
         public XgAgentTests(ITestOutputHelper output)
         {
@@ -43,19 +43,19 @@ namespace AISmart.Samples
 
         public async Task InitializeAsync()
         {
-            _xStateAgent = _grainFactory.GetGrain<IStateAgent<XAgentState>>(Guid.NewGuid());
-            _marketLeaderStateAgent = _grainFactory.GetGrain<IStateAgent<MarketLeaderAgentState>>(Guid.NewGuid());
-            _developerStateAgent = _grainFactory.GetGrain<IStateAgent<DeveloperAgentState>>(Guid.NewGuid());
-            _investmentStateAgent = _grainFactory.GetGrain<IStateAgent<InvestmentAgentState>>(Guid.NewGuid());
-            _groupStateAgent = _grainFactory.GetGrain<IStateAgent<GroupAgentState>>(Guid.NewGuid());
+            _xStateGAgent = _grainFactory.GetGrain<IStateGAgent<XAgentState>>(Guid.NewGuid());
+            _marketLeaderStateGAgent = _grainFactory.GetGrain<IStateGAgent<MarketLeaderAgentState>>(Guid.NewGuid());
+            _developerStateGAgent = _grainFactory.GetGrain<IStateGAgent<DeveloperAgentState>>(Guid.NewGuid());
+            _investmentStateGAgent = _grainFactory.GetGrain<IStateGAgent<InvestmentAgentState>>(Guid.NewGuid());
+            _groupStateGAgent = _grainFactory.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
             
-            await _groupStateAgent.Register(_xStateAgent);
-            await _groupStateAgent.Register(_marketLeaderStateAgent);
-            await _groupStateAgent.Register(_developerStateAgent);
-            await _groupStateAgent.Register(_investmentStateAgent);
+            await _groupStateGAgent.Register(_xStateGAgent);
+            await _groupStateGAgent.Register(_marketLeaderStateGAgent);
+            await _groupStateGAgent.Register(_developerStateGAgent);
+            await _groupStateGAgent.Register(_investmentStateGAgent);
 
-            _publishingAgent = _clusterClient.GetGrain<IPublishingAgent>(Guid.NewGuid());
-            await _publishingAgent.PublishTo(_groupStateAgent);
+            _publishingGAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
+            await _publishingGAgent.PublishTo(_groupStateGAgent);
         }
 
         public Task DisposeAsync()
@@ -75,7 +75,7 @@ namespace AISmart.Samples
                 Content = content
             };
 
-            await _publishingAgent.PublishEventAsync(xThreadCreatedEvent);
+            await _publishingGAgent.PublishEventAsync(xThreadCreatedEvent);
 
             var investmentAgent = GrainTracker.InvestmentAgents.First();
             var investmentAgentState = await investmentAgent.GetStateAsync();

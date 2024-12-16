@@ -1,6 +1,6 @@
 namespace AISmart.Agents.Developer;
 
-public class DeveloperGEvent : GEvent
+public class DeveloperGEvent : GEventBase
 {
     
 }
