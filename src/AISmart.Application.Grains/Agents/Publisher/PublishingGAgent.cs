@@ -1,5 +1,6 @@
 using AISmart.Agents;
 using AISmart.Agents.Publisher;
+using AISmart.Dapr;
 using AISmart.Sender;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
@@ -11,6 +12,7 @@ public class PublishingAgentState
 {
 }
 
+[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class PublishingGAgent : GAgentBase<PublishingAgentState, PublishingGEvent>, IPublishingAgent
@@ -22,6 +24,11 @@ public class PublishingGAgent : GAgentBase<PublishingAgentState, PublishingGEven
     public override Task<string> GetDescriptionAsync()
     {
         return Task.FromResult("Agent to be used for publishing new events.");
+    }
+
+    public override Task HandleEvent(EventWrapperBase item)
+    {
+        return Task.CompletedTask;
     }
 
     public async Task PublishEventAsync<T>(T @event) where T : EventBase

@@ -1,12 +1,15 @@
 using System.Diagnostics.CodeAnalysis;
+using AISmart.Agents;
 using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
+using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.X;
 
+[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -44,10 +47,17 @@ public class XGAgent : GAgentBase<XAgentState, XGEvent>
         await PublishAsync(publishEvent);
     }
 
+    public override async Task HandleEvent(EventWrapperBase item)
+    {
+        if (item is EventWrapper<XThreadCreatedEvent> wrapper)
+        {
+            await ExecuteAsync(wrapper.Event);
+        }
+    }
+
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         GrainTracker.XAgents.Enqueue(this);
         await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<XThreadCreatedEvent>(ExecuteAsync);
     }
 }

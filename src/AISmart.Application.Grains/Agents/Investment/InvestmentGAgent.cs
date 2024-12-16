@@ -1,10 +1,13 @@
+using AISmart.Agents;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.Investment;
+using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
+[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEvent>, IInvestmentStateAgent<InvestmentAgentState>
@@ -35,10 +38,17 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
         return Task.CompletedTask;
     }
 
+    public override async Task HandleEvent(EventWrapperBase item)
+    {
+        if (item is EventWrapper<ImplementationEvent> wrapper)
+        {
+            await ExecuteAsync(wrapper.Event);
+        }
+    }
+
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         GrainTracker.InvestmentAgents.Enqueue(this);
         await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<ImplementationEvent>(ExecuteAsync);
     }
 }

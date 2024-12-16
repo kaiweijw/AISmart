@@ -5,7 +5,9 @@ using AISmart.Agent.Event;
 using AISmart.Agent.Events;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
+using AISmart.Agents;
 using AISmart.Application.Grains;
+using AISmart.Dapr;
 using AISmart.Dto;
 using Microsoft.Extensions.Logging;
 using Orleans;
@@ -13,6 +15,7 @@ using Orleans.Providers;
 
 namespace AISmart.Agent;
 
+[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfAgent
@@ -93,13 +96,18 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
     }
 
 
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    public override Task HandleEvent(EventWrapperBase item)
     {
-         await base.OnActivateAsync(cancellationToken);
-         await SubscribeAsync<CreateTransactionEvent>(ExecuteAsync);
-         await SubscribeAsync<SendTransactionCallBackEvent>(ExecuteAsync);
-         await SubscribeAsync<QueryTransactionCallBackEvent>(ExecuteAsync);
+        return Task.CompletedTask;
     }
+
+    // public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    // {
+    //      await base.OnActivateAsync(cancellationToken);
+    //      await SubscribeAsync<CreateTransactionEvent>(ExecuteAsync);
+    //      await SubscribeAsync<SendTransactionCallBackEvent>(ExecuteAsync);
+    //      await SubscribeAsync<QueryTransactionCallBackEvent>(ExecuteAsync);
+    // }
 
     public async Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData)
     {

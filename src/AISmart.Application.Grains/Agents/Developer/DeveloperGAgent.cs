@@ -1,11 +1,13 @@
+using AISmart.Agents;
 using AISmart.Agents.Developer;
 using AISmart.Agents.ImplementationAgent.Events;
-using AISmart.Application.Grains.Agents.X;
+using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Developer;
 
+[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
@@ -30,10 +32,17 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
         return Task.CompletedTask;
     }
 
+    public override async Task HandleEvent(EventWrapperBase item)
+    {
+        if (item is EventWrapper<ImplementationEvent> wrapper)
+        {
+            await ExecuteAsync(wrapper.Event);
+        }
+    }
+
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         GrainTracker.DeveloperAgents.Enqueue(this);
         await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<ImplementationEvent>(ExecuteAsync);
     }
 }

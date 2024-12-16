@@ -1,11 +1,13 @@
+using System.Reflection;
+using AISmart.Agents;
 using AISmart.Agents.Group;
-using AISmart.Agents.ImplementationAgent.Events;
-using AISmart.Application.Grains.Agents.Developer;
+using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Group;
 
+[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
@@ -28,6 +30,11 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
     protected override Task OnUnregisterAgentAsync(Guid agentGuid)
     {
         --State.RegisteredAgents;
+        return Task.CompletedTask;
+    }
+
+    public override Task HandleEvent(EventWrapperBase item)
+    {
         return Task.CompletedTask;
     }
 

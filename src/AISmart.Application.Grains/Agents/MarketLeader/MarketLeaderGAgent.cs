@@ -1,12 +1,15 @@
+using AISmart.Agents;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.MarketLeader;
 using AISmart.Agents.MarketLeader.Events;
 using AISmart.Application.Grains.Agents.X;
+using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.MarketLeader;
 
+[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeaderGEvent>
@@ -30,10 +33,17 @@ public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeade
         });
     }
 
+    public override async Task HandleEvent(EventWrapperBase item)
+    {
+        if (item is EventWrapper<SocialEvent> wrapper)
+        {
+            await ExecuteAsync(wrapper.Event);
+        }
+    }
+
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         GrainTracker.MarketLeaderAgents.Enqueue(this);
         await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<SocialEvent>(ExecuteAsync);
     }
 }
