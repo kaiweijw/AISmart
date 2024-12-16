@@ -1,6 +1,6 @@
 namespace AISmart.Agents.Publisher;
 
-public class PublishingGEvent : GEvent
+public class PublishingGEvent : GEventBase
 {
     
 }
