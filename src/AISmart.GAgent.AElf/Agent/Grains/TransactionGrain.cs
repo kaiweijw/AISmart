@@ -28,7 +28,7 @@ public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
         var transaction = await _AElfNodeProvider.CreateTransactionAsync(sendTransactionDto.ChainId, sendTransactionDto.SenderName, sendTransactionDto.ContractAddress,
             sendTransactionDto.MethodName, new TransferInput());
         var sendTransactionAsync =  await _AElfNodeProvider.SendTransactionAsync(sendTransactionDto.ChainId,transaction);
-        var publishingAgent = GrainFactory.GetGrain<IPublishingAgent>(Guid.NewGuid());
+        var publishingAgent = GrainFactory.GetGrain<IPublishingGAgent>(Guid.NewGuid());
         await publishingAgent.PublishEventAsync(new SendTransactionCallBackEvent
         {
             TransactionId = sendTransactionAsync.TransactionId,
@@ -66,7 +66,7 @@ public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
         {
             _Logger.LogError(e,"Transaction query timed out.");
         }
-        var publishingAgent = GrainFactory.GetGrain<IPublishingAgent>(Guid.NewGuid());
+        var publishingAgent = GrainFactory.GetGrain<IPublishingGAgent>(Guid.NewGuid());
         await publishingAgent.PublishEventAsync(new QueryTransactionCallBackEvent()
                 {
                     TransactionId =  queryTransactionDto.TransactionId
