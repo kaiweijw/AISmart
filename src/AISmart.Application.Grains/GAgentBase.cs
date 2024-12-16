@@ -3,14 +3,13 @@ using AISmart.Agents;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
-using Orleans.Runtime;
 using Orleans.Streams;
 
 namespace AISmart.Application.Grains;
 
-public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateAgent<TState>
+public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateGAgent<TState>
     where TState : class, new()
-    where TEvent : GEvent
+    where TEvent : GEventBase
 {
     private IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
 
@@ -32,7 +31,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         return Task.CompletedTask;
     }
 
-    public async Task<bool> SubscribeTo(IAgent agent)
+    public async Task<bool> SubscribeTo(IGAgent agent)
     {
         var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
@@ -46,7 +45,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         return true;
     }
 
-    public Task<bool> UnsubscribeFrom(IAgent agent)
+    public Task<bool> UnsubscribeFrom(IGAgent agent)
     {
         var agentGuid = agent.GetPrimaryKey();
         if (!_subscriptions.ContainsKey(agentGuid))
@@ -59,7 +58,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         return Task.FromResult(true);
     }
 
-    public Task<bool> PublishTo(IAgent agent)
+    public Task<bool> PublishTo(IGAgent agent)
     {
         var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
@@ -67,7 +66,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         return Task.FromResult(_publishers.TryAdd(agentGuid, stream));
     }
 
-    public Task<bool> UnpublishFrom(IAgent agent)
+    public Task<bool> UnpublishFrom(IGAgent agent)
     {
         if (!_publishers.ContainsKey(agent.GetPrimaryKey()))
         {
@@ -78,7 +77,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         return Task.FromResult(true);
     }
 
-    public async Task Register(IAgent agent)
+    public async Task Register(IGAgent agent)
     {
         var success = await agent.SubscribeTo(this);
         success = await agent.PublishTo(this) | success;
@@ -91,7 +90,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         await OnRegisterAgentAsync(agent.GetPrimaryKey());
     }
     
-    public async Task Unregister(IAgent agent)
+    public async Task Unregister(IGAgent agent)
     {
         var success = await agent.UnsubscribeFrom(this);
         success = await agent.UnpublishFrom(this) | success;

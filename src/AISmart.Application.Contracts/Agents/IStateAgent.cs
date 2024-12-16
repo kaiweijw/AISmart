@@ -3,7 +3,7 @@ using Orleans;
 
 namespace AISmart.Agents;
 
-public interface IAgent : IGrainWithGuidKey
+public interface IGAgent : IGrainWithGuidKey
 {
     /// <summary>
     /// Used for activating the agent manually, mostly used for testing
@@ -16,15 +16,15 @@ public interface IAgent : IGrainWithGuidKey
 
     //Function to get agent description
     Task<string> GetDescriptionAsync();
-    Task<bool> SubscribeTo(IAgent agent);
-    Task<bool> UnsubscribeFrom(IAgent agent);
-    Task<bool> PublishTo(IAgent agent);
-    Task<bool> UnpublishFrom(IAgent agent);
-    Task Register(IAgent agent);
-    Task Unregister(IAgent agent);
+    Task<bool> SubscribeTo(IGAgent agent);
+    Task<bool> UnsubscribeFrom(IGAgent agent);
+    Task<bool> PublishTo(IGAgent agent);
+    Task<bool> UnpublishFrom(IGAgent agent);
+    Task Register(IGAgent agent);
+    Task Unregister(IGAgent agent);
 }
 
-public interface IStateAgent<TState> : IAgent
+public interface IStateGAgent<TState> : IGAgent
 {
     Task<TState> GetStateAsync();
 }
