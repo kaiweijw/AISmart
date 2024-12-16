@@ -21,18 +21,13 @@ public class DrawOperationGAgent : GAgentBase<DrawOperationState, DrawOperateEve
         throw new NotImplementedException();
     }
 
-    protected async Task ExecuteAsync(DrawTriangleEvent drawTriangleEvent)
+    [EventHandler]
+    public async Task ExecuteAsync(DrawTriangleEvent drawTriangleEvent)
     {
         await PublishAsync(new DrawTriangleResultEvent()
         {
             DrawTriangleContent = $"I Have draw a {drawTriangleEvent.PolygonSides} Triangle"
         });
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<DrawTriangleEvent>(ExecuteAsync);
     }
 }
 
