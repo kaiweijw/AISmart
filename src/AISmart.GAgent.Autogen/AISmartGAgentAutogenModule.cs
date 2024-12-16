@@ -21,9 +21,9 @@ public class AISmartGAgentAutogenModule : AbpModule
     {
         var configuration = context.Services.GetConfiguration();
         context.Services.Configure<AutogenOptions>(configuration.GetSection("AutogenConfig"));
-
-        var autogenConfig = context.Services.GetRequiredService<IOptions<AutogenOptions>>().Value;
-        context.Services.AddTransient<ChatClient>(op => new ChatClient(autogenConfig.Model, autogenConfig.ApiKey));
+        //
+        // var autogenConfig = context.Services.GetRequiredService<IOptions<AutogenOptions>>().Value;
+        // context.Services.AddTransient<ChatClient>(op => new ChatClient(autogenConfig.Model, autogenConfig.ApiKey));
         context.Services.AddTransient<IChatAgentProvider, ChatAgentProvider>();
         context.Services.AddTransient<IChatService, ChatService>();
         Configure<RagOptions>(configuration.GetSection("AutogenConfig:AutoGenRag"));

@@ -14,13 +14,13 @@ namespace AISmart.GAgent.Autogen;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>, IAutogenAgent
+public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IAutogenGAgent
 {
     private readonly IRagProvider _ragProvider;
     private readonly AutoGenExecutor _executor;
     private readonly AgentDescriptionManager _agentDescriptionManager;
 
-    public AutogenGAgent(ILogger logger, IClusterClient clusterClient, AutoGenExecutor executor,
+    public AutogenGAgent(ILogger<AutogenGAgent> logger, AutoGenExecutor executor,
         IRagProvider ragProvider, AgentDescriptionManager agentDescriptionManager) : base(logger)
     {
         _ragProvider = ragProvider;
@@ -52,7 +52,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>, IAutogenA
 
         Task.Run(async () => { await _executor.ExecuteTask(eventData.EventId, history); });
 
-        base.RaiseEvent(new CreateEvent()
+        base.RaiseEvent(new Create()
         {
             Id = eventData.EventId,
             Messages = history,
@@ -66,21 +66,21 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>, IAutogenA
         switch (eventData.ExecuteStatus)
         {
             case TaskExecuteStatus.Progressing:
-                base.RaiseEvent(new CallerProgressingEvent()
+                base.RaiseEvent(new CallerProgressing()
                 {
                     Id = eventData.TaskId,
                     CurrentCallInfo = eventData.CurrentCallInfo,
                 });
                 break;
             case TaskExecuteStatus.Break:
-                base.RaiseEvent(new BreakEvent()
+                base.RaiseEvent(new Break()
                 {
                     Id = eventData.TaskId,
                     BreakReason = eventData.EndContent
                 });
                 break;
             case TaskExecuteStatus.Finish:
-                base.RaiseEvent(new CompleteEvent()
+                base.RaiseEvent(new Complete()
                 {
                     Id = eventData.TaskId,
                     Summary = eventData.EndContent

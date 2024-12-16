@@ -13,7 +13,7 @@ public class AutoGenAgentState
 
     [Id(1)] public Dictionary<Guid, RequestWrapper> CurrentRequestDic = new Dictionary<Guid, RequestWrapper>();
     
-    public void Apply(BreakEvent @event)
+    public void Apply(Break @event)
     {
         var state = GetStateInfo(@event.Id);
         if (state == null)
@@ -27,7 +27,7 @@ public class AutoGenAgentState
         AutoGenStateDic.Remove(@event.Id);
     }
     
-    public void Apply(CallerAgentReplyEvent @event)
+    public void Apply(CallerAgentReply @event)
     {
         var state = GetStateInfo(@event.Id);
         if (state == null)
@@ -37,7 +37,7 @@ public class AutoGenAgentState
         state.ChatHistory.Add(@event.Reply);
     }
     
-    public void Apply(CallerProgressingEvent @event)
+    public void Apply(CallerProgressing @event)
     {
         var state = GetStateInfo(@event.Id);
         if (state == null)
@@ -48,7 +48,7 @@ public class AutoGenAgentState
         state.CurrentCallInfo = @event.CurrentCallInfo;
     }
 
-    public void Apply(CompleteEvent @event)
+    public void Apply(Complete @event)
     {
         var state = GetStateInfo(@event.Id);
         if (state == null)
@@ -62,7 +62,7 @@ public class AutoGenAgentState
         AutoGenStateDic.Remove(@event.Id);
     }
 
-    public void Apply(CreateEvent @event)
+    public void Apply(Create @event)
     {
         var state = new AutoGenAgentStateInfo();
         state.TaskId = @event.Id;

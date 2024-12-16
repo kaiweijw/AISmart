@@ -24,6 +24,7 @@ public class TelegramService :  ApplicationService,ITelegramService
     
     public async Task ReceiveMessagesAsync(TelegramUpdateDto updateMessage)
     {
+        await SetGroupsAsync();
         // To filter only messages that mention the bot, check if message.Entities.type == "mention".
         // Group message auto-reply, just add the bot as a group admin.
         if (updateMessage.Message != null)
@@ -44,7 +45,7 @@ public class TelegramService :  ApplicationService,ITelegramService
     {
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
         var telegramAgent = _clusterClient.GetGrain<IStateGAgent<TelegramGAgentState>>(Guid.NewGuid());
-        var autogenAgent=  _clusterClient.GetGrain<IAutogenAgent>(Guid.NewGuid());
+        var autogenAgent=  _clusterClient.GetGrain<IAutogenGAgent>(Guid.NewGuid());
         autogenAgent.RegisterAgentEvent(typeof(TelegramGAgent), [typeof(ReceiveMessageEvent), typeof(SendMessageEvent)]);
         
         await groupAgent.Register(telegramAgent);

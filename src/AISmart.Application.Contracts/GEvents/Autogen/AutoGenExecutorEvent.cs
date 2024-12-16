@@ -1,14 +1,16 @@
 using System;
 using AISmart.Agents;
+using Orleans;
 
 namespace AISmart.GAgent.Autogen.Event;
 
+[GenerateSerializer]
 public class AutoGenExecutorEvent : EventBase
 {
-    public Guid TaskId { get; set; }
-    public TaskExecuteStatus ExecuteStatus { get; set; }
-    public string CurrentCallInfo { get; set; }
-    public string EndContent { get; set; }
+    [Id(0)]public Guid TaskId { get; set; }
+    [Id(1)] public TaskExecuteStatus ExecuteStatus { get; set; }
+    [Id(2)] public string CurrentCallInfo { get; set; }
+    [Id(3)] public string EndContent { get; set; }
 }
 
 public enum TaskExecuteStatus
