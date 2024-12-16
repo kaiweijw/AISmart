@@ -7,7 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+<!--
         <PackageReference Include="AElf.Indexing.Elasticsearch" Version="0.0.18" />
+-->
         <PackageReference Include="AutoGen.Core" Version="0.2.1" />
         <PackageReference Include="MediatR" Version="11.1.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />

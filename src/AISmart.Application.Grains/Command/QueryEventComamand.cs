@@ -6,5 +6,5 @@ namespace AISmart.Application.Grains.Command;
 
 public class QueryEventCommand :IRequest<CreateTransactionEventIndex>
 {
-    
+    public string EventName { get; set; }
 }

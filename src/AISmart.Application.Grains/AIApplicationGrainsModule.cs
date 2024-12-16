@@ -5,6 +5,7 @@ using AElf.Indexing.Elasticsearch.Services;
 //using AElf.Indexing.Elasticsearch;
 using AISmart.Application.Grains.Command;
 using AISmart.Application.Grains.CommandHandler;
+using AISmart.Application.Grains.Dto;
 using Elasticsearch.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
@@ -22,8 +23,8 @@ namespace AISmart.Application.Grains;
 [DependsOn(
     typeof(AbpAutoMapperModule),
     typeof(AbpEventBusModule),
-    typeof(AISmartApplicationContractsModule),
-    typeof(AElfIndexingElasticsearchModule)
+    typeof(AISmartApplicationContractsModule)
+  //,  typeof(AElfIndexingElasticsearchModule)
 )]
 public class AIApplicationGrainsModule : AbpModule
  
@@ -49,6 +50,8 @@ public class AIApplicationGrainsModule : AbpModule
             options.IndexPrefix = "aismart";
         });
         context.Services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
+        //context.Services.AddTransient<INESTRepository<CreateTransactionEventIndex, string>>();
+        context.Services.AddTransient<CreateTransactionCommandHandler>();
 
         ConfigureElasticsearch(context);
 
