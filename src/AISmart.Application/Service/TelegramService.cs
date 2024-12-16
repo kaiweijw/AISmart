@@ -43,7 +43,7 @@ public class TelegramService :  ApplicationService,ITelegramService
     {
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
         var telegramAgent = _clusterClient.GetGrain<IStateGAgent<TelegramGAgentState>>(Guid.NewGuid());
-        var autogenAgent=  _clusterClient.GetGrain<AutogenGAgent>(Guid.NewGuid());
+        var autogenAgent=  _clusterClient.GetGrain<IAutogenAgent>(Guid.NewGuid());
         autogenAgent.RegisterAgentEvent(typeof(TelegramGAgent), [typeof(ReceiveMessageEvent), typeof(SendMessageEvent)]);
         
         await groupAgent.Register(telegramAgent);

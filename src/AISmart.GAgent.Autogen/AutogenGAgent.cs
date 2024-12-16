@@ -14,21 +14,22 @@ namespace AISmart.GAgent.Autogen;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>
+public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>, IAutogenAgent
 {
     private readonly IRagProvider _ragProvider;
     private readonly AutoGenExecutor _executor;
     private readonly AgentDescriptionManager _agentDescriptionManager;
 
     public AutogenGAgent(ILogger logger, IClusterClient clusterClient, AutoGenExecutor executor,
-        IRagProvider ragProvider,AgentDescriptionManager agentDescriptionManager) : base(logger)
+        IRagProvider ragProvider, AgentDescriptionManager agentDescriptionManager) : base(logger)
     {
         _ragProvider = ragProvider;
         _executor = executor;
         _agentDescriptionManager = agentDescriptionManager;
     }
 
-    public void RegisterAgentEvent(Type agent, List<Type> eventTypes){
+    public void RegisterAgentEvent(Type agent, List<Type> eventTypes)
+    {
         _agentDescriptionManager.AddAgentEvents(agent, eventTypes);
     }
 
@@ -36,7 +37,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>
     {
         throw new NotImplementedException();
     }
-    
+
     [EventHandler]
     public async Task ExecuteAsync(AutoGenCreatedEvent eventData)
     {
