@@ -24,7 +24,6 @@ public class TelegramService :  ApplicationService,ITelegramService
     
     public async Task ReceiveMessagesAsync(TelegramUpdateDto updateMessage)
     {
-        await SetGroupsAsync();
         // To filter only messages that mention the bot, check if message.Entities.type == "mention".
         // Group message auto-reply, just add the bot as a group admin.
         if (updateMessage.Message != null)
