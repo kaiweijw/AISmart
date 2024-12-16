@@ -15,6 +15,7 @@ namespace AISmart.Service;
 public class TelegramService :  ApplicationService,ITelegramService
 {
     private readonly IClusterClient _clusterClient;
+    private readonly Guid _publishId = Guid.NewGuid();
 
     public TelegramService(IClusterClient clusterClient)
     {
@@ -27,7 +28,7 @@ public class TelegramService :  ApplicationService,ITelegramService
         // Group message auto-reply, just add the bot as a group admin.
         if (updateMessage.Message != null)
         {
-            var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
+            var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(_publishId);
            
             await  publishingAgent.PublishEventAsync(new ReceiveMessageEvent
             {
@@ -49,7 +50,7 @@ public class TelegramService :  ApplicationService,ITelegramService
         await groupAgent.Register(telegramAgent);
         await groupAgent.Register(autogenAgent);
         
-        var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
+        var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(_publishId);
         await publishingAgent.PublishTo(groupAgent);
     }
 }

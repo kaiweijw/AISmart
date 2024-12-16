@@ -33,16 +33,13 @@ public class DemoAppService : ApplicationService, IDemoAppService
 
     public async Task<string> PipelineDemoAsync(string content)
     {
-        var xAgent = _clusterClient.GetGrain<IStateGAgent<XAgentState>>(Guid.NewGuid(), typeof(XGAgent).Namespace);
+        var xAgent = _clusterClient.GetGrain<IStateGAgent<XAgentState>>(Guid.NewGuid());
         var marketLeaderAgent =
-            _clusterClient.GetGrain<IStateGAgent<MarketLeaderAgentState>>(Guid.NewGuid(),
-                typeof(MarketLeaderGAgent).Namespace);
+            _clusterClient.GetGrain<IStateGAgent<MarketLeaderAgentState>>(Guid.NewGuid());
         var developerAgent =
-            _clusterClient.GetGrain<IStateGAgent<DeveloperAgentState>>(Guid.NewGuid(),
-                typeof(DeveloperGAgent).Namespace);
+            _clusterClient.GetGrain<IStateGAgent<DeveloperAgentState>>(Guid.NewGuid());
         var investmentAgent =
-            _clusterClient.GetGrain<IStateGAgent<InvestmentAgentState>>(Guid.NewGuid(),
-                typeof(DeveloperGAgent).Namespace);
+            _clusterClient.GetGrain<IStateGAgent<InvestmentAgentState>>(Guid.NewGuid());
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
 
