@@ -141,7 +141,6 @@ public class AutoGenExecutor : ISingletonDependency
                  - Split the task into different events, and use the output of the previous event combined with the user's request to determine the execution of the next event.
                  - Based on the event's response, reorganize the next request in line with the user's intent until the user's issue is resolved.
                  - If the above events cannot meet the user's task execution needs, you can generate results based on the events to drive the continuation of the process.
-                 - If it is the result returned by the agent, return the agent's result directly without any modifications.
                  - The response for each event will be added to the conversation in JSON format. 
                    You need to analyze the response information to decide whether to proceed to the next round. 
                    The response information will be used during the final summary. The JSON format is as follows:
