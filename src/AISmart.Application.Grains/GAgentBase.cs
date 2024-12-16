@@ -9,7 +9,7 @@ namespace AISmart.Application.Grains;
 
 public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateGAgent<TState>
     where TState : class, new()
-    where TEvent : GEvent
+    where TEvent : GEventBase
 {
     private IStreamProvider? StreamProvider { get; set; } = null;
     
