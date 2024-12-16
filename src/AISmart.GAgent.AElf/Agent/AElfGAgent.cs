@@ -12,10 +12,10 @@ using AISmart.Dto;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Providers;
+using Orleans.Streams;
 
 namespace AISmart.Agent;
 
-[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfAgent
@@ -29,7 +29,7 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         return Task.FromResult("An agent to inform other agents when a aelf thread is published.");
     }
 
-
+    [EventHandler]
     protected async Task ExecuteAsync(CreateTransactionEvent gEventData)
     {
        var gEvent = new CreateTransactionGEvent
@@ -54,7 +54,8 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         Logger.LogInformation("ExecuteAsync: AElf {MethodName}", gEventData.MethodName);
     }
     
-    protected  Task ExecuteAsync(SendTransactionCallBackEvent gEventData)
+    [EventHandler]
+    public Task ExecuteAsync(SendTransactionCallBackEvent gEventData)
     {
         base.RaiseEvent(new SendTransactionGEvent
         {
@@ -73,9 +74,8 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         return Task.CompletedTask;
     }
 
-   
-
-    protected async Task ExecuteAsync(QueryTransactionCallBackEvent gEventData)
+    [EventHandler]
+    public async Task ExecuteAsync(QueryTransactionCallBackEvent gEventData)
     {
         if (gEventData.IsSuccess)
         {
@@ -95,31 +95,6 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         await ConfirmEvents();
     }
 
-
-    public override async Task HandleEventAsync(EventWrapperBase item)
-    {
-        switch (item)
-        {
-            case EventWrapper<CreateTransactionEvent> wrapper:
-                await ExecuteAsync(wrapper.Event);
-                break;
-            case EventWrapper<SendTransactionCallBackEvent> wrapper:
-                await ExecuteAsync(wrapper.Event);
-                break;
-            case EventWrapper<QueryTransactionCallBackEvent> wrapper:
-                await ExecuteAsync(wrapper.Event);
-                break;
-        }
-    }
-
-    // public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    // {
-    //      await base.OnActivateAsync(cancellationToken);
-    //      await SubscribeAsync<CreateTransactionEvent>(ExecuteAsync);
-    //      await SubscribeAsync<SendTransactionCallBackEvent>(ExecuteAsync);
-    //      await SubscribeAsync<QueryTransactionCallBackEvent>(ExecuteAsync);
-    // }
-
     public async Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData)
     {
         await ExecuteAsync( gEventData);
@@ -136,7 +111,7 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
 
     protected Task ExecuteAsync(TransactionGEvent eventData)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 }
 

@@ -6,10 +6,10 @@ using AISmart.Application.Grains.Agents.X;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
+using Orleans.Streams;
 
 namespace AISmart.Application.Grains.Agents.MarketLeader;
 
-[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeaderGEvent>
@@ -23,7 +23,7 @@ public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeade
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
-    private async Task ExecuteAsync(SocialEvent eventData)
+    public async Task HandleEventAsync(SocialEvent eventData)
     {
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: Market Leader analyses content:{eventData.Content}");
         
@@ -31,14 +31,6 @@ public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeade
         {
             Content = eventData.Content
         });
-    }
-
-    public override async Task HandleEventAsync(EventWrapperBase item)
-    {
-        if (item is EventWrapper<SocialEvent> wrapper)
-        {
-            await ExecuteAsync(wrapper.Event);
-        }
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)

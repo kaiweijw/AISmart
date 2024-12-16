@@ -4,10 +4,10 @@ using AISmart.Agents.Group;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
+using Orleans.Streams;
 
 namespace AISmart.Application.Grains.Agents.Group;
 
-[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
@@ -30,11 +30,6 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
     protected override Task OnUnregisterAgentAsync(Guid agentGuid)
     {
         --State.RegisteredAgents;
-        return Task.CompletedTask;
-    }
-
-    public override Task HandleEventAsync(EventWrapperBase item)
-    {
         return Task.CompletedTask;
     }
 

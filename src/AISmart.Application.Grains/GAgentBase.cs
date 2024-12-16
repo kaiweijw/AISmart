@@ -1,3 +1,4 @@
+using System.Reflection;
 using AISmart.Agents;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     // need to use persistent storage to store this
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
-    private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
+    private readonly List<EventWrapperBaseAsyncObserver> _observers = new();
 
     protected GAgentBase(ILogger logger)
     {
@@ -111,27 +112,6 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
     }
 
-    // Don't need this if we use implicit subscribe.
-    protected Task SubscribeAsync<T>(Func<T, Task> onEvent) where T : EventBase
-    {
-        _subscriptionHandlers.Add(OnNextWrapperAsync);
-        return Task.CompletedTask;
-
-        Task OnNextWrapperAsync(EventWrapperBase @event, StreamSequenceToken token = null)
-        {
-            Logger.LogInformation("Received message: {@Message}", @event);
-            if (@event is EventWrapper<T> eventWrapper)
-            {
-                Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
-
-                onEvent(eventWrapper.Event);
-                //await DoAckAsync(eventWrapper);
-            }
-
-            return Task.CompletedTask;
-        }
-    }
-
     public abstract Task<string> GetDescriptionAsync();
 
     public Task<TState> GetStateAsync()
@@ -212,25 +192,36 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     private async Task SubscribeAsync(IAsyncStream<EventWrapperBase> stream)
     {
-        foreach (var handler in _subscriptionHandlers)
+        foreach (var observer in _observers)
         {
-            await stream.SubscribeAsync(handler);
+            await stream.SubscribeAsync(observer);
         }
     }
-
-    public abstract Task HandleEventAsync(EventWrapperBase item);
 
     private async Task HandleEventAsync(EventWrapperBase item, StreamSequenceToken? token)
     {
         Logger.LogInformation("Received message: {@Message}", item);
-        await HandleEventAsync(item);
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        var streamId = StreamId.Create(CommonConstants.StreamNamespace, this.GetPrimaryKey());
-        var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        await stream.SubscribeAsync(HandleEventAsync);
-        _subscriptionHandlers.Add(HandleEventAsync);
+        var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            .Where(m => m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync))
+            .Where(m => m.ReturnType == typeof(Task) && m.GetParameters().Length == 1 &&
+                        typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType));
+
+        foreach (var method in methods)
+        {
+            var observer = new EventWrapperBaseAsyncObserver(async item =>
+            {
+                var eventType = item.GetType().GetProperty(nameof(EventWrapper<object>.Event))?.GetValue(item);
+                if (method.GetParameters()[0].ParameterType == eventType!.GetType())
+                {
+                    await (Task)method.Invoke(this, [eventType])!;
+                }
+            });
+
+            _observers.Add(observer);
+        }
     }
 }

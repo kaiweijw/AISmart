@@ -7,7 +7,6 @@ using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Developer;
 
-[ImplicitStreamSubscription(CommonConstants.StreamNamespace)]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
@@ -21,23 +20,14 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
-    private Task ExecuteAsync(ImplementationEvent eventData)
+    public async Task HandleEventAsync(ImplementationEvent eventData)
     {
-        Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: DeveloperAgent analyses content:{eventData.Content}");
+        Logger.LogInformation($"{GetType()} ExecuteAsync: DeveloperAgent analyses content:{eventData.Content}");
         if (State.Content.IsNullOrEmpty())
         {
             State.Content = [];
         }
         State.Content.Add(eventData.Content);
-        return Task.CompletedTask;
-    }
-
-    public override async Task HandleEventAsync(EventWrapperBase item)
-    {
-        if (item is EventWrapper<ImplementationEvent> wrapper)
-        {
-            await ExecuteAsync(wrapper.Event);
-        }
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
