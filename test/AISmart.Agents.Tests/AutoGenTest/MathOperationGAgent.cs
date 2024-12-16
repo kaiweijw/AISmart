@@ -16,18 +16,13 @@ public class MathOperationGAgent: GAgentBase<MathOperationState, MathOperationEv
     {
     }
     
+    [EventHandler]
     protected async Task ExecuteAsync(AddNumberEvent numberEvent)
     {
         await PublishAsync(new AddNumberResultEvent()
         {
             Total = numberEvent.B + numberEvent.A + 1
         });
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<AddNumberEvent>(ExecuteAsync);
     }
 
     public override Task<string> GetDescriptionAsync()
