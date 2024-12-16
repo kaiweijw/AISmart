@@ -1,3 +1,4 @@
+using System;
 using AISmart.Agents;
 
 namespace AISmart.GAgent.Autogen.Event;
