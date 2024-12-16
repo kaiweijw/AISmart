@@ -1,13 +1,14 @@
 using System;
 using System.ComponentModel;
-using System.Threading;
 using System.Threading.Tasks;
 using AISmart.Agent.GEvents;
 using AISmart.Agents;
+using AISmart.Agents.AutoGen;
 using AISmart.Application.Grains;
 using AISmart.Events;
 using AISmart.Grains;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Orleans.Providers;
 
 namespace AISmart.Agent;
@@ -40,7 +41,13 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
            Message = @event.Message
        });
        await ConfirmEvents();
-       
+       await PublishAsync(new AutoGenCreatedEvent
+       {
+           EventId = Guid.NewGuid(),
+           Content = JsonConvert.SerializeObject(@event)+" Processes the message to generate an intelligent response"
+       });
+
+
     }
     [EventHandler]
     public async Task ExecuteAsync(SendMessageEvent @event)
