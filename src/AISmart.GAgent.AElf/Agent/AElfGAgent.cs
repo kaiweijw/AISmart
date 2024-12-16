@@ -21,10 +21,10 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
     }
 
 
-    protected  Task ExecuteAsync(CreateTransactionGEvent gEventData)
+    protected async Task<Task> ExecuteAsync(CreateTransactionGEvent gEventData)
     {
-        //base.RaiseEvent(gEventData);
         RaiseEvent(gEventData);
+        await ConfirmEvents();
         _= GrainFactory.GetGrain<ITransactionGrain>(gEventData.Id).SendAElfTransactionAsync(
             new SendTransactionDto
             {
@@ -105,6 +105,7 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
     {
         throw new NotImplementedException();
     }
+
 }
 
 public interface IAElfAgent : IGrainWithGuidKey

@@ -246,9 +246,11 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
             await stream.SubscribeAsync(handler);
         }
     }
-    protected override async void RaiseEvent<GEvent >(GEvent gEvent)
+    /*protected override async void RaiseEvent<GEvent >(GEvent gEvent)
     {
-        base.RaiseEvent(gEvent);
+        RaiseEvent(gEvent);
+        await ConfirmEvents();
+
         ServiceProvider.GetRequiredService<ILocalEventBus>().PublishAsync(gEvent);
         Mediator = ServiceProvider.GetRequiredService<IMediator>();
         var command = new CreateTransactionCommand
@@ -258,11 +260,28 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
             EventInfo = JsonConvert.SerializeObject(gEvent)
         };
         await Mediator.Send(command);
-
-    }
+    }*/
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         await base.OnActivateAsync(cancellationToken);
         Mediator = this.ServiceProvider.GetRequiredService<IMediator>();
     }
+    
+    protected override void OnStateChanged()
+    {
+        base.OnStateChanged();
+        var type = State.GetType();
+        /*ServiceProvider.GetRequiredService<ILocalEventBus>().PublishAsync(gEvent);
+        Mediator = ServiceProvider.GetRequiredService<IMediator>();
+        var command = new CreateTransactionCommand
+        {
+            Id = Guid.NewGuid(),
+            EventName = gEvent.GetType().Name,
+            EventInfo = JsonConvert.SerializeObject(gEvent)
+        };
+        await Mediator.Send(command);*/
+
+}
+
+
 }
