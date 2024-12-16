@@ -107,16 +107,12 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         aelfAgentDto.PendingTransactions = State.PendingTransactions;
         return aelfAgentDto;
     }
-
-
-    protected Task ExecuteAsync(TransactionGEvent eventData)
-    {
-        return Task.CompletedTask;
-    }
+    
 }
 
 public interface IAElfAgent : IGrainWithGuidKey
 { 
-    Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData);
+    Task ExecuteTransactionAsync(CreateTransactionEvent gEventData);
     Task<AElfAgentGState> GetAElfAgentDto();
 }
+
