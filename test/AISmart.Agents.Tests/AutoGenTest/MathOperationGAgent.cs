@@ -17,7 +17,7 @@ public class MathOperationGAgent: GAgentBase<MathOperationState, MathOperationEv
     }
     
     [EventHandler]
-    protected async Task ExecuteAsync(AddNumberEvent numberEvent)
+    public async Task ExecuteAsync(AddNumberEvent numberEvent)
     {
         await PublishAsync(new AddNumberResultEvent()
         {

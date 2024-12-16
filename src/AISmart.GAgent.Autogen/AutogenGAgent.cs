@@ -38,7 +38,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>
     }
     
     [EventHandler]
-    protected async Task ExecuteAsync(AutoGenCreatedEvent eventData)
+    public async Task ExecuteAsync(AutoGenCreatedEvent eventData)
     {
         List<IMessage> history = new List<IMessage>();
         var ragResponse = await _ragProvider.RetrieveAnswerAsync(eventData.Content);
@@ -60,7 +60,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>
     }
 
     [EventHandler]
-    protected async Task ExecuteAsync(AutoGenExecutorEvent eventData)
+    public async Task ExecuteAsync(AutoGenExecutorEvent eventData)
     {
         switch (eventData.ExecuteStatus)
         {

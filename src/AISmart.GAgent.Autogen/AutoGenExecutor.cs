@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AISmart.Agents;
+using AISmart.Application.Grains;
+using AISmart.GAgent.Autogen.Applications;
 using AISmart.GAgent.Autogen.Common;
 using AISmart.GAgent.Autogen.Event;
 using AISmart.GAgent.Autogen.Exceptions;
@@ -18,31 +20,29 @@ namespace AISmart.GAgent.Autogen;
 public class AutoGenExecutor : ISingletonDependency
 {
     private readonly AgentDescriptionManager _agentDescriptionManager;
-    private readonly IClusterClient _clusterClient;
+    private readonly IChatService _chatService;
+    private readonly IChatAgentProvider _chatAgentProvider;
+    private readonly IGrainFactory _clusterClient;
     private readonly ILogger<AutoGenExecutor> _logger;
-    private readonly IServiceProvider _serviceProvider;
     private readonly Guid _publishGrainId = Guid.NewGuid();
     private const string AgentName = "admin";
     private const string FinishFlag = "complete";
     private const string BreakFlag = "break";
 
-    public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IClusterClient clusterClient,
-        AgentDescriptionManager agentDescriptionManager, IServiceProvider serviceProvider)
+    public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IGrainFactory clusterClient,
+        AgentDescriptionManager agentDescriptionManager, IChatAgentProvider chatAgentProvider, IChatService chatService)
     {
         _logger = logger;
         _clusterClient = clusterClient;
-        _serviceProvider = serviceProvider;
         _agentDescriptionManager = agentDescriptionManager;
+        _chatAgentProvider = chatAgentProvider;
+        _chatService = chatService;
     }
 
     public async Task ExecuteTask(Guid taskId, List<IMessage> history)
     {
-        var chatClient = _serviceProvider.GetRequiredService<ChatClient>();
-        IAgent agent = new OpenAIChatAgent(chatClient, AgentName, GetAgentResponsibility())
-            .RegisterMessageConnector()
-            .RegisterMiddleware(GetMiddleware());
-
-        var response = await agent.SendAsync("What should be done next?", history);
+        _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
+        var response = await _chatService.SendAsync(AgentName, "What should be done next?", history);
         var responseStr = response.GetContent();
         if (responseStr.IsNullOrEmpty())
         {
@@ -98,7 +98,6 @@ public class AutoGenExecutor : ISingletonDependency
                 ExecuteStatus = TaskExecuteStatus.Progressing,
                 CurrentCallInfo = responseStr
             });
-            return;
         }
     }
 
