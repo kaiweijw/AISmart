@@ -37,6 +37,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>
         throw new NotImplementedException();
     }
     
+    [EventHandler]
     protected async Task ExecuteAsync(AutoGenCreatedEvent eventData)
     {
         List<IMessage> history = new List<IMessage>();
@@ -58,6 +59,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>
         });
     }
 
+    [EventHandler]
     protected async Task ExecuteAsync(AutoGenExecutorEvent eventData)
     {
         switch (eventData.ExecuteStatus)
@@ -86,12 +88,5 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, BaseEvent>
             default:
                 throw new ArgumentOutOfRangeException();
         }
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<AutoGenCreatedEvent>(ExecuteAsync);
-        await SubscribeAsync<AutoGenExecutorEvent>(ExecuteAsync);
     }
 }
