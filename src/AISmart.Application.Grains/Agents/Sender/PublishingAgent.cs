@@ -1,5 +1,6 @@
 using AISmart.Agents;
 using AISmart.Sender;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 

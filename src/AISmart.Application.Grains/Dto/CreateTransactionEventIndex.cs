@@ -1,22 +1,17 @@
-/*using AElf.Indexing.Elasticsearch;
+using AElf.Indexing.Elasticsearch;
 using Nest;
 using Volo.Abp.Domain.Entities;
 
 namespace AISmart.Application.Grains.Dto;
 
-public class CreateTransactionEventIndex: IIndexBuild, IEntity<string>
+public class CreateTransactionEventIndex:  IEntity<string>,IIndexBuild
 {
     [Keyword] public string Id { get; set; }
-    [Keyword] public string ChainId { get; set; }
-    [Keyword] public string SenderName{ get; set; }
-    [Keyword] public  string ContractAddress { get; set; }
-    [Keyword] public  string MethodName { get; set; }
-    [Keyword] public  string Param { get; set; }
-    [Keyword] public bool IsSuccess   { get; set; }
-    [Keyword] public string TransactionId { get; set; }
+    [Keyword] public string EventType { get; set; }
+    [Keyword] public string EventMessage{ get; set; }
 
     public object?[] GetKeys()
     {
         throw new NotImplementedException();
     }
-}*/
+}

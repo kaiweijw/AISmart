@@ -5,6 +5,7 @@ using AISmart.Agent.Event;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
 using AISmart.Application.Grains;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Providers;

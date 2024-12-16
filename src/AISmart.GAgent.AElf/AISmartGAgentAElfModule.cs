@@ -1,5 +1,8 @@
-﻿using AISmart.Options;
+﻿using System.Reflection;
+using AISmart.Application.Grains;
+using AISmart.Options;
 using AISmart.Provider;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.Modularity;
@@ -7,7 +10,8 @@ using Volo.Abp.Modularity;
 namespace AISmart;
 
 [DependsOn(
-    typeof(AISmartApplicationContractsModule)
+    typeof(AISmartApplicationContractsModule),
+    typeof(AIApplicationGrainsModule)
     )]
 public class AISmartGAgentAElfModule : AbpModule
 {

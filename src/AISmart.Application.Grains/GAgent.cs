@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Orleans.EventSourcing;
 using Orleans.Runtime;
 using Orleans.Streams;
@@ -26,7 +27,6 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
-    [Inject]
     public IMediator Mediator { get; set; }
     private readonly ILocalEventBus _eventBus;
 
@@ -248,20 +248,23 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
             await stream.SubscribeAsync(handler);
         }
     }
-    protected override async void RaiseEvent<TransactionGEvent >(TransactionGEvent gEvent)
+    protected override async void RaiseEvent<GEvent >(GEvent gEvent)
     {
         base.RaiseEvent(gEvent);
         ServiceProvider.GetRequiredService<ILocalEventBus>().PublishAsync(gEvent);
-        _eventBus.PublishAsync(gEvent);
-        await ConfirmEvents();
-
-        /*var type = gEvent.GetType();
         Mediator = ServiceProvider.GetRequiredService<IMediator>();
-        Mediator.Send(gEvent);*/
+        var command = new CreateTransactionCommand
+        {
+            Id = Guid.NewGuid(),
+            EventName = gEvent.GetType().Name,
+            EventInfo = JsonConvert.SerializeObject(gEvent)
+        };
+        await Mediator.Send(command);
+
     }
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         await base.OnActivateAsync(cancellationToken);
-        Mediator = this.ServiceProvider.GetService<IMediator>();
+        Mediator = this.ServiceProvider.GetRequiredService<IMediator>();
     }
 }

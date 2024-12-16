@@ -1,5 +1,6 @@
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Application.Grains.Agents.MarketLeader;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 

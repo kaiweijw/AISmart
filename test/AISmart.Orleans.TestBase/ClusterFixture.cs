@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AISmart.Application.Grains;
+using AISmart.Application.Grains.CommandHandler;
 using AutoMapper;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -72,6 +74,9 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                     Mapper = sp.GetRequiredService<IMapper>()
                 });
                 services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
+                services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
+                services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
+
             })
             .AddMemoryStreams("AISmart")
             .AddMemoryGrainStorage("PubSubStore")

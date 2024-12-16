@@ -1,5 +1,5 @@
 using AISmart.Application.Grains.Command;
-//using AISmart.Application.Grains.Dto;
+using AISmart.Application.Grains.Dto;
 using AISmart.Domain.Grains.Event;
 using AutoMapper;
 
@@ -12,7 +12,7 @@ public class AISmartGrainsAutoMapperProfile : Profile
         // User AutoMap
         CreateMap<BasicEvent, TelegramEvent>().ReverseMap();
         CreateMap<AgentTaskState, AgentTaskDto>().ReverseMap();
-       // CreateMap<CreateEventComamand, CreateTransactionEventIndex>();
+        CreateMap<CreateTransactionCommand, CreateTransactionEventIndex>();
 
     }
 }
