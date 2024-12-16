@@ -8,7 +8,7 @@ namespace AISmart.Application.Grains.Agents.Developer;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>
+public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>, IDeveloperAgent
 {
     public DeveloperAgent(ILogger<DeveloperAgent> logger, IClusterClient clusterClient) : base(logger)
     {
@@ -41,4 +41,15 @@ public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>
         await base.OnActivateAsync(cancellationToken);
         await SubscribeAsync<ImplementationEvent>(ExecuteAsync);
     }
+
+    public async Task ExecuteTransactionAsync(ImplementationEvent gEventData)
+    {
+        RaiseEvent(gEventData);
+        await ConfirmEvents();
+        await ExecuteAsync(gEventData);
+    }
+}
+public interface IDeveloperAgent : IGrainWithGuidKey
+{ 
+    Task ExecuteTransactionAsync(ImplementationEvent gEventData);
 }

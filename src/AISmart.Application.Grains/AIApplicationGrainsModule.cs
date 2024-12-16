@@ -1,29 +1,21 @@
 using System.Reflection;
-using AElf.Indexing.Elasticsearch;
 using AElf.Indexing.Elasticsearch.Options;
-using AElf.Indexing.Elasticsearch.Services;
-//using AElf.Indexing.Elasticsearch;
-using AISmart.Application.Grains.Command;
-using AISmart.Application.Grains.Dto;
 using Elasticsearch.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.EventBus;
-using Volo.Abp.EventBus.Local;
 using Volo.Abp.Modularity;
 using MediatR;
-using Microsoft.Extensions.Options;
 using Nest;
 using Volo.Abp;
-using Volo.Abp.Threading;
-
+using AISmart.Application;
 namespace AISmart.Application.Grains;
 
 [DependsOn(
     typeof(AbpAutoMapperModule),
     typeof(AbpEventBusModule),
-    typeof(AISmartApplicationContractsModule),
-    typeof(AISmartApplicationModule)
+    typeof(AISmartApplicationContractsModule)
+   //,typeof(AISmartApplicationModule)
 )]
 public class AIApplicationGrainsModule : AbpModule
  
