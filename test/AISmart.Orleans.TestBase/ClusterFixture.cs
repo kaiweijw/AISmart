@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Nest;
 using Orleans.Hosting;
 using Orleans.TestingHost;
 using Volo.Abp.AutoMapper;
@@ -79,6 +80,12 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
                 services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
                 services.AddTransient<CreateTransactionCommandHandler>();
+                services.AddSingleton<IElasticClient>(provider =>
+                {
+                    var settings =new ConnectionSettings(new Uri("http://127.0.0.1:9200"))
+                        .DefaultIndex("cqrs");
+                    return new ElasticClient(settings);
+                });
 
             })
             .AddMemoryStreams("AISmart")

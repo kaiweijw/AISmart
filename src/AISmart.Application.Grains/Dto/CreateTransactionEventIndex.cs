@@ -15,3 +15,10 @@ public class CreateTransactionEventIndex:  IEntity<string>,IIndexBuild
         throw new NotImplementedException();
     }
 }
+
+public class EventIndex
+{
+    public string Id { get; set; }
+    public string EventType { get; set; }
+    public string EventMessage{ get; set; }
+}

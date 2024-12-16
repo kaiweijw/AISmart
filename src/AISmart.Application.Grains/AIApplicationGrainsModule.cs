@@ -58,19 +58,20 @@ public class AIApplicationGrainsModule : AbpModule
     }
     public override void OnApplicationShutdown(ApplicationShutdownContext context)
     {
-        var elasticIndexService = context.ServiceProvider.GetRequiredService<IElasticIndexService>();
-        var modules = context.ServiceProvider.GetRequiredService<IOptionsSnapshot<IndexCreateOption>>().Value.Modules;
-
-        modules.ForEach(m =>
-        {
-            var types = GetTypesAssignableFrom<IIndexBuild>(m.Assembly);
-            foreach (var t in types)
-            {
-                AsyncHelper.RunSync(async () =>
-                    await elasticIndexService.DeleteIndexAsync("aismart." + t.Name.ToLower()));
-            }
-        });
+        // var elasticIndexService = context.ServiceProvider.GetRequiredService<IElasticIndexService>();
+        // var modules = context.ServiceProvider.GetRequiredService<IOptionsSnapshot<IndexCreateOption>>().Value.Modules;
+        //
+        // modules.ForEach(m =>
+        // {
+        //     var types = GetTypesAssignableFrom<IIndexBuild>(m.Assembly);
+        //     foreach (var t in types)
+        //     {
+        //         AsyncHelper.RunSync(async () =>
+        //             await elasticIndexService.DeleteIndexAsync("aismart." + t.Name.ToLower()));
+        //     }
+        // });
     }
+    
     private List<Type> GetTypesAssignableFrom<T>(Assembly assembly)
     {
         var compareType = typeof(T);
