@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using AISmart.Dto;
 using Newtonsoft.Json;
 
-namespace AISmart.Dto;
+namespace AISmart.Telegram;
 
 public class GetUpdatedDto
 {

@@ -95,7 +95,15 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         await ConfirmEvents();
     }
 
-    public async Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData)
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+         await base.OnActivateAsync(cancellationToken);
+         await SubscribeAsync<CreateTransactionEvent>(ExecuteAsync);
+         await SubscribeAsync<SendTransactionCallBackEvent>(ExecuteAsync);
+         await SubscribeAsync<QueryTransactionCallBackEvent>(ExecuteAsync);
+    }
+
+    public async Task ExecuteTransactionAsync(CreateTransactionEvent gEventData)
     {
         await ExecuteAsync( gEventData);
     }
@@ -108,7 +116,7 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         return aelfAgentDto;
     }
 
-
+    
     protected Task ExecuteAsync(TransactionGEvent eventData)
     {
         return Task.CompletedTask;
@@ -117,6 +125,7 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
 
 public interface IAElfAgent : IGrainWithGuidKey
 { 
-    Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData);
+    Task ExecuteTransactionAsync(CreateTransactionEvent gEventData);
     Task<AElfAgentGState> GetAElfAgentDto();
 }
+

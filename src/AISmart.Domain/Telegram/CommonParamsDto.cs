@@ -42,70 +42,64 @@ public class Message
     public bool? IsAutomaticForward { get; set; }
 
     [JsonProperty("reply_to_message")]
-    public Message ReplyToMessage { get; set; }
+    public Message? ReplyToMessage { get; set; }
 
     [JsonProperty("external_reply")]
-    public ExternalReplyInfo ExternalReply { get; set; }
+    public ExternalReplyInfo? ExternalReply { get; set; }
 
     [JsonProperty("quote")]
-    public TextQuote Quote { get; set; }
+    public TextQuote? Quote { get; set; }
 
     [JsonProperty("via_bot")]
-    public User ViaBot { get; set; }
+    public User? ViaBot { get; set; }
 
     [JsonProperty("edit_date")]
     public int? EditDate { get; set; }
 
     [JsonProperty("text")]
-    public string Text { get; set; }
+    public string? Text { get; set; }
 
     [JsonProperty("entities")]
-    public List<MessageEntity> Entities { get; set; }
+    public List<MessageEntity>? Entities { get; set; }
 
     [JsonProperty("animation")]
-    public Animation Animation { get; set; }
+    public Animation? Animation { get; set; }
 
     [JsonProperty("audio")]
-    public Audio Audio { get; set; }
+    public Audio? Audio { get; set; }
 
     [JsonProperty("document")]
-    public Document Document { get; set; }
+    public Document? Document { get; set; }
 
     [JsonProperty("photo")]
-    public List<PhotoSize> Photo { get; set; }
+    public List<PhotoSize>? Photo { get; set; }
 
     [JsonProperty("sticker")]
-    public Sticker Sticker { get; set; }
+    public Sticker? Sticker { get; set; }
 
     [JsonProperty("video")]
-    public Video Video { get; set; }
+    public Video? Video { get; set; }
 
     [JsonProperty("caption")]
-    public string Caption { get; set; }
+    public string? Caption { get; set; }
 
     [JsonProperty("caption_entities")]
-    public List<MessageEntity> CaptionEntities { get; set; }
+    public List<MessageEntity>? CaptionEntities { get; set; }
 
     [JsonProperty("contact")]
-    public Contact Contact { get; set; }
+    public Contact? Contact { get; set; }
 
     [JsonProperty("poll")]
-    public Poll Poll { get; set; }
+    public Poll? Poll { get; set; }
 
     [JsonProperty("new_chat_members")]
-    public List<User> NewChatMembers { get; set; }
+    public List<User>? NewChatMembers { get; set; }
 
     [JsonProperty("left_chat_member")]
-    public User LeftChatMember { get; set; }
+    public User? LeftChatMember { get; set; }
 
     [JsonProperty("new_chat_title")]
-    public string NewChatTitle { get; set; }
-
-    [JsonProperty("new_chat_photo")]
-    public List<PhotoSize> NewChatPhoto { get; set; }
-
-    [JsonProperty("delete_chat_photo")]
-    public bool? DeleteChatPhoto { get; set; }
+    public string? NewChatTitle { get; set; }
 
     [JsonProperty("group_chat_created")]
     public bool? GroupChatCreated { get; set; }
@@ -117,7 +111,7 @@ public class Message
     public bool? ChannelChatCreated { get; set; }
 
     [JsonProperty("pinned_message")]
-    public Message PinnedMessage { get; set; }
+    public Message? PinnedMessage { get; set; }
 }
 
 public class User
@@ -129,7 +123,7 @@ public class User
     public bool IsBot { get; set; }  // True, if this user is a bot
 
     [JsonProperty("first_name")]
-    public string FirstName { get; set; }  // User's or bot's first name
+    public string? FirstName { get; set; }  // User's or bot's first name
 
     [JsonProperty("last_name")]
     public string? LastName { get; set; }  // Optional. User's or bot's last name
