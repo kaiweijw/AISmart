@@ -1,13 +1,12 @@
+using System.Threading;
+using System.Threading.Tasks;
 using AElf.Indexing.Elasticsearch;
-using AISmart.Application.Grains.Command;
 using AISmart.Application.Grains.Dto;
-using Elasticsearch.Net;
 using MediatR;
 using Nest;
 using Volo.Abp.ObjectMapping;
-using Volo.Abp.EventBus;
 
-namespace AISmart.Application.Grains.CommandHandler;
+namespace AISmart.Application;
 
 public class QueryEventCommandHandler : IRequestHandler<QueryEventCommand, CreateTransactionEventIndex>
 {

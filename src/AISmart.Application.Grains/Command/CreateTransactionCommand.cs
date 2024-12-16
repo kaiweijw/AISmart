@@ -1,7 +1,7 @@
-using AISmart.Agents;
+using System;
 using MediatR;
 
-namespace AISmart.Application.Grains.Command;
+namespace AISmart.Application;
 
 public class CreateTransactionCommand : IRequest<int>
 {

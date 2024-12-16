@@ -1,4 +1,9 @@
-﻿using AISmart.Application.Grains;
+﻿using System;
+using AISmart.Application;
+using AISmart.Application.Grains;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Nest;
 using Volo.Abp.Account;
 using Volo.Abp.AspNetCore.Mvc.Dapr;
 using Volo.Abp.AutoMapper;
@@ -30,6 +35,13 @@ public class AISmartApplicationModule : AbpModule
         {
             options.AddMaps<AISmartApplicationModule>();
         });
-        
+        context.Services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
+        context.Services.AddTransient<CreateTransactionCommandHandler>();
+        context.Services.AddSingleton<IElasticClient>(provider =>
+        {
+            var settings =new ConnectionSettings(new Uri("http://127.0.0.1:9200"))
+                .DefaultIndex("cqrs");
+            return new ElasticClient(settings);
+        });
     }
 }

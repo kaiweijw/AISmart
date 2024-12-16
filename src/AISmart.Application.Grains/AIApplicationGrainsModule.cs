@@ -4,7 +4,6 @@ using AElf.Indexing.Elasticsearch.Options;
 using AElf.Indexing.Elasticsearch.Services;
 //using AElf.Indexing.Elasticsearch;
 using AISmart.Application.Grains.Command;
-using AISmart.Application.Grains.CommandHandler;
 using AISmart.Application.Grains.Dto;
 using Elasticsearch.Net;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,8 +22,8 @@ namespace AISmart.Application.Grains;
 [DependsOn(
     typeof(AbpAutoMapperModule),
     typeof(AbpEventBusModule),
-    typeof(AISmartApplicationContractsModule)
-  //,  typeof(AElfIndexingElasticsearchModule)
+    typeof(AISmartApplicationContractsModule),
+    typeof(AISmartApplicationModule)
 )]
 public class AIApplicationGrainsModule : AbpModule
  
@@ -32,7 +31,7 @@ public class AIApplicationGrainsModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         context.Services.AddMediatR(Assembly.GetExecutingAssembly());
-        context.Services.AddSingleton<ILocalEventBus, LocalEventBus>();
+        //context.Services.AddSingleton<ILocalEventBus, LocalEventBus>();
         //context.Services.AddTransient<CreateEventCommandHandler>();
         //context.Services.AddTransient<ILocalEventHandler<CreateEventComamand>, CreateEventCommandHandler>();
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AIApplicationGrainsModule>(); });
@@ -49,9 +48,8 @@ public class AIApplicationGrainsModule : AbpModule
             options.Refresh = Refresh.True;
             options.IndexPrefix = "aismart";
         });
-        context.Services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
-        //context.Services.AddTransient<INESTRepository<CreateTransactionEventIndex, string>>();
-        context.Services.AddTransient<CreateTransactionCommandHandler>();
+        /*context.Services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
+        context.Services.AddTransient<CreateTransactionCommandHandler>();*/
 
         ConfigureElasticsearch(context);
 

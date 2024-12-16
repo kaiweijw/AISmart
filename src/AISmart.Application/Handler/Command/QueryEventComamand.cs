@@ -1,8 +1,7 @@
-using AISmart.Agents;
 using AISmart.Application.Grains.Dto;
 using MediatR;
 
-namespace AISmart.Application.Grains.Command;
+namespace AISmart.Application;
 
 public class QueryEventCommand :IRequest<CreateTransactionEventIndex>
 {

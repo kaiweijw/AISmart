@@ -1,5 +1,6 @@
-﻿using AutoMapper;
-using AISmart.Authors;
+﻿using AISmart.Application;
+using AISmart.Application.Grains.Dto;
+using AutoMapper;
 
 namespace AISmart;
 
@@ -12,6 +13,7 @@ public class AISmartApplicationAutoMapperProfile : Profile
          * into multiple profile classes for a better organization. */
         
         //Example related, can be removed
+        CreateMap<CreateTransactionCommand, CreateTransactionEventIndex>();
 
     }
 }

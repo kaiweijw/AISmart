@@ -1,5 +1,4 @@
 using AISmart.Agents;
-using AISmart.Application.Grains.Command;
 using AISmart.Dapr;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -246,42 +245,27 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
             await stream.SubscribeAsync(handler);
         }
     }
-    /*protected override async void RaiseEvent<GEvent >(GEvent gEvent)
-    {
-        RaiseEvent(gEvent);
-        await ConfirmEvents();
 
-        ServiceProvider.GetRequiredService<ILocalEventBus>().PublishAsync(gEvent);
-        Mediator = ServiceProvider.GetRequiredService<IMediator>();
-        var command = new CreateTransactionCommand
-        {
-            Id = Guid.NewGuid(),
-            EventName = gEvent.GetType().Name,
-            EventInfo = JsonConvert.SerializeObject(gEvent)
-        };
-        await Mediator.Send(command);
-    }*/
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         await base.OnActivateAsync(cancellationToken);
         Mediator = this.ServiceProvider.GetRequiredService<IMediator>();
     }
     
-    protected override void OnStateChanged()
+    protected override async void OnStateChanged()
     {
         base.OnStateChanged();
         var type = State.GetType();
-        /*ServiceProvider.GetRequiredService<ILocalEventBus>().PublishAsync(gEvent);
         Mediator = ServiceProvider.GetRequiredService<IMediator>();
         var command = new CreateTransactionCommand
         {
             Id = Guid.NewGuid(),
-            EventName = gEvent.GetType().Name,
-            EventInfo = JsonConvert.SerializeObject(gEvent)
+            EventName = type.Name,//gEvent.GetType().Name,
+            EventInfo = JsonConvert.SerializeObject(type)
         };
-        await Mediator.Send(command);*/
+        await Mediator.Send(command);
 
-}
+    }
 
 
 }
