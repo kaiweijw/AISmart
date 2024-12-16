@@ -2,7 +2,9 @@ using System;
 using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agent.Event;
+using AISmart.Agent.Events;
 using AISmart.Agent.GEvents;
+using AISmart.Agent.Grains;
 using Orleans;
 using Xunit;
 using Xunit.Abstractions;
@@ -24,7 +26,7 @@ public class AElfGAgentTests : AISmartApplicationTestBase
     {
         string chainId = "AELF";
         string senderName = "Test";
-        var createTransactionEvent = new CreateTransactionGEvent(){
+        var createTransactionEvent = new CreateTransactionEvent(){
                 ChainId = chainId,
                 SenderName = senderName, 
                 ContractAddress = "JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE",
@@ -32,9 +34,24 @@ public class AElfGAgentTests : AISmartApplicationTestBase
                 };
                 var guid = Guid.NewGuid();
                 await _clusterClient.GetGrain<IAElfAgent>(guid).ExecuteTransactionAsync(createTransactionEvent);
-                /*var transaction = await _clusterClient.GetGrain<IAElfAgent>(guid).GetAElfTransactionAsync();
-                _output.WriteLine("TransactionId: " + transaction.TransactionId );
-                _output.WriteLine("success: " + transaction.IsSuccess);*/
+               var transaction = await _clusterClient.GetGrain<IAElfAgent>(guid).GetAElfAgentDto();
+                _output.WriteLine("TransactionId: " + transaction.PendingTransactions.Count);
+    }
+    
+    [Fact]
+    public async Task GetTransactionResultTest()
+    {
+        string chainId = "AELF";
+        var guid = Guid.NewGuid();
+       _= _clusterClient.GetGrain<ITransactionGrain>(guid).LoadAElfTransactionResultAsync(new QueryTransactionDto(){
+            ChainId = chainId,
+            TransactionId = "TransactionId1"
+        });
+       _=  _clusterClient.GetGrain<ITransactionGrain>(guid).LoadAElfTransactionResultAsync(new QueryTransactionDto(){
+            ChainId = chainId,
+            TransactionId = "TransactionId2"
+        });
+       await Task.Delay(200000);
     }
 
 }

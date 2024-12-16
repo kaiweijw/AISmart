@@ -3,14 +3,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using AElf.Client.MultiToken;
 using AISmart.Agent.Event;
-using AISmart.Dto;
 using AISmart.Provider;
 using AISmart.Sender;
 using Microsoft.Extensions.Logging;
 using Orleans;
+using Orleans.Providers;
+using TransactionDto = AISmart.Dto.TransactionDto;
 
 namespace AISmart.Agent.Grains;
 
+[StorageProvider(ProviderName = "PubSubStore")]
 public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
 {
     public readonly IAElfNodeProvider _AElfNodeProvider;
@@ -26,8 +28,8 @@ public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
         var transaction = await _AElfNodeProvider.CreateTransactionAsync(sendTransactionDto.ChainId, sendTransactionDto.SenderName, sendTransactionDto.ContractAddress,
             sendTransactionDto.MethodName, new TransferInput());
         var sendTransactionAsync =  await _AElfNodeProvider.SendTransactionAsync(sendTransactionDto.ChainId,transaction);
-        var publishingAgent = GrainFactory.GetGrain<IPublishingAgent>(Guid.NewGuid());
-        await publishingAgent.PublishEventAsync(new SendTransactionCallBackSEvent
+        var publishingAgent = GrainFactory.GetGrain<IPublishingGAgent>(Guid.NewGuid());
+        await publishingAgent.PublishEventAsync(new SendTransactionCallBackEvent
         {
             TransactionId = sendTransactionAsync.TransactionId,
             
@@ -64,8 +66,8 @@ public class TransactionGrain : Grain<AElfTransactionState>, ITransactionGrain
         {
             _Logger.LogError(e,"Transaction query timed out.");
         }
-        var publishingAgent = GrainFactory.GetGrain<IPublishingAgent>(Guid.NewGuid());
-        await publishingAgent.PublishEventAsync(new QueryTransactionCallBackSEvent()
+        var publishingAgent = GrainFactory.GetGrain<IPublishingGAgent>(Guid.NewGuid());
+        await publishingAgent.PublishEventAsync(new QueryTransactionCallBackEvent()
                 {
                     TransactionId =  queryTransactionDto.TransactionId
                 });

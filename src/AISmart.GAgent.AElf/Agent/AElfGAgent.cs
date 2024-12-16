@@ -2,31 +2,49 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AISmart.Agent.Event;
+using AISmart.Agent.Events;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
+using AISmart.Agents;
 using AISmart.Application.Grains;
+using AISmart.Dapr;
+using AISmart.Dto;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Providers;
+using Orleans.Streams;
 
 namespace AISmart.Agent;
 
+[StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, TransactionGEvent>(logger), IAElfAgent
+public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfAgent
 {
+    public AElfGAgent(ILogger<AElfGAgent> logger) : base(logger)
+    {
+    }
+    
     public override Task<string> GetDescriptionAsync()
     {
         return Task.FromResult("An agent to inform other agents when a aelf thread is published.");
     }
 
-
-    protected  Task ExecuteAsync(CreateTransactionGEvent gEventData)
+    [EventHandler]
+    protected async Task ExecuteAsync(CreateTransactionEvent gEventData)
     {
-        base.RaiseEvent(gEventData);
-        _= GrainFactory.GetGrain<ITransactionGrain>(gEventData.Id).SendAElfTransactionAsync(
+       var gEvent = new CreateTransactionGEvent
+        {
+            ChainId = gEventData.ChainId,
+            SenderName = gEventData.SenderName,
+            ContractAddress = gEventData.ContractAddress,
+            MethodName = gEventData.MethodName,
+        };
+        base.RaiseEvent(gEvent);
+        await ConfirmEvents();
+        _= GrainFactory.GetGrain<ITransactionGrain>(gEvent.Id).SendAElfTransactionAsync(
             new SendTransactionDto
             {
-                Id = gEventData.Id,
+                Id = gEvent.Id,
                 ChainId = gEventData.ChainId,
                 SenderName = gEventData.SenderName,
                 ContractAddress = gEventData.ContractAddress,
@@ -34,10 +52,10 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
                 Param = gEventData.Param
             });
         Logger.LogInformation("ExecuteAsync: AElf {MethodName}", gEventData.MethodName);
-        return Task.CompletedTask;
     }
     
-    protected  Task ExecuteAsync(SendTransactionCallBackSEvent gEventData)
+    [EventHandler]
+    public Task ExecuteAsync(SendTransactionCallBackEvent gEventData)
     {
         base.RaiseEvent(new SendTransactionGEvent
         {
@@ -56,9 +74,8 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
         return Task.CompletedTask;
     }
 
-   
-
-    protected async Task ExecuteAsync(QueryTransactionCallBackSEvent gEventData)
+    [EventHandler]
+    public async Task ExecuteAsync(QueryTransactionCallBackEvent gEventData)
     {
         if (gEventData.IsSuccess)
         {
@@ -78,34 +95,24 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
         await ConfirmEvents();
     }
 
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-         await base.OnActivateAsync(cancellationToken);
-         await SubscribeAsync<CreateTransactionGEvent>(ExecuteAsync);
-         await SubscribeAsync<SendTransactionGEvent>(ExecuteAsync);
-         await SubscribeAsync<SendTransactionCallBackSEvent>(ExecuteAsync);
-         await SubscribeAsync<QueryTransactionCallBackSEvent>(ExecuteAsync);
-    }
-
-    public async Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData)
+    public async Task ExecuteTransactionAsync(CreateTransactionEvent gEventData)
     {
         await ExecuteAsync( gEventData);
     }
 
-
-    protected override Task ExecuteAsync(TransactionGEvent eventData)
+    public async Task<AElfAgentGState> GetAElfAgentDto()
     {
-        throw new NotImplementedException();
+        AElfAgentDto aelfAgentDto = new AElfAgentDto();
+        aelfAgentDto.Id = State.Id;
+        aelfAgentDto.PendingTransactions = State.PendingTransactions;
+        return aelfAgentDto;
     }
-
-    protected override Task CompleteAsync(TransactionGEvent eventData)
-    {
-        throw new NotImplementedException();
-    }
+    
 }
 
 public interface IAElfAgent : IGrainWithGuidKey
 { 
-    Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData);
+    Task ExecuteTransactionAsync(CreateTransactionEvent gEventData);
+    Task<AElfAgentGState> GetAElfAgentDto();
 }
+

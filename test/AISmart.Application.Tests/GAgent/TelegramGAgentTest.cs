@@ -1,10 +1,18 @@
+using System;
 using System.Threading.Tasks;
 using AElf.Client.Dto;
 using AElf.Contracts.MultiToken;
 using AElf.Types;
+using AISmart.Agent;
+using AISmart.Agent.Grains;
+using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Dto;
+using AISmart.Grains;
 using AISmart.Provider;
+using AISmart.Sender;
+using AISmart.Service;
 using Newtonsoft.Json;
+using Orleans.Runtime;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,10 +21,12 @@ namespace AISmart.GAgent;
 public class TelegramGAgentTest : AISmartApplicationTestBase
 {
     private readonly ITelegramProvider _telegramProvider;
+    private readonly ITelegramService _telegramService;
     private readonly ITestOutputHelper _output;
     public TelegramGAgentTest(ITestOutputHelper output)
     {
         _telegramProvider = GetRequiredService<ITelegramProvider>();
+        _telegramService =  GetRequiredService<ITelegramService>();
         _output = output;
     }
     //https://core.telegram.org/bots/api#chat
@@ -51,4 +61,5 @@ public class TelegramGAgentTest : AISmartApplicationTestBase
             Caption = "hello, this is a photo."
         });
     }
+    
 }
