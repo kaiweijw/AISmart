@@ -7,6 +7,7 @@ using AISmart.Application;
 using AISmart.Application.Grains;
 using AISmart.Application.Grains.Command;
 using AISmart.Application.Grains.Dto;
+using AISmart.Application.Grains.Handler;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Configuration;
@@ -80,6 +81,7 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
                 services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
                 services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
+                services.AddMediatR(typeof(CreateTransaction1CommandHandler).Assembly);
                 services.AddTransient<CreateTransactionCommandHandler>();
                 services.AddSingleton<IElasticClient>(provider =>
                 {

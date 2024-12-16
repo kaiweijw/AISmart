@@ -10,5 +10,5 @@ public class DeveloperAgentState
 
 public class DeveloperAgentCommand : BaseCommand<DeveloperAgentState>
 {
-    
+    public string Id { get; set; }
 }

@@ -46,6 +46,11 @@ public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>, 
 
     public async Task ExecuteTransactionAsync(ImplementationEvent gEventData)
     {
+        if (State.Content.IsNullOrEmpty())
+        {
+            State.Content = [];
+        }
+        State.Content.Add(gEventData.Content);
         RaiseEvent(gEventData);
         await ConfirmEvents();
         await ExecuteAsync(gEventData);
@@ -57,7 +62,8 @@ public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>, 
         Mediator = ServiceProvider.GetRequiredService<IMediator>();
         var command = new DeveloperAgentCommand
         {
-            State = State
+            State = State,
+            Id = Guid.NewGuid().ToString()
         };
 
         Mediator.Send(command);
