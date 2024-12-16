@@ -1,26 +1,25 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using AISmart.Agents;
-using AISmart.Application.Grains;
-using AISmart.GAgent.Autogen.Applications;
+using AISmart.Dapr;
 using AISmart.GAgent.Autogen.Common;
 using AISmart.GAgent.Autogen.Event;
+using AISmart.GAgent.Autogen.Events;
 using AISmart.GAgent.Autogen.Exceptions;
+using AISmart.GEvents.Autogen;
 using AISmart.Sender;
 using AutoGen.Core;
-using AutoGen.OpenAI;
-using AutoGen.OpenAI.Extension;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OpenAI.Chat;
-using Volo.Abp.DependencyInjection;
+using Orleans.Runtime;
+using Orleans.Streams;
 
 namespace AISmart.GAgent.Autogen;
 
-public class AutoGenExecutor : ISingletonDependency
+public class AutoGenExecutor : Grain, IAutoGenExecutor
 {
+    private IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
     private readonly AgentDescriptionManager _agentDescriptionManager;
-    private readonly IChatService _chatService;
     private readonly IChatAgentProvider _chatAgentProvider;
     private readonly IGrainFactory _clusterClient;
     private readonly ILogger<AutoGenExecutor> _logger;
@@ -30,17 +29,18 @@ public class AutoGenExecutor : ISingletonDependency
     private const string BreakFlag = "break";
 
     public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IGrainFactory clusterClient,
-        AgentDescriptionManager agentDescriptionManager, IChatAgentProvider chatAgentProvider, IChatService chatService)
+        AgentDescriptionManager agentDescriptionManager, IChatAgentProvider chatAgentProvider)
     {
         _logger = logger;
         _clusterClient = clusterClient;
         _agentDescriptionManager = agentDescriptionManager;
         _chatAgentProvider = chatAgentProvider;
-        _chatService = chatService;
     }
 
-    public async Task ExecuteTask(Guid taskId, List<IMessage> history)
+    public async Task ExecuteTaskAsync(ExecutorTaskInfo taskInfo)
     {
+        var history = ConvertMessage(taskInfo.History);
+        var taskId = taskInfo.TaskId;
         _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
         var response = await _chatAgentProvider.SendAsync(AgentName, "What should be done next?", history);
         var responseStr = response.GetContent();
@@ -56,8 +56,8 @@ public class AutoGenExecutor : ISingletonDependency
             var completeEvent = JsonSerializer.Deserialize<EventComplete>(responseStr);
             if (completeEvent != null)
             {
-                var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-                await publishGrain.PublishEventAsync(new AutoGenExecutorEvent()
+                // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+                await PublishInternalEvent(new AutoGenExecutorEvent()
                 {
                     TaskId = taskId,
                     ExecuteStatus = TaskExecuteStatus.Finish,
@@ -74,8 +74,8 @@ public class AutoGenExecutor : ISingletonDependency
             var breakInfo = JsonSerializer.Deserialize<EventBreak>(responseStr);
             if (breakInfo != null)
             {
-                var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-                await publishGrain.PublishEventAsync(new AutoGenExecutorEvent()
+                // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+                await PublishInternalEvent(new AutoGenExecutorEvent()
                 {
                     TaskId = taskId,
                     ExecuteStatus = TaskExecuteStatus.Break,
@@ -91,13 +91,41 @@ public class AutoGenExecutor : ISingletonDependency
         var handleEventSchema = JsonSerializer.Deserialize<HandleEventAsyncSchema>(responseStr);
         if (handleEventSchema != null)
         {
-            var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-            await publishGrain.PublishEventAsync(new AutoGenExecutorEvent()
+            // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+            await PublishInternalEvent(new AutoGenExecutorEvent()
             {
                 TaskId = taskId,
                 ExecuteStatus = TaskExecuteStatus.Progressing,
                 CurrentCallInfo = responseStr
             });
+        }
+    }
+
+    private List<IMessage> ConvertMessage(List<AutogenMessage> listAutoGenMessage)
+    {
+        var result = new List<IMessage>();
+        foreach (var item in listAutoGenMessage)
+        {
+            result.Add(new TextMessage(GetRole(item.Role), item.Content));
+        }
+
+        return result;
+    }
+
+    private Role GetRole(string roleName)
+    {
+        switch (roleName)
+        {
+            case "user":
+                return Role.User;
+            case "assistant":
+                return Role.Assistant;
+            case "system":
+                return Role.System;
+            case "function":
+                return Role.Function;
+            default:
+                return Role.User;
         }
     }
 
@@ -165,6 +193,13 @@ public class AutoGenExecutor : ISingletonDependency
                  """;
     }
 
+    private async Task PublishInternalEvent(AutoGenInternalEventBase publishData)
+    {
+        var streamId = StreamId.Create(CommonConstants.StreamNamespace, this.GetPrimaryKey());
+        var stream = StreamProvider.GetStream<AutoGenInternalEventBase>(streamId);
+        await stream.OnNextAsync(publishData);
+    }
+    
     #region Event hook
 
     /// <summary>
@@ -197,8 +232,8 @@ public class AutoGenExecutor : ISingletonDependency
                 $"Event name:{agentName} Deserialize object is null, the parameters is{parameters}");
         }
 
-        var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-        await publishGrain.PublishEventAsync(eventData);
+        // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+        await PublishInternalEvent(new PassThroughExecutorEvent() { PassThroughData = eventData });
 
         return JsonSerializer.Serialize(new HandleEventAsyncSchema()
             { AgentName = agentName, EventName = eventName, Parameters = parameters });
@@ -248,7 +283,7 @@ public class AutoGenExecutor : ISingletonDependency
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             });
-        
+
         string result;
         try
         {

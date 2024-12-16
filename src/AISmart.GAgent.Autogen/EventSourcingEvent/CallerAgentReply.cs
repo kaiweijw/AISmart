@@ -1,3 +1,4 @@
+using AISmart.GAgent.Autogen.Common;
 using AutoGen.Core;
 
 namespace AISmart.GAgent.Autogen.EventSourcingEvent;
@@ -6,5 +7,5 @@ namespace AISmart.GAgent.Autogen.EventSourcingEvent;
 public class CallerAgentReply:AutogenEventBase
 {
     [Id(0)] public string AgentName { get; set; }
-    [Id(1)] public IMessage Reply { get; set; }
+    [Id(1)] public AutogenMessage Reply { get; set; }
 }

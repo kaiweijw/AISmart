@@ -1,4 +1,5 @@
 using AISmart.Agents.AutoGen;
+using AISmart.GAgent.Autogen.Common;
 using AISmart.GAgent.Autogen.EventSourcingEvent;
 using AutoGen.Core;
 using Microsoft.Extensions.Logging;
@@ -83,7 +84,7 @@ public class AutoGenAgentState
 public class AutoGenAgentStateInfo
 {
     [Id(0)] public Guid TaskId { get; set; }
-    [Id(1)] public List<IMessage> ChatHistory { get; set; }
+    [Id(1)] public List<AutogenMessage> ChatHistory { get; set; }
     [Id(2)] public long SessionStartTime { get; set; }
     [Id(3)] public SessionStateEnum SessionStateEnum { get; set; } = SessionStateEnum.Processing;
     [Id(4)] public string CurrentCallInfo { get; set; }

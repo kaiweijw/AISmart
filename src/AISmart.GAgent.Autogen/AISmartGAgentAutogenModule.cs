@@ -1,4 +1,3 @@
-using AISmart.GAgent.Autogen.Applications;
 using AISmart.GAgent.Autogen.Options;
 using AISmart.Options;
 using AISmart.Provider;

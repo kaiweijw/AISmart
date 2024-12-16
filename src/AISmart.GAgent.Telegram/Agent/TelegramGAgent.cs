@@ -44,7 +44,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
        await PublishAsync(new AutoGenCreatedEvent
        {
            EventId = Guid.NewGuid(),
-           Content = $"I received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}. Please parse the message content, generate a response, and then call the SendMessageEvent method"
+           Content = $"I received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}. Please parse the message content, generate a response Based on the JSON Message, and then call the SendMessageEvent event of TelegramGAgent"
        });
 
 
