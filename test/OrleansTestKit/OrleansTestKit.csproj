@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59">
+    <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -32,11 +32,11 @@
     <PackageReference Include="Microsoft.Orleans.Streaming" />
     <PackageReference Include="Microsoft.Orleans.Runtime" />
     <PackageReference Include="Microsoft.Orleans.EventSourcing" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="Moq" />
   </ItemGroup>
 
   <ItemGroup>
