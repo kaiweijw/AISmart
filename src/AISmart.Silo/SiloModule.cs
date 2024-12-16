@@ -12,7 +12,10 @@ namespace AISmart.Silo;
 [DependsOn(
     typeof(AbpAspNetCoreSerilogModule),
     typeof(AbpAutofacModule),
-    typeof(OpenTelemetryModule)
+    typeof(OpenTelemetryModule),
+    typeof(AISmartGAgentAElfModule),
+    typeof(AISmartGAgentTelegramModule),
+    typeof(AISmartGAgentTwitterModule)
 )]
 public class SiloModule : AIApplicationGrainsModule, IDomainGrainsModule
 {

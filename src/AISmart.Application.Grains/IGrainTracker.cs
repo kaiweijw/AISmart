@@ -9,7 +9,6 @@ using AISmart.Application.Grains.Agents.Developer;
 using AISmart.Application.Grains.Agents.Group;
 using AISmart.Application.Grains.Agents.MarketLeader;
 using AISmart.Application.Grains.Agents.X;
-using AISmart.Sender;
 
 namespace AISmart.Application.Grains;
 
@@ -25,5 +24,5 @@ public static class GrainTracker
     public static ConcurrentQueue<IStateGAgent<DeveloperAgentState>> DeveloperAgents = new();
     public static ConcurrentQueue<IStateGAgent<InvestmentAgentState>> InvestmentAgents = new();
     public static ConcurrentQueue<IStateGAgent<GroupAgentState>> GroupAgents = new();
-    public static ConcurrentQueue<IPublishingGAgent> PublishingGAgents = new();
+
 }
