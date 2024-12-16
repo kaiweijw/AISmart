@@ -26,14 +26,8 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
         return Task.FromResult("Represents an agent responsible for informing other agents when a Telegram thread is published.");
     }
     
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<ReceiveMessageEvent>(ExecuteAsync);
-        await SubscribeAsync<SendMessageEvent>(ExecuteAsync);
-    }
 
-    
+    [EventHandler]
     public async Task ExecuteAsync(ReceiveMessageEvent @event)
     {
        RaiseEvent(new ReceiveMessageGEvent
@@ -45,6 +39,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
        await ConfirmEvents();
        
     }
+    [EventHandler]
     public async Task ExecuteAsync(SendMessageEvent @event)
     {
         if (@event.ReplyMessageId != null)

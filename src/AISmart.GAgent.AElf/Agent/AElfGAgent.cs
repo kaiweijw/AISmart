@@ -95,7 +95,7 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         await ConfirmEvents();
     }
 
-    public async Task ExecuteTransactionAsync(CreateTransactionGEvent gEventData)
+    public async Task ExecuteTransactionAsync(CreateTransactionEvent gEventData)
     {
         await ExecuteAsync( gEventData);
     }
