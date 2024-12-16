@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AISmart.Telegram;
 using Newtonsoft.Json;
 
 namespace AISmart.Dto;
@@ -45,5 +46,5 @@ public class PhotoParamsRequest
     public string? MessageEffectId { get; set; }
 
     [JsonProperty("reply_parameters")]
-    public ReplyParamDto? ReplyParameters { get; set; }
+    public ReplyParameters? ReplyParameters { get; set; }
 }

@@ -33,7 +33,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
     [EventHandler]
     public async Task ExecuteAsync(ReceiveMessageEvent @event)
     { 
-        _logger.LogInformation("ReceiveMessageEvent "+@event.MessageId);
+        _logger.LogInformation("Telegram ReceiveMessageEvent "+@event.MessageId);
        RaiseEvent(new ReceiveMessageGEvent
        {
            MessageId = @event.MessageId,

@@ -7,12 +7,10 @@ using AISmart.Agent;
 using AISmart.Agent.Grains;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Dto;
-using AISmart.Grains;
 using AISmart.Provider;
-using AISmart.Sender;
 using AISmart.Service;
+using AISmart.Telegram;
 using Newtonsoft.Json;
-using Orleans.Runtime;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -47,9 +45,9 @@ public class TelegramGAgentTest : AISmartApplicationTestBase
     [Fact]
     public async Task SendMessageWithReplayTest()
     {
-        await  _telegramProvider.SendMessageAsync("Test","-1002473003637","hello fun",new ReplyParamDto
+        await  _telegramProvider.SendMessageAsync("Test","-1002473003637","hello funtest",new ReplyParamDto
         {
-            MessageId = 6
+            MessageId = 10
         });
     }
     
@@ -60,9 +58,9 @@ public class TelegramGAgentTest : AISmartApplicationTestBase
         {
             ChatId = "-1002473003637",
             Photo = "https://raw.githubusercontent.com/paulazhou/picbed/main/Hexo/2021_05_23_G1OwSTxDrfVlPdv.png",
-            ReplyParameters = new ReplyParamDto
+            ReplyParameters = new ReplyParameters()
             {
-                MessageId = 12
+                MessageId = "12"
             },
             Caption = "hello, this is a photo."
         });
