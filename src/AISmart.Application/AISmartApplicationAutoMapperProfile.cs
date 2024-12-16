@@ -13,7 +13,6 @@ public class AISmartApplicationAutoMapperProfile : Profile
          * into multiple profile classes for a better organization. */
         
         //Example related, can be removed
-        CreateMap<CreateTransactionCommand, CreateTransactionEventIndex>();
 
     }
 }

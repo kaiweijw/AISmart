@@ -35,13 +35,13 @@ public class AISmartApplicationModule : AbpModule
         {
             options.AddMaps<AISmartApplicationModule>();
         });
-        context.Services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
+        /*context.Services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
         context.Services.AddTransient<CreateTransactionCommandHandler>();
         context.Services.AddSingleton<IElasticClient>(provider =>
         {
             var settings =new ConnectionSettings(new Uri("http://127.0.0.1:9200"))
                 .DefaultIndex("cqrs");
             return new ElasticClient(settings);
-        });
+        });*/
     }
 }
