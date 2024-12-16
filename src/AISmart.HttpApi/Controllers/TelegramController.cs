@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading.Tasks;
 using AISmart.Authors;
 using AISmart.Dapr;
@@ -31,6 +32,7 @@ public class TelegramController: AISmartController
     [HttpPost("messages")]
     public async Task PostMessages([FromBody]TelegramUpdateDto updateMessage)
     {
+        _logger.LogInformation("Raw JSON received: {rawJson}", await new StreamReader(HttpContext.Request.Body).ReadToEndAsync());
         _logger.LogInformation("Receive update message from telegram.{message}",JsonConvert.SerializeObject(updateMessage));
         await _telegramService.ReceiveMessagesAsync(updateMessage);
     }
