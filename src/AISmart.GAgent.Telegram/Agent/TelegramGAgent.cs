@@ -17,8 +17,10 @@ namespace AISmart.Agent;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, ITelegramGAgent
 {
+    private readonly ILogger<TelegramGAgent> _logger;
     public TelegramGAgent(ILogger<TelegramGAgent> logger) : base(logger)
     {
+        _logger = logger;
     }
 
     public override Task<string> GetDescriptionAsync()
@@ -29,7 +31,8 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
 
     [EventHandler]
     public async Task ExecuteAsync(ReceiveMessageEvent @event)
-    {
+    { 
+        _logger.LogInformation("ReceiveMessageEvent "+@event.MessageId);
        RaiseEvent(new ReceiveMessageGEvent
        {
            MessageId = @event.MessageId,
