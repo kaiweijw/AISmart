@@ -5,7 +5,7 @@ using MediatR;
 using Nest;
 using Volo.Abp.ObjectMapping;
 
-namespace AISmart.Application;
+namespace AISmart.Application.Grains.Command;
 
 public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, int>
 {

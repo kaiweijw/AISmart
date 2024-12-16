@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AElf.Indexing.Elasticsearch;
 using AISmart.Application;
 using AISmart.Application.Grains;
+using AISmart.Application.Grains.Command;
 using AISmart.Application.Grains.Dto;
 using AutoMapper;
 using MediatR;
@@ -78,8 +79,8 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 });
                 services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
                 services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
-                //services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
-                //services.AddTransient<CreateTransactionCommandHandler>();
+                services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
+                services.AddTransient<CreateTransactionCommandHandler>();
                 services.AddSingleton<IElasticClient>(provider =>
                 {
                     var settings =new ConnectionSettings(new Uri("http://127.0.0.1:9200"))
