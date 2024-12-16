@@ -1,6 +1,6 @@
 namespace AISmart.Agents.Investment;
 
-public class InvestmentGEvent : GEvent
+public class InvestmentGEvent : GEventBase
 {
     
 }

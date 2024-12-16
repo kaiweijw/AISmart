@@ -1,4 +1,6 @@
 ﻿using System.Linq.Expressions;
+using AISmart.GAgent.Autogen;
+using AISmart.GAgent.Autogen.Common;
 using AISmart.Mock;
 using AISmart.Provider;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,7 +61,12 @@ public sealed class TestKitSilo
         _grainCreator = new TestGrainCreator(GrainRuntime, ReminderRegistry, ServiceProvider);
 
         ServiceProvider.AddService<IAElfNodeProvider>(new MockAElfNodeProvider());
-
+        
+        var manager = new AgentDescriptionManager();
+        ServiceProvider.AddService(manager);
+        var clusterClient = ServiceProvider.GetRequiredService<IClusterClient>();
+        ServiceProvider.AddService(new AutoGenExecutor(null, clusterClient, manager, ServiceProvider));
+        
         var provider = new ServiceCollection()
             .AddSingleton<GrainTypeResolver>()
             .AddSingleton<IGrainTypeProvider, AttributeGrainTypeProvider>()
