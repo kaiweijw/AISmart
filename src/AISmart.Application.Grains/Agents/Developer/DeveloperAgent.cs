@@ -1,6 +1,8 @@
 using AISmart.Agents.ImplementationAgent.Events;
+using AISmart.Application.Grains.Agents.MarketLeader;
 using AISmart.Application.Grains.Agents.X;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
@@ -47,6 +49,19 @@ public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>, 
         RaiseEvent(gEventData);
         await ConfirmEvents();
         await ExecuteAsync(gEventData);
+    }
+    
+    protected override void OnStateChanged()
+    {
+        var type = State.GetType();
+        Mediator = ServiceProvider.GetRequiredService<IMediator>();
+        var command = new DeveloperAgentCommand
+        {
+            State = State
+        };
+
+        Mediator.Send(command);
+        base.OnStateChanged();   
     }
 }
 public interface IDeveloperAgent : IGrainWithGuidKey
