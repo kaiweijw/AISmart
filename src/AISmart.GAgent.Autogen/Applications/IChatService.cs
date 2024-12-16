@@ -5,7 +5,6 @@ namespace AISmart.GAgent.Autogen.Applications;
 
 public interface IChatService
 {
-    Task<IMessage> SendAsync(string agentName, string message, IEnumerable<IMessage>? chatHistory);
 }
 
 public class ChatService : IChatService, ITransientDependency

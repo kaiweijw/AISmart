@@ -13,7 +13,7 @@ using Orleans.Providers;
 
 namespace AISmart.Agent;
 
-[Description("Represents an agent responsible for informing other agents when a Telegram thread is published.")]
+[Description("Handle telegram")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, ITelegramGAgent
@@ -44,7 +44,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
        await PublishAsync(new AutoGenCreatedEvent
        {
            EventId = Guid.NewGuid(),
-           Content = JsonConvert.SerializeObject(@event)+" Processes the message to generate an intelligent response"
+           Content = $"I received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}. Please parse the message content, generate a response, and then call the SendMessageEvent method"
        });
 
 

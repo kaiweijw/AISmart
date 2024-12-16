@@ -42,7 +42,7 @@ public class AutoGenExecutor : ISingletonDependency
     public async Task ExecuteTask(Guid taskId, List<IMessage> history)
     {
         _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
-        var response = await _chatService.SendAsync(AgentName, "What should be done next?", history);
+        var response = await _chatAgentProvider.SendAsync(AgentName, "What should be done next?", history);
         var responseStr = response.GetContent();
         if (responseStr.IsNullOrEmpty())
         {
