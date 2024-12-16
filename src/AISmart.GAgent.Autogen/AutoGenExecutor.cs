@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AISmart.Agents;
+using AISmart.Application.Grains;
+using AISmart.GAgent.Autogen.Applications;
 using AISmart.GAgent.Autogen.Common;
 using AISmart.GAgent.Autogen.Event;
 using AISmart.GAgent.Autogen.Exceptions;
@@ -18,31 +20,29 @@ namespace AISmart.GAgent.Autogen;
 public class AutoGenExecutor : ISingletonDependency
 {
     private readonly AgentDescriptionManager _agentDescriptionManager;
-    private readonly IClusterClient _clusterClient;
+    private readonly IChatService _chatService;
+    private readonly IChatAgentProvider _chatAgentProvider;
+    private readonly IGrainFactory _clusterClient;
     private readonly ILogger<AutoGenExecutor> _logger;
-    private readonly IServiceProvider _serviceProvider;
     private readonly Guid _publishGrainId = Guid.NewGuid();
     private const string AgentName = "admin";
     private const string FinishFlag = "complete";
     private const string BreakFlag = "break";
 
-    public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IClusterClient clusterClient,
-        AgentDescriptionManager agentDescriptionManager, IServiceProvider serviceProvider)
+    public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IGrainFactory clusterClient,
+        AgentDescriptionManager agentDescriptionManager, IChatAgentProvider chatAgentProvider, IChatService chatService)
     {
         _logger = logger;
         _clusterClient = clusterClient;
-        _serviceProvider = serviceProvider;
         _agentDescriptionManager = agentDescriptionManager;
+        _chatAgentProvider = chatAgentProvider;
+        _chatService = chatService;
     }
 
     public async Task ExecuteTask(Guid taskId, List<IMessage> history)
     {
-        var chatClient = _serviceProvider.GetRequiredService<ChatClient>();
-        IAgent agent = new OpenAIChatAgent(chatClient, AgentName, GetAgentResponsibility())
-            .RegisterMessageConnector()
-            .RegisterMiddleware(GetMiddleware());
-
-        var response = await agent.SendAsync("What should be done next?", history);
+        _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
+        var response = await _chatService.SendAsync(AgentName, "What should be done next?", history);
         var responseStr = response.GetContent();
         if (responseStr.IsNullOrEmpty())
         {
@@ -98,7 +98,6 @@ public class AutoGenExecutor : ISingletonDependency
                 ExecuteStatus = TaskExecuteStatus.Progressing,
                 CurrentCallInfo = responseStr
             });
-            return;
         }
     }
 
@@ -141,7 +140,6 @@ public class AutoGenExecutor : ISingletonDependency
                  - Split the task into different events, and use the output of the previous event combined with the user's request to determine the execution of the next event.
                  - Based on the event's response, reorganize the next request in line with the user's intent until the user's issue is resolved.
                  - If the above events cannot meet the user's task execution needs, you can generate results based on the events to drive the continuation of the process.
-                 - If it is the result returned by the agent, return the agent's result directly without any modifications.
                  - The response for each event will be added to the conversation in JSON format. 
                    You need to analyze the response information to decide whether to proceed to the next round. 
                    The response information will be used during the final summary. The JSON format is as follows:

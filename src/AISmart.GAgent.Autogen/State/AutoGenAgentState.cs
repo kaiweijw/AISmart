@@ -7,9 +7,11 @@ namespace AISmart.GAgent.Autogen.State;
 
 [GenerateSerializer]
 public class AutoGenAgentState
-{
+{   
     [Id(0)] public Dictionary<Guid, AutoGenAgentStateInfo> AutoGenStateDic =
         new Dictionary<Guid, AutoGenAgentStateInfo>();
+
+    [Id(1)] public Dictionary<Guid, RequestWrapper> CurrentRequestDic = new Dictionary<Guid, RequestWrapper>();
     
     public void Apply(BreakEvent @event)
     {
@@ -95,4 +97,11 @@ public enum SessionStateEnum
     Processing,
     Break,
     Completed
+}
+
+[GenerateSerializer]
+public class RequestWrapper
+{
+    [Id(0)] public Guid TaskId { get; set; }
+    [Id(1)] public long StartTime { get; set; }
 }
