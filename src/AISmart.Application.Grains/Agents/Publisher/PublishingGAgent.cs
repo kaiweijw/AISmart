@@ -24,7 +24,7 @@ public class PublishingGAgent : GAgentBase<PublishingAgentState, PublishingGEven
         return Task.FromResult("Agent to be used for publishing new events.");
     }
 
-    public async Task PublishEventAsync<T>(T @event) where T : BaseEvent
+    public async Task PublishEventAsync<T>(T @event) where T : EventBase
     {
         if (@event == null)
         {

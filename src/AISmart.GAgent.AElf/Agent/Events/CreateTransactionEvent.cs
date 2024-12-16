@@ -4,7 +4,7 @@ using Orleans;
 namespace AISmart.Agent.Events;
 
 [GenerateSerializer]
-public  class CreateTransactionEvent: BaseEvent
+public  class CreateTransactionEvent: EventBase
 {
     [Id(1)] public string ChainId { get; set; }
     [Id(2)] public string SenderName{ get; set; }

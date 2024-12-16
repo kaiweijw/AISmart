@@ -6,5 +6,5 @@ namespace AISmart.Sender;
 
 public interface IPublishingGAgent : IGAgent
 {
-    Task PublishEventAsync<T>(T @event) where T : BaseEvent;
+    Task PublishEventAsync<T>(T @event) where T : EventBase;
 }
