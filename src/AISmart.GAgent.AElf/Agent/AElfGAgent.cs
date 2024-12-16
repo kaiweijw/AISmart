@@ -22,7 +22,8 @@ public class AElfGAgent(ILogger<AElfGAgent> logger) : GAgent<AElfAgentGState, Tr
 
     protected  Task ExecuteAsync(CreateTransactionGEvent gEventData)
     {
-        base.RaiseEvent(gEventData);
+        //base.RaiseEvent(gEventData);
+        RaiseEvent(gEventData);
         _= GrainFactory.GetGrain<ITransactionGrain>(gEventData.Id).SendAElfTransactionAsync(
             new SendTransactionDto
             {

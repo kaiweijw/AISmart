@@ -1,9 +1,15 @@
 using AISmart.Agents;
+using AISmart.Application.Grains.Command;
 using AISmart.Dapr;
+using MediatR;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
 using Orleans.Runtime;
 using Orleans.Streams;
+using Volo.Abp.EventBus;
+using Volo.Abp.EventBus.Local;
 
 namespace AISmart.Application.Grains;
 
@@ -20,7 +26,10 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
-    
+    [Inject]
+    public IMediator Mediator { get; set; }
+    private readonly ILocalEventBus _eventBus;
+
     protected GAgent(ILogger logger)
     {
         Logger = logger;
@@ -238,5 +247,21 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         {
             await stream.SubscribeAsync(handler);
         }
+    }
+    protected override async void RaiseEvent<TransactionGEvent >(TransactionGEvent gEvent)
+    {
+        base.RaiseEvent(gEvent);
+        ServiceProvider.GetRequiredService<ILocalEventBus>().PublishAsync(gEvent);
+        _eventBus.PublishAsync(gEvent);
+        await ConfirmEvents();
+
+        /*var type = gEvent.GetType();
+        Mediator = ServiceProvider.GetRequiredService<IMediator>();
+        Mediator.Send(gEvent);*/
+    }
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        await base.OnActivateAsync(cancellationToken);
+        Mediator = this.ServiceProvider.GetService<IMediator>();
     }
 }
