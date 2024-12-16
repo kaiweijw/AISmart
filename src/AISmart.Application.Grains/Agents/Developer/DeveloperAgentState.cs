@@ -5,3 +5,8 @@ public class DeveloperAgentState
 {
     [Id(0)]  public List<string> Content { get; set; }
 }
+
+public class DeveloperAgentCommand : BaseCommand<DeveloperAgentState>
+{
+    
+}
