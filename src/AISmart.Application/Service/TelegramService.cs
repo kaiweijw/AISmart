@@ -4,6 +4,7 @@ using AISmart.Agent;
 using AISmart.Agents;
 using AISmart.Agents.Group;
 using AISmart.Events;
+using AISmart.GAgent.Autogen;
 using AISmart.Sender;
 using AISmart.Telegram;
 using Orleans;
@@ -42,7 +43,12 @@ public class TelegramService :  ApplicationService,ITelegramService
     {
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
         var telegramAgent = _clusterClient.GetGrain<IStateGAgent<TelegramGAgentState>>(Guid.NewGuid());
+        var autogenAgent=  _clusterClient.GetGrain<AutogenGAgent>(Guid.NewGuid());
+        autogenAgent.RegisterAgentEvent(typeof(TelegramGAgent), [typeof(ReceiveMessageEvent), typeof(SendMessageEvent)]);
+        
         await groupAgent.Register(telegramAgent);
+        await groupAgent.Register(autogenAgent);
+        
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
         await publishingAgent.PublishTo(groupAgent);
     }
