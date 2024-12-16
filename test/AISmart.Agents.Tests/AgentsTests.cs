@@ -12,6 +12,7 @@ using AISmart.Application.Grains.Agents.MarketLeader;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Application.Grains.Agents.X;
 using AISmart.Dapr;
+using AISmart.Events;
 using AISmart.Sender;
 using Orleans.TestKit;
 using Shouldly;
@@ -78,5 +79,50 @@ public class AgentsTests : TestKitBase
 
         var aelfGAgentState = await aelfGAgent.GetAElfAgentDto();
         aelfGAgentState.PendingTransactions.Count.ShouldBe(1);
+    }
+    
+    [Fact]
+    public async Task ReceiveMessageTest()
+    {
+       
+        var guid = Guid.NewGuid();
+        var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
+        var telegramGAgent = await Silo.CreateGrainAsync<TelegramGAgent>(guid);
+        await groupAgent.Register(telegramGAgent);
+        var txGrain = await Silo.CreateGrainAsync<TelegramGrain>(guid);
+        Silo.AddProbe<ITelegramGrain>(_ => txGrain);
+        var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
+        await publishingAgent.PublishTo(groupAgent);
+        Silo.AddProbe<IPublishingAgent>(_ => publishingAgent);
+        await publishingAgent.PublishEventAsync(new ReceiveMessageEvent
+        {
+            MessageId = "11",
+            ChatId = "12",
+            Message = "Test",
+            NeedReplyBotName = "Test"
+        });
+    }
+    
+    [Fact]
+    public async Task SendMessageTest()
+    {
+       
+        var guid = Guid.NewGuid();
+        var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
+        var telegramGAgent = await Silo.CreateGrainAsync<TelegramGAgent>(guid);
+        await groupAgent.Register(telegramGAgent);
+        var txGrain = await Silo.CreateGrainAsync<TelegramGrain>(guid);
+        Silo.AddProbe<ITelegramGrain>(_ => txGrain);
+        var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
+        await publishingAgent.PublishTo(groupAgent);
+        Silo.AddProbe<IPublishingAgent>(_ => publishingAgent);
+        await publishingAgent.PublishEventAsync(new SendMessageEvent
+        {
+            ChatId = "12",
+            Message = "bot message",
+            SenderBotName ="Test",
+            ReplyMessageId = "11"
+        });
+        await Task.Delay(10000);
     }
 }

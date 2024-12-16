@@ -150,9 +150,8 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
         }
     }
 
-    public async Task TestUpdatesMessagesAsync(TelegramUpdateDto updateMessage)
+    public async Task ReceiveMessagesAsync(TelegramUpdateDto updateMessage)
     {
-        _logger.LogDebug("GetUpdatesMessagesAsync:{message}",JsonConvert.SerializeObject(updateMessage));
         // To filter only messages that mention the bot, check if message.Entities.type == "mention".
         // Group message auto-reply, just add the bot as a group admin.
         if (updateMessage.Message != null)
@@ -162,13 +161,5 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
                 MessageId = updateMessage.Message.MessageId
             });
         }
-        // todo: process message
     }
-
-    // public async Task<T> GetAsync<T>(string url)
-    // {
-    //     var resp = await new HttpClient().GetAsync(url);
-    //     resp.EnsureSuccessStatusCode();
-    //     return await resp.Content.DeserializeSnakeCaseAsync<T>();
-    // }
 }
