@@ -72,7 +72,7 @@ public class AISmartHttpApiHostModule : AIApplicationGrainsModule, IDomainGrains
         ConfigureCors(context, configuration);
         ConfigureAutoResponseWrapper(context);
         ConfigureSwaggerServices(context, configuration);
-        context.Services.AddDaprClient();
+        //context.Services.AddDaprClient();
     }
     
     private static void ConfigureAutoResponseWrapper(ServiceConfigurationContext context)

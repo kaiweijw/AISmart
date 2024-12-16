@@ -1,6 +1,6 @@
 namespace AISmart.Agents.MarketLeader;
 
-public class MarketLeaderGEvent : GEvent
+public class MarketLeaderGEvent : GEventBase
 {
     
 }

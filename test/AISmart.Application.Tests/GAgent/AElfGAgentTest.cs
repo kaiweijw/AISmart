@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agent.Event;
+using AISmart.Agent.Events;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
 using Orleans;
@@ -25,7 +26,7 @@ public class AElfGAgentTests : AISmartApplicationTestBase
     {
         string chainId = "AELF";
         string senderName = "Test";
-        var createTransactionEvent = new CreateTransactionGEvent(){
+        var createTransactionEvent = new CreateTransactionEvent(){
                 ChainId = chainId,
                 SenderName = senderName, 
                 ContractAddress = "JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE",
