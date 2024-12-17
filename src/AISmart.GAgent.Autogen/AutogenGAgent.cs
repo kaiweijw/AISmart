@@ -66,6 +66,11 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             Messages = history,
             CreateTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()
         });
+
+        await PublishAsync(new RequestAllSubscriptionsEvent
+        {
+            RequestFromGAgentType = GetType()
+        });
     }
 
     [EventHandler]
@@ -99,13 +104,19 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
         }
     }
 
+    [AllEventHandler]
     public async Task HandleEventAsync(EventWrapperBase eventWrapperBase)
     {
         if (eventWrapperBase is EventWrapper<EventBase> eventWrapper)
         {
             var eventId = eventWrapper.EventId;
-            // 
         }
+    }
+
+    [EventHandler]
+    public async Task SaveSubscribedEventsAsync(SubscribedEventListEvent subscribedEventListEvent)
+    {
+        var eventList = subscribedEventListEvent.Value;
     }
 
     private async Task SubscribeStream(IGrainWithGuidKey grain)

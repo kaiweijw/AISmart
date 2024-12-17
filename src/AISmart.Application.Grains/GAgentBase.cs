@@ -3,7 +3,6 @@ using AISmart.Agents;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
-using Orleans.Runtime;
 using Orleans.Streams;
 
 namespace AISmart.Application.Grains;
@@ -12,6 +11,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     where TState : class, new()
     where TEvent : GEventBase
 {
+    public IPersistentState<Dictionary<Guid, string>>? Subscribers { get; }
     private IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
 
     protected readonly ILogger Logger;
@@ -21,8 +21,9 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<EventWrapperBaseAsyncObserver> _observers = new();
 
-    protected GAgentBase(ILogger logger)
+    protected GAgentBase(ILogger logger, [PersistentState("subscribers")] IPersistentState<Dictionary<Guid, string>>? subscribers = null)
     {
+        Subscribers = subscribers;
         Logger = logger;
     }
 
@@ -88,7 +89,15 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
             return;
         }
 
-        await OnRegisterAgentAsync(agent.GetPrimaryKey());
+        var guid = agent.GetPrimaryKey();
+
+        if (Subscribers != null)
+        {
+            Subscribers?.State.Add(guid, agent.GetType().Namespace!);
+            await Subscribers?.WriteStateAsync()!;
+        }
+
+        await OnRegisterAgentAsync(guid);
     }
 
     public async Task Unregister(IGAgent agent)
@@ -102,6 +111,50 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         }
 
         await OnUnregisterAgentAsync(agent.GetPrimaryKey());
+    }
+
+    public async Task<List<Type>?> GetAllSubscribedEventsAsync()
+    {
+        var eventHandlerMethods = GetEventHandlerMethods();
+        var handlingTypes = eventHandlerMethods
+            .Select(m => m.GetParameters().First().ParameterType)
+            .Where(t => t != typeof(RequestAllSubscriptionsEvent))
+            .ToList();
+        return handlingTypes;
+    }
+
+    [EventHandler]
+    public async Task<SubscribedEventListEvent> HandleRequestAllSubscriptionsEventAsync(RequestAllSubscriptionsEvent request)
+    {
+        if (Subscribers == null)
+        {
+            return new SubscribedEventListEvent
+            {
+                GAgentType = GetType()
+            };
+        }
+        var gAgentList = Subscribers.State.Select(keyPair => GrainFactory.GetGrain<IGAgent>(keyPair.Key, keyPair.Value)).ToList();
+
+        if (gAgentList.Any(grain => grain == null))
+        {
+            // Only happened on test environment.
+            throw new InvalidOperationException("One or more grains in gAgentList are null.");
+        }
+
+        var listOfEventList = await Task.WhenAll(gAgentList.AsParallel().Select(async grain => await grain.GetAllSubscribedEventsAsync()));
+
+        if (listOfEventList.Any(e => e == null))
+        {
+            // Only happened on test environment.
+            throw new InvalidOperationException("One or more grains' subscribed event list is null.");
+        }
+
+        var eventList = listOfEventList.SelectMany(e => e!).ToList();
+        return new SubscribedEventListEvent
+        {
+            Value = eventList,
+            GAgentType = GetType()
+        };
     }
 
     protected virtual async Task OnRegisterAgentAsync(Guid agentGuid)
@@ -238,12 +291,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     private Task UpdateObserverList()
     {
-        var eventHandlerMethods = GetType()
-            .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-            .Where(m => m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync))
-            .Where(m => m.GetParameters().Length == 1 &&
-                        (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
-                         m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
+        var eventHandlerMethods = GetEventHandlerMethods();
 
         foreach (var eventHandlerMethod in eventHandlerMethods)
         {
@@ -269,6 +317,18 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         }
 
         return Task.CompletedTask;
+    }
+
+    private IEnumerable<MethodInfo> GetEventHandlerMethods()
+    {
+        return GetType()
+            .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            .Where(m => 
+                (m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync)) &&
+                (m.GetParameters()[0].ParameterType != typeof(EventWrapperBase) || m.GetCustomAttribute<AllEventHandlerAttribute>() != null))
+            .Where(m => m.GetParameters().Length == 1 &&
+                        (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
+                         m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
     }
 
     private async Task HandleMethodInvocationAsync(MethodInfo method, ParameterInfo parameter, object eventType, Guid eventId)

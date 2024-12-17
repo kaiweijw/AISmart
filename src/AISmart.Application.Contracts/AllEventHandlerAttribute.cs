@@ -1,6 +1,6 @@
 using System;
 
-namespace AISmart.Agents;
+namespace AISmart;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-public class EventHandlerAttribute : Attribute;
+public class AllEventHandlerAttribute : Attribute;
