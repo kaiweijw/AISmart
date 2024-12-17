@@ -24,7 +24,7 @@ public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
 
     public async Task<int> Handle(SaveStateCommand request, CancellationToken cancellationToken)
     {
-        await _elasticIndexService.CheckExistOrCreateIndex(request.State.GetType().Name);
+        _elasticIndexService.CheckExistOrCreateIndex(request.State.GetType().Name);
         await SaveIndexAsync(request);
         return await Task.FromResult(1); 
     }

@@ -15,7 +15,7 @@ public class ElasticIndexService : IElasticIndexService
         _elasticClient = elasticClient;
     }
 
-    public async Task CheckExistOrCreateIndex(string typeName)
+    public void CheckExistOrCreateIndex(string typeName)
     {
         var indexName = typeName.ToLower() + "index";
         var indexExistsResponse = _elasticClient.Indices.Exists(indexName);
