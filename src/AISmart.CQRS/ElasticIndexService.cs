@@ -15,11 +15,16 @@ public class ElasticIndexService : IElasticIndexService
         _elasticClient = elasticClient;
     }
 
-    public async Task CreateIndexFromEntity(string typeName)
+    public async Task CheckExistOrCreateIndex(string typeName)
     {
         var indexName = typeName.ToLower() + "index";
+        var indexExistsResponse = _elasticClient.Indices.Exists(indexName);
+        if (indexExistsResponse.Exists)
+        {
+            return;
+        }
         var createIndexResponse = _elasticClient.Indices.Create(indexName, c => c
-            .Map<BaseStateIndex>(m=>m.AutoMap())
+            .Map<BaseStateIndex>(m => m.AutoMap())
         );
         if (!createIndexResponse.IsValid)
         {
@@ -29,5 +34,14 @@ public class ElasticIndexService : IElasticIndexService
         {
             Logger.LogError("Index created successfully. {indexName}", indexName);
         }
+    }
+
+    public async Task SaveOrUpdateIndexAsync(string typeName, BaseStateIndex baseStateIndex)
+    {
+        var indexName = typeName.ToLower() + "index";
+        await _elasticClient.IndexAsync(baseStateIndex, i => i
+            .Index(indexName)
+            .Id(baseStateIndex.Id)
+        );
     }
 }
