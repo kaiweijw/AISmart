@@ -7,5 +7,5 @@ namespace AISmart.GEvents.Autogen;
 public class PassThroughExecutorEvent : AutoGenExecutorEvent
 {
     [Id(0)] public Guid TaskId { get; set; }
-    [Id(0)] public object PassThroughData { get; set; }
+    [Id(1)] public object PassThroughData { get; set; }
 }
