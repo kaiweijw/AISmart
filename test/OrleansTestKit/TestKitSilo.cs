@@ -67,7 +67,7 @@ public sealed class TestKitSilo
         
         var manager = new AgentDescriptionManager();
         ServiceProvider.AddService(manager);
-        ServiceProvider.AddService(new AutoGenExecutor(NullLogger<AutoGenExecutor>.Instance, GrainFactory, manager, new TestChatAgentProvider(), new TestChatService()));
+        ServiceProvider.AddService(new AutoGenExecutor(NullLogger<AutoGenExecutor>.Instance, GrainFactory, manager, new TestChatAgentProvider()));
 
         var provider = new ServiceCollection()
             .AddSingleton<GrainTypeResolver>()
