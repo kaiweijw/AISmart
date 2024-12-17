@@ -11,5 +11,5 @@ public class DeveloperAgentState : BaseState
 
 public class DeveloperAgentCommand : BaseCommand<DeveloperAgentState>
 {
-    public string Id { get; set; }
+    
 }

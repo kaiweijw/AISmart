@@ -1,12 +1,10 @@
 using AISmart.Agents;
-using AISmart.Application.Grains.Command;
 using AISmart.Cqrs;
 using AISmart.Cqrs.Command;
 using AISmart.Dapr;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Orleans.EventSourcing;
 using Orleans.Runtime;
 using Orleans.Streams;
@@ -27,8 +25,6 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
-    public IMediator Mediator { get; set; }
-    private readonly ILocalEventBus _eventBus;
     public ICqrsProvider CqrsProvider { get; set; }
 
     protected GAgent(ILogger logger)
@@ -224,7 +220,12 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     
     // how does dependency work between agents? just pub/sub messages enough?
     
-
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        await base.OnActivateAsync(cancellationToken);
+        CqrsProvider = this.ServiceProvider.GetRequiredService<ICqrsProvider>();
+    }
+    
     protected abstract Task ExecuteAsync(TEvent eventData);
     
     protected abstract Task CompleteAsync(TEvent eventData);
@@ -248,12 +249,6 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
         {
             await stream.SubscribeAsync(handler);
         }
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        await base.OnActivateAsync(cancellationToken);
-        Mediator = this.ServiceProvider.GetRequiredService<IMediator>();
     }
     
     protected override async void OnStateChanged()
