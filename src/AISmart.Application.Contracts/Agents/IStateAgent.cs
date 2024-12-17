@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans;
@@ -23,7 +24,7 @@ public interface IGAgent : IGrainWithGuidKey
     Task<bool> UnpublishFrom(IGAgent agent);
     Task Register(IGAgent agent);
     Task Unregister(IGAgent agent);
-    Task<SubscribedEventListEvent> GetAllSubscribedEventsAsync(RequestAllSubscriptionsEvent request);
+    Task<List<Type>?> GetAllSubscribedEventsAsync();
 }
 
 public interface IStateGAgent<TState> : IGAgent

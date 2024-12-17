@@ -66,7 +66,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             Messages = history,
             CreateTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()
         });
-        
+
         await PublishAsync(new RequestAllSubscriptionsEvent
         {
             RequestFromGAgentType = GetType()

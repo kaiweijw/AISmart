@@ -4,6 +4,11 @@ using AISmart.Agent.Events;
 using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
 using AISmart.Agents;
+using AISmart.Agents.Developer;
+using AISmart.Agents.Group;
+using AISmart.Agents.Investment;
+using AISmart.Agents.MarketLeader;
+using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
 using AISmart.Application.Grains.Agents.Developer;
 using AISmart.Application.Grains.Agents.Group;
@@ -14,6 +19,7 @@ using AISmart.Application.Grains.Agents.X;
 using AISmart.Dapr;
 using AISmart.Events;
 using AISmart.Sender;
+using AutoGen.Core;
 using Orleans.TestKit;
 using Shouldly;
 
@@ -35,6 +41,7 @@ public class AgentsTests : TestKitBase
         await groupGAgent.Register(marketLeaderGAgent);
         await groupGAgent.Register(developerGAgent);
         await groupGAgent.Register(investmentGAgent);
+        await groupGAgent.Register(groupGAgent);
 
         await publishingGAgent.PublishTo(groupGAgent);
 
@@ -43,6 +50,13 @@ public class AgentsTests : TestKitBase
             Id = "mock_x_thread_id",
             Content = "BTC REACHED 100k WOOHOOOO!"
         };
+
+        //Silo.AddProbe<IGAgent>(xGAgent.GetGrainId().GetGuidKey(), xGAgent.GetType().Namespace, _ => xGAgent);
+        Silo.AddProbe<IStateGAgent<XAgentState>>(_ => xGAgent);
+        Silo.AddProbe<IStateGAgent<GroupAgentState>>(_ => groupGAgent);
+        Silo.AddProbe<IStateGAgent<MarketLeaderAgentState>>(_ => marketLeaderGAgent);
+        Silo.AddProbe<IStateGAgent<DeveloperAgentState>>(_ => developerGAgent);
+        Silo.AddProbe<IStateGAgent<InvestmentAgentState>>(_ => investmentGAgent);
 
         await publishingGAgent.PublishEventAsync(xThreadCreatedEvent);
 

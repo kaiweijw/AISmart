@@ -18,16 +18,17 @@ public class AutoGenTest : TestKitBase
     [Fact]
     public async Task AutogenGAgentTest()
     {
-        var guid = Guid.NewGuid();
         var groupGAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
-        var autogenGAgent = await Silo.CreateGrainAsync<AutogenGAgent>(guid);
-        var publishingGAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
-        var drawGAgent = await Silo.CreateGrainAsync<DrawOperationGAgent>(guid);
-        var mathGAgent = await Silo.CreateGrainAsync<MathOperationGAgent>(guid);
-        var autoGenExecutor = await Silo.CreateGrainAsync<AutoGenExecutor>(guid);
+        var autogenGAgent = await Silo.CreateGrainAsync<AutogenGAgent>(Guid.NewGuid());
+        var publishingGAgent = await Silo.CreateGrainAsync<PublishingGAgent>(Guid.NewGuid());
+        var drawGAgent = await Silo.CreateGrainAsync<DrawOperationGAgent>(Guid.NewGuid());
+        var mathGAgent = await Silo.CreateGrainAsync<MathOperationGAgent>(Guid.NewGuid());
+        var autoGenExecutor = await Silo.CreateGrainAsync<AutoGenExecutor>(Guid.NewGuid());
 
         autogenGAgent.RegisterAgentEvent(typeof(DrawOperationGAgent), [typeof(DrawTriangleEvent)]);
         autogenGAgent.RegisterAgentEvent(typeof(MathOperationGAgent), [typeof(AddNumberEvent), typeof(SubNumberEvent)]);
+
+        Silo.AddProbe<IStateGAgent<GroupAgentState>>(_ => groupGAgent);
 
         await groupGAgent.Register(autogenGAgent);
         await groupGAgent.Register(drawGAgent);
@@ -35,10 +36,8 @@ public class AutoGenTest : TestKitBase
 
         Silo.AddProbe<IPublishingGAgent>(_ => publishingGAgent);
         Silo.AddProbe<IAutoGenExecutor>(_ => autoGenExecutor);
-        Silo.AddProbe<IStateGAgent<GroupAgentState>>(_ => groupGAgent);
 
-        await autogenGAgent.SubscribeTo(publishingGAgent);
-        await publishingGAgent.PublishTo(autogenGAgent);
+        await publishingGAgent.PublishTo(groupGAgent);
 
         Silo.AddStreamProbe<AutoGenInternalEventBase>();
 
