@@ -308,9 +308,17 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
                 if (parameter.ParameterType == typeof(EventWrapperBase))
                 {
-                    var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId);
-                    var result = eventHandlerMethod.Invoke(this, [invokeParameter]);
-                    await (Task)result!;
+                    try
+                    {
+                        var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId);
+                        var result = eventHandlerMethod.Invoke(this, [invokeParameter]);
+                        await (Task)result!;
+                    }
+                    catch (Exception ex)
+                    {
+                        // TODO: Make this better.
+                        Logger.LogError(ex, "Error invoking method {MethodName} with event type {EventType}", eventHandlerMethod.Name, eventType.GetType().Name);
+                    }
                 }
             });
 
