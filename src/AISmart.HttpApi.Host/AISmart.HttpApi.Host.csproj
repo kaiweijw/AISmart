@@ -27,6 +27,7 @@
     <PackageReference Include="AElf.OpenTelemetry" />
     <PackageReference Include="AutoResponseWrapper" />
     <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
 
   <ItemGroup>
