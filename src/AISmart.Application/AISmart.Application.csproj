@@ -13,6 +13,7 @@
         <ProjectReference Include="..\AISmart.Application.Contracts\AISmart.Application.Contracts.csproj" />
         <ProjectReference Include="..\AISmart.Application.Grains\AISmart.Application.Grains.csproj" />
         <ProjectReference Include="..\AISmart.GAgent.AElf\AISmart.GAgent.AElf.csproj" />
+        <ProjectReference Include="..\AISmart.GAgent.Autogen\AISmart.GAgent.Autogen.csproj" />
         <ProjectReference Include="..\AISmart.GAgent.Telegram\AISmart.GAgent.Telegram.csproj" />
         <ProjectReference Include="..\AISmart.GAgent.Twitter\AISmart.GAgent.Twitter.csproj" />
     </ItemGroup>

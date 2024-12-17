@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using AISmart.Telegram;
 using Newtonsoft.Json;
 
 namespace AISmart.Dto;
 
-public class PhotoParamsDto
+public class PhotoParamsRequest
 {
     [JsonPropertyName("business_connection_id")]
     public string? BusinessConnectionId { get; set; }
@@ -45,6 +46,6 @@ public class PhotoParamsDto
     [JsonPropertyName("message_effect_id")]
     public string? MessageEffectId { get; set; }
 
-    [JsonPropertyName("reply_parameters")]
-    public ReplyParamDto? ReplyParameters { get; set; }
+    [JsonProperty("reply_parameters")]
+    public ReplyParameters? ReplyParameters { get; set; }
 }

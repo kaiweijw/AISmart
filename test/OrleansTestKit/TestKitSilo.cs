@@ -3,8 +3,11 @@ using AISmart.GAgent.Autogen;
 using AISmart.GAgent.Autogen.Common;
 using AISmart.Mock;
 using AISmart.Provider;
+using AutoGen.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using OpenAI.Chat;
 using Orleans.EventSourcing;
 using Orleans.Metadata;
 using Orleans.Serialization;
@@ -64,9 +67,8 @@ public sealed class TestKitSilo
         
         var manager = new AgentDescriptionManager();
         ServiceProvider.AddService(manager);
-        var clusterClient = ServiceProvider.GetRequiredService<IClusterClient>();
-        ServiceProvider.AddService(new AutoGenExecutor(null, clusterClient, manager, ServiceProvider));
-        
+        ServiceProvider.AddService(new AutoGenExecutor(NullLogger<AutoGenExecutor>.Instance, GrainFactory, manager, new TestChatAgentProvider(), new TestChatService()));
+
         var provider = new ServiceCollection()
             .AddSingleton<GrainTypeResolver>()
             .AddSingleton<IGrainTypeProvider, AttributeGrainTypeProvider>()

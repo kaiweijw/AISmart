@@ -7,12 +7,10 @@ using AISmart.Agent;
 using AISmart.Agent.Grains;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Dto;
-using AISmart.Grains;
 using AISmart.Provider;
-using AISmart.Sender;
 using AISmart.Service;
+using AISmart.Telegram;
 using Newtonsoft.Json;
-using Orleans.Runtime;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -35,28 +33,34 @@ public class TelegramGAgentTest : AISmartApplicationTestBase
     {
     //  var updates = await  _telegramProvider.GetUpdatesAsync("Test");
      // _output.WriteLine("updates: " + updates);
-      await  _telegramProvider.SendMessageAsync("Test","7600783090","hello bot2");
+     string jsonString = @"{
+       ""message_id"": 12345,
+       ""date"": 1617735123,
+       ""text"": ""Hello, World!""
+      }";
+     var json = JsonConvert.DeserializeObject<Message>(jsonString);
+      _output.WriteLine("updates: " + json.MessageId);
     }
     
     [Fact]
     public async Task SendMessageWithReplayTest()
     {
-        await  _telegramProvider.SendMessageAsync("Test","7027097058","hello bot2",new ReplyParamDto
+        await  _telegramProvider.SendMessageAsync("Test","-1002473003637","hello funtest",new ReplyParamDto
         {
-            MessageId = 12
+            MessageId = 10
         });
     }
     
     [Fact]
     public async Task SendPhotoWithReplayTest()
     {
-        await  _telegramProvider.SendPhotoAsync("Test",new PhotoParamsDto
+        await  _telegramProvider.SendPhotoAsync("Test",new PhotoParamsRequest
         {
-            ChatId = "7027097058",
+            ChatId = "-1002473003637",
             Photo = "https://raw.githubusercontent.com/paulazhou/picbed/main/Hexo/2021_05_23_G1OwSTxDrfVlPdv.png",
-            ReplyParameters = new ReplyParamDto
+            ReplyParameters = new ReplyParameters()
             {
-                MessageId = 12
+                MessageId = "12"
             },
             Caption = "hello, this is a photo."
         });

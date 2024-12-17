@@ -35,4 +35,10 @@ public class PublishingGAgent : GAgentBase<PublishingAgentState, PublishingGEven
         Logger.LogInformation($"PublishingAgent publish {@event}");
         await PublishAsync(@event);
     }
+
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        GrainTracker.PublishingGAgents.Enqueue(this);
+        return base.OnActivateAsync(cancellationToken);
+    }
 }

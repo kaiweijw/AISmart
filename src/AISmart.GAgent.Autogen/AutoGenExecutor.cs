@@ -1,48 +1,48 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using AISmart.Agents;
+using AISmart.Dapr;
 using AISmart.GAgent.Autogen.Common;
 using AISmart.GAgent.Autogen.Event;
+using AISmart.GAgent.Autogen.Events;
 using AISmart.GAgent.Autogen.Exceptions;
+using AISmart.GEvents.Autogen;
 using AISmart.Sender;
 using AutoGen.Core;
-using AutoGen.OpenAI;
-using AutoGen.OpenAI.Extension;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OpenAI.Chat;
-using Volo.Abp.DependencyInjection;
+using Orleans.Runtime;
+using Orleans.Streams;
 
 namespace AISmart.GAgent.Autogen;
 
-public class AutoGenExecutor : ISingletonDependency
+public class AutoGenExecutor : Grain, IAutoGenExecutor
 {
+    private IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
     private readonly AgentDescriptionManager _agentDescriptionManager;
-    private readonly IClusterClient _clusterClient;
+    private readonly IChatAgentProvider _chatAgentProvider;
+    private readonly IGrainFactory _clusterClient;
     private readonly ILogger<AutoGenExecutor> _logger;
-    private readonly IServiceProvider _serviceProvider;
     private readonly Guid _publishGrainId = Guid.NewGuid();
     private const string AgentName = "admin";
     private const string FinishFlag = "complete";
     private const string BreakFlag = "break";
 
-    public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IClusterClient clusterClient,
-        AgentDescriptionManager agentDescriptionManager, IServiceProvider serviceProvider)
+    public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IGrainFactory clusterClient,
+        AgentDescriptionManager agentDescriptionManager, IChatAgentProvider chatAgentProvider)
     {
         _logger = logger;
         _clusterClient = clusterClient;
-        _serviceProvider = serviceProvider;
         _agentDescriptionManager = agentDescriptionManager;
+        _chatAgentProvider = chatAgentProvider;
     }
 
-    public async Task ExecuteTask(Guid taskId, List<IMessage> history)
+    public async Task ExecuteTaskAsync(ExecutorTaskInfo taskInfo)
     {
-        var chatClient = _serviceProvider.GetRequiredService<ChatClient>();
-        IAgent agent = new OpenAIChatAgent(chatClient, AgentName, GetAgentResponsibility())
-            .RegisterMessageConnector()
-            .RegisterMiddleware(GetMiddleware());
-
-        var response = await agent.SendAsync("What should be done next?", history);
+        var history = ConvertMessage(taskInfo.History);
+        var taskId = taskInfo.TaskId;
+        _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
+        var response = await _chatAgentProvider.SendAsync(AgentName, "What should be done next?", history);
         var responseStr = response.GetContent();
         if (responseStr.IsNullOrEmpty())
         {
@@ -56,8 +56,8 @@ public class AutoGenExecutor : ISingletonDependency
             var completeEvent = JsonSerializer.Deserialize<EventComplete>(responseStr);
             if (completeEvent != null)
             {
-                var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-                await publishGrain.PublishEventAsync(new AutoGenExecutorEvent()
+                // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+                await PublishInternalEvent(new AutoGenExecutorEvent()
                 {
                     TaskId = taskId,
                     ExecuteStatus = TaskExecuteStatus.Finish,
@@ -74,8 +74,8 @@ public class AutoGenExecutor : ISingletonDependency
             var breakInfo = JsonSerializer.Deserialize<EventBreak>(responseStr);
             if (breakInfo != null)
             {
-                var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-                await publishGrain.PublishEventAsync(new AutoGenExecutorEvent()
+                // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+                await PublishInternalEvent(new AutoGenExecutorEvent()
                 {
                     TaskId = taskId,
                     ExecuteStatus = TaskExecuteStatus.Break,
@@ -91,13 +91,41 @@ public class AutoGenExecutor : ISingletonDependency
         var handleEventSchema = JsonSerializer.Deserialize<HandleEventAsyncSchema>(responseStr);
         if (handleEventSchema != null)
         {
-            var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-            await publishGrain.PublishEventAsync(new AutoGenExecutorEvent()
+            // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+            await PublishInternalEvent(new AutoGenExecutorEvent()
             {
                 TaskId = taskId,
                 ExecuteStatus = TaskExecuteStatus.Progressing,
                 CurrentCallInfo = responseStr
             });
+        }
+    }
+
+    private List<IMessage> ConvertMessage(List<AutogenMessage> listAutoGenMessage)
+    {
+        var result = new List<IMessage>();
+        foreach (var item in listAutoGenMessage)
+        {
+            result.Add(new TextMessage(GetRole(item.Role), item.Content));
+        }
+
+        return result;
+    }
+
+    private Role GetRole(string roleName)
+    {
+        switch (roleName)
+        {
+            case "user":
+                return Role.User;
+            case "assistant":
+                return Role.Assistant;
+            case "system":
+                return Role.System;
+            case "function":
+                return Role.Function;
+            default:
+                return Role.User;
         }
     }
 
@@ -140,7 +168,6 @@ public class AutoGenExecutor : ISingletonDependency
                  - Split the task into different events, and use the output of the previous event combined with the user's request to determine the execution of the next event.
                  - Based on the event's response, reorganize the next request in line with the user's intent until the user's issue is resolved.
                  - If the above events cannot meet the user's task execution needs, you can generate results based on the events to drive the continuation of the process.
-                 - If it is the result returned by the agent, return the agent's result directly without any modifications.
                  - The response for each event will be added to the conversation in JSON format. 
                    You need to analyze the response information to decide whether to proceed to the next round. 
                    The response information will be used during the final summary. The JSON format is as follows:
@@ -166,6 +193,13 @@ public class AutoGenExecutor : ISingletonDependency
                  """;
     }
 
+    private async Task PublishInternalEvent(AutoGenInternalEventBase publishData)
+    {
+        var streamId = StreamId.Create(CommonConstants.StreamNamespace, this.GetPrimaryKey());
+        var stream = StreamProvider.GetStream<AutoGenInternalEventBase>(streamId);
+        await stream.OnNextAsync(publishData);
+    }
+    
     #region Event hook
 
     /// <summary>
@@ -198,8 +232,8 @@ public class AutoGenExecutor : ISingletonDependency
                 $"Event name:{agentName} Deserialize object is null, the parameters is{parameters}");
         }
 
-        var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-        await publishGrain.PublishEventAsync(eventData);
+        // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+        await PublishInternalEvent(new PassThroughExecutorEvent() { PassThroughData = eventData });
 
         return JsonSerializer.Serialize(new HandleEventAsyncSchema()
             { AgentName = agentName, EventName = eventName, Parameters = parameters });
@@ -249,7 +283,7 @@ public class AutoGenExecutor : ISingletonDependency
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             });
-        
+
         string result;
         try
         {
