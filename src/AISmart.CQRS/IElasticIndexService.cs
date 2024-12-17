@@ -5,7 +5,7 @@ namespace AISmart.CQRS;
 
 public interface IElasticIndexService
 {
-    public Task CheckExistOrCreateIndex(string typeName);
+    public void CheckExistOrCreateIndex(string typeName);
     public Task SaveOrUpdateIndexAsync(string typeName,BaseStateIndex baseStateIndex);
 
 }
