@@ -1,10 +1,7 @@
 <Project>
     <PropertyGroup>
-<<<<<<< HEAD
         <OrleansVersion>7.2.6</OrleansVersion>
-=======
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
->>>>>>> feature/add-agent-fix-build
     </PropertyGroup>
     <ItemGroup>
         <!-- Test packages -->
