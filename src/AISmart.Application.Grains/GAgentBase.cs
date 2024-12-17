@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using AISmart.Agents;
 using AISmart.Dapr;
@@ -141,18 +142,16 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
             throw new InvalidOperationException("One or more grains in gAgentList are null.");
         }
 
-        var listOfEventList = await Task.WhenAll(gAgentList.AsParallel().Select(async grain => await grain.GetAllSubscribedEventsAsync()));
-
-        if (listOfEventList.Any(e => e == null))
+        var dict = new ConcurrentDictionary<Type, List<Type>>();
+        foreach (var gAgent in gAgentList.AsParallel())
         {
-            // Only happened on test environment.
-            throw new InvalidOperationException("One or more grains' subscribed event list is null.");
+            var eventList = await gAgent.GetAllSubscribedEventsAsync();
+            dict[gAgent.GetType()] = eventList ?? [];
         }
 
-        var eventList = listOfEventList.SelectMany(e => e!).ToList();
         return new SubscribedEventListEvent
         {
-            Value = eventList,
+            Value = dict.ToDictionary(),
             GAgentType = GetType()
         };
     }
@@ -309,7 +308,6 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 
                 var eventId = (Guid)item.GetType().GetProperty(nameof(EventWrapper<object>.EventId))?.GetValue(item)!;
                 var eventType = item.GetType().GetProperty(nameof(EventWrapper<object>.Event))?.GetValue(item);
-                
                 var parameter = eventHandlerMethod.GetParameters()[0];
                 if (parameter.ParameterType == eventType!.GetType())
                 {
@@ -318,9 +316,17 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
                 if (parameter.ParameterType == typeof(EventWrapperBase))
                 {
-                    var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId, this.GetPrimaryKey());
-                    var result = eventHandlerMethod.Invoke(this, [invokeParameter]);
-                    await (Task)result!;
+                    try
+                    {
+                        var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId);
+                        var result = eventHandlerMethod.Invoke(this, [invokeParameter]);
+                        await (Task)result!;
+                    }
+                    catch (Exception ex)
+                    {
+                        // TODO: Make this better.
+                        Logger.LogError(ex, "Error invoking method {MethodName} with event type {EventType}", eventHandlerMethod.Name, eventType.GetType().Name);
+                    }
                 }
             });
 
@@ -350,8 +356,16 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         }
         else if (method.ReturnType == typeof(Task))
         {
-            var result = method.Invoke(this, [eventType]);
-            await (Task)result!;
+            try
+            {
+                var result = method.Invoke(this, [eventType]);
+                await (Task)result!;
+            }
+            catch (Exception ex)
+            {
+                // TODO: Make this better.
+                Logger.LogError(ex, "Error invoking method {MethodName} with event type {EventType}", method.Name, eventType.GetType().Name);
+            }
         }
     }
 
@@ -369,9 +383,17 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
             var resultType = method.ReturnType.GetGenericArguments()[0];
             if (typeof(EventBase).IsAssignableFrom(resultType))
             {
-                var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
-                var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId, this.GetPrimaryKey());
-                await PublishAsync(eventWrapper);
+                try
+                {
+                    var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
+                    var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId);
+                    await PublishAsync(eventWrapper);
+                }
+                catch (Exception ex)
+                {
+                    // TODO: Make this better.
+                    Logger.LogError(ex, "Error invoking method {MethodName} with event type {EventType}", method.Name, eventType.GetType().Name);
+                }
             }
             else
             {

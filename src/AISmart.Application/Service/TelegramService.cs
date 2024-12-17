@@ -7,6 +7,8 @@ using AISmart.Events;
 using AISmart.GAgent.Autogen;
 using AISmart.Sender;
 using AISmart.Telegram;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Orleans;
 using Volo.Abp.Application.Services;
 
@@ -15,27 +17,29 @@ namespace AISmart.Service;
 public class TelegramService :  ApplicationService,ITelegramService
 {
     private readonly IClusterClient _clusterClient;
-    private static readonly Guid _publishId = Guid.NewGuid();
+    private readonly ILogger<TelegramService> _logger;
+    private static readonly Guid PublishId = Guid.NewGuid();
 
-    public TelegramService(IClusterClient clusterClient)
+    public TelegramService(IClusterClient clusterClient,ILogger<TelegramService> logger)
     {
         _clusterClient = clusterClient;
+        _logger = logger;
     }
     
-    public async Task ReceiveMessagesAsync(TelegramUpdateDto updateMessage)
+    public async Task ReceiveMessagesAsync(TelegramUpdateDto updateMessage, StringValues token)
     {
         // To filter only messages that mention the bot, check if message.Entities.type == "mention".
         // Group message auto-reply, just add the bot as a group admin.
+        _logger.LogDebug("IPublishingGAgent {PublishId}",PublishId);
         if (updateMessage.Message != null)
         {
-            var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(_publishId);
-           
+            var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(PublishId);
             await  publishingAgent.PublishEventAsync(new ReceiveMessageEvent
             {
                 MessageId = updateMessage.Message.MessageId.ToString(),
                 ChatId = updateMessage.Message.Chat.Id.ToString(),
                 Message = updateMessage.Message.Text,
-                NeedReplyBotName = "Test"
+                NeedReplyBotName = token
             });
         }
     }
@@ -50,7 +54,7 @@ public class TelegramService :  ApplicationService,ITelegramService
         await groupAgent.Register(telegramAgent);
         await groupAgent.Register(autogenAgent);
         
-        var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(_publishId);
+        var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(PublishId);
         await publishingAgent.PublishTo(groupAgent);
     }
 }

@@ -1,15 +1,11 @@
 using AISmart.Agents;
 using AISmart.Agents.AutoGen;
-using AISmart.Agents.Group;
-using AISmart.Agents.X;
 using AISmart.Application.Grains.Agents.Group;
 using AISmart.Application.Grains.Agents.Publisher;
-using AISmart.Application.Grains.Agents.X;
 using AISmart.GAgent.Autogen;
 using AISmart.GAgent.Autogen.Events;
 using AISmart.Sender;
 using Orleans.TestKit;
-using Orleans.TestKit.Streams;
 
 namespace AISmart.Grains.Tests.AutoGenTest;
 

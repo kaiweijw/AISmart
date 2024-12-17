@@ -16,17 +16,23 @@ using AISmart.Application.Grains.Agents.Investment;
 using AISmart.Application.Grains.Agents.MarketLeader;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Application.Grains.Agents.X;
-using AISmart.Dapr;
 using AISmart.Events;
+using AISmart.Grains.Tests.TestGAgents;
 using AISmart.Sender;
-using AutoGen.Core;
 using Orleans.TestKit;
 using Shouldly;
 
 namespace AISmart.Grains.Tests;
 
-public class AgentsTests : TestKitBase
+public class GAgentTests : TestKitBase
 {
+    [Fact]
+    public async Task BasicTest()
+    {
+        var naiveTestGAgent = await Silo.CreateGrainAsync<NaiveTestGAgent>(Guid.NewGuid());
+        var state = await naiveTestGAgent.GetStateAsync();
+    }
+    
     [Fact]
     public async Task GroupTest()
     {
@@ -120,7 +126,6 @@ public class AgentsTests : TestKitBase
     [Fact]
     public async Task SendMessageTest()
     {
-       
         var guid = Guid.NewGuid();
         var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
         var telegramGAgent = await Silo.CreateGrainAsync<TelegramGAgent>(guid);
