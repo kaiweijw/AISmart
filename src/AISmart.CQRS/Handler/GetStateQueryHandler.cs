@@ -7,7 +7,7 @@ using Nest;
 
 namespace AISmart.CQRS.Handler;
 
-public class GetStateQueryHandler : IRequestHandler<GetStateQuery, BaseState>
+public class GetStateQueryHandler : IRequestHandler<GetStateQuery, BaseStateIndex>
 {
     private readonly IElasticClient _elasticClient;
     public GetStateQueryHandler(
@@ -17,12 +17,12 @@ public class GetStateQueryHandler : IRequestHandler<GetStateQuery, BaseState>
         _elasticClient = elasticClient;
     }
     
-    public async Task<BaseState> Handle(GetStateQuery request, CancellationToken cancellationToken)
+    public async Task<BaseStateIndex> Handle(GetStateQuery request, CancellationToken cancellationToken)
     {
         // var response = await _elasticClient.IndexAsync(request.Index, i => i
         //     .Index(request.Index)
         //     .Id(request.StateId)
-        var response = await _elasticClient.GetAsync<BaseState>(request.Id, g => g.Index(request.Index));
+        var response = await _elasticClient.GetAsync<BaseStateIndex>(request.Id, g => g.Index(request.Index));
         return response.Source; 
     }
 }
