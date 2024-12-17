@@ -24,7 +24,7 @@ public class CQRSProvider : ICQRSProvider, ISingletonDependency
         await _mediator.Send(command);
     }
 
-    public async Task<BaseState> QueryAsync(string index, string id)
+    public async Task<BaseStateIndex> QueryAsync(string index, string id)
     {
         var getStateQuery = new GetStateQuery()
         {
