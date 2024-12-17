@@ -32,7 +32,7 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
         --State.RegisteredAgents;
         return Task.CompletedTask;
     }
-
+    
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
         GrainTracker.GroupAgents.Enqueue(this);

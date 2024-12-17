@@ -238,10 +238,12 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     private Task UpdateObserverList()
     {
-        var eventHandlerMethods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+        var eventHandlerMethods = GetType()
+            .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
             .Where(m => m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync))
             .Where(m => m.GetParameters().Length == 1 &&
-                        typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType));
+                        (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
+                         m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
 
         foreach (var eventHandlerMethod in eventHandlerMethods)
         {
@@ -253,6 +255,13 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 if (parameter.ParameterType == eventType!.GetType())
                 {
                     await HandleMethodInvocationAsync(eventHandlerMethod, parameter, eventType, eventId);
+                }
+
+                if (parameter.ParameterType == typeof(EventWrapperBase))
+                {
+                    var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId);
+                    var result = eventHandlerMethod.Invoke(this, [invokeParameter]);
+                    await (Task)result!;
                 }
             });
 

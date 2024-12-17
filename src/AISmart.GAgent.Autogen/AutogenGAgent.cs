@@ -105,6 +105,15 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
         }
     }
 
+    public async Task HandleEventAsync(EventWrapperBase eventWrapperBase)
+    {
+        if (eventWrapperBase is EventWrapper<EventBase> eventWrapper)
+        {
+            var eventId = eventWrapper.EventId;
+            // 
+        }
+    }
+
     private async Task SubscribeStream(IGrainWithGuidKey grain)
     {
         var agentGuid = grain.GetPrimaryKey();

@@ -2,8 +2,10 @@ using AISmart.Agents.AutoGen;
 using AISmart.Application.Grains.Agents.Group;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.GAgent.Autogen;
+using AISmart.GAgent.Autogen.Events;
 using AISmart.Sender;
 using Orleans.TestKit;
+using Orleans.TestKit.Streams;
 
 namespace AISmart.Grains.Tests.AutoGenTest;
 
@@ -32,6 +34,8 @@ public class AutoGenTest : TestKitBase
 
         await autogenGAgent.SubscribeTo(publishingGAgent);
         await publishingGAgent.PublishTo(autogenGAgent);
+
+        Silo.AddStreamProbe<AutoGenInternalEventBase>();
 
         await publishingGAgent.PublishEventAsync(new AutoGenCreatedEvent
         {
