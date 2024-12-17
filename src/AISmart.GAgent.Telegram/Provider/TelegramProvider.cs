@@ -32,27 +32,34 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
         String Token = GetAccount(sendUser);
         string url = $"https://api.telegram.org/bot{Token}/sendMessage";
         
-        var parametersList = new List<KeyValuePair<string, string>>
+        // Create a request object
+        var sendMessageRequest = new MessageParamsRequest()
         {
-            new("chat_id", chatId),
-            new("text", message)
+            ChatId = chatId,
+            Text = message
         };
-        if (replyParam != null)
-        {
-            parametersList.Add(new KeyValuePair<string, string>("reply_parameters",
-                JsonConvert.SerializeObject(replyParam,new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore
-                })));
-        }
-        FormUrlEncodedContent parameters = new(parametersList);
 
+        // Add reply_to_message_id if present
+        if (replyParam!= null)
+        {
+          var replyParameters = new ReplyParameters
+            {
+                MessageId = replyParam.MessageId.ToString()
+            };
+            sendMessageRequest.ReplyParameters = replyParameters;
+        }
+
+        // Serialize the request object to JSON
+        string json = JsonConvert.SerializeObject(sendMessageRequest, new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore
+        });
 
         try
         {
             _logger.LogDebug("send message to {chatId} : {message}",chatId, message);
-            HttpResponseMessage response = await new HttpClient().PostAsync(url, parameters);
-                
+            var response = await new HttpClient().PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
+
             response.EnsureSuccessStatusCode();
 
             string responseBody = await response.Content.ReadAsStringAsync();
@@ -127,11 +134,11 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
         return account;
     }
 
-    public async Task SendPhotoAsync(string sendUser,PhotoParamsDto photoParamsDto)
+    public async Task SendPhotoAsync(string sendUser,PhotoParamsRequest photoParamsRequest)
     {
         var token = GetAccount(sendUser);
         var url = $"https://api.telegram.org/bot{token}/sendPhoto";
-        var paramsJson = JsonConvert.SerializeObject(photoParamsDto, new JsonSerializerSettings
+        var paramsJson = JsonConvert.SerializeObject(photoParamsRequest, new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore
         });

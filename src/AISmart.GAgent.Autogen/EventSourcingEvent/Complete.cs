@@ -1,7 +1,7 @@
 namespace AISmart.GAgent.Autogen.EventSourcingEvent;
 
 [GenerateSerializer]
-public class CompleteEvent:BaseEvent
+public class Complete:AutogenEventBase
 {
     [Id(0)] public string Summary { get; set; }
 }

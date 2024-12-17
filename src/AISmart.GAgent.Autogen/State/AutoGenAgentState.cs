@@ -1,4 +1,5 @@
 using AISmart.Agents.AutoGen;
+using AISmart.GAgent.Autogen.Common;
 using AISmart.GAgent.Autogen.EventSourcingEvent;
 using AutoGen.Core;
 using Microsoft.Extensions.Logging;
@@ -7,11 +8,13 @@ namespace AISmart.GAgent.Autogen.State;
 
 [GenerateSerializer]
 public class AutoGenAgentState
-{
+{   
     [Id(0)] public Dictionary<Guid, AutoGenAgentStateInfo> AutoGenStateDic =
         new Dictionary<Guid, AutoGenAgentStateInfo>();
+
+    [Id(1)] public Dictionary<Guid, RequestWrapper> CurrentRequestDic = new Dictionary<Guid, RequestWrapper>();
     
-    public void Apply(BreakEvent @event)
+    public void Apply(Break @event)
     {
         var state = GetStateInfo(@event.Id);
         if (state == null)
@@ -25,7 +28,7 @@ public class AutoGenAgentState
         AutoGenStateDic.Remove(@event.Id);
     }
     
-    public void Apply(CallerAgentReplyEvent @event)
+    public void Apply(CallerAgentReply @event)
     {
         var state = GetStateInfo(@event.Id);
         if (state == null)
@@ -35,7 +38,7 @@ public class AutoGenAgentState
         state.ChatHistory.Add(@event.Reply);
     }
     
-    public void Apply(CallerProgressingEvent @event)
+    public void Apply(CallerProgressing @event)
     {
         var state = GetStateInfo(@event.Id);
         if (state == null)
@@ -46,7 +49,7 @@ public class AutoGenAgentState
         state.CurrentCallInfo = @event.CurrentCallInfo;
     }
 
-    public void Apply(CompleteEvent @event)
+    public void Apply(Complete @event)
     {
         var state = GetStateInfo(@event.Id);
         if (state == null)
@@ -60,7 +63,7 @@ public class AutoGenAgentState
         AutoGenStateDic.Remove(@event.Id);
     }
 
-    public void Apply(CreateEvent @event)
+    public void Apply(Create @event)
     {
         var state = new AutoGenAgentStateInfo();
         state.TaskId = @event.Id;
@@ -81,7 +84,7 @@ public class AutoGenAgentState
 public class AutoGenAgentStateInfo
 {
     [Id(0)] public Guid TaskId { get; set; }
-    [Id(1)] public List<IMessage> ChatHistory { get; set; }
+    [Id(1)] public List<AutogenMessage> ChatHistory { get; set; }
     [Id(2)] public long SessionStartTime { get; set; }
     [Id(3)] public SessionStateEnum SessionStateEnum { get; set; } = SessionStateEnum.Processing;
     [Id(4)] public string CurrentCallInfo { get; set; }
@@ -95,4 +98,11 @@ public enum SessionStateEnum
     Processing,
     Break,
     Completed
+}
+
+[GenerateSerializer]
+public class RequestWrapper
+{
+    [Id(0)] public Guid TaskId { get; set; }
+    [Id(1)] public long StartTime { get; set; }
 }

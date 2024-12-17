@@ -1,50 +1,50 @@
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using AISmart.Telegram;
 using Newtonsoft.Json;
 
 namespace AISmart.Dto;
 
-public class PhotoParamsDto
+public class PhotoParamsRequest
 {
-    [JsonPropertyName("business_connection_id")]
+    [JsonProperty("business_connection_id")]
     public string? BusinessConnectionId { get; set; }
 
-    [JsonPropertyName("chat_id")]
+    [JsonProperty("chat_id")]
     public string ChatId { get; set; }
 
-    [JsonPropertyName("message_thread_id")]
+    [JsonProperty("message_thread_id")]
     public int? MessageThreadId { get; set; }
 
-    [JsonPropertyName("photo")]
+    [JsonProperty("photo")]
     public string Photo { get; set; }
 
-    [JsonPropertyName("caption")]
+    [JsonProperty("caption")]
     public string? Caption { get; set; }
 
-    [JsonPropertyName("parse_mode")]
+    [JsonProperty("parse_mode")]
     public string? ParseMode { get; set; }
 
-    [JsonPropertyName("caption_entities")]
+    [JsonProperty("caption_entities")]
     public List<MessageEntity>? CaptionEntities { get; set; }
 
-    [JsonPropertyName("show_caption_above_media")]
+    [JsonProperty("show_caption_above_media")]
     public bool? ShowCaptionAboveMedia { get; set; }
 
-    [JsonPropertyName("has_spoiler")]
+    [JsonProperty("has_spoiler")]
     public bool? HasSpoiler { get; set; }
 
-    [JsonPropertyName("disable_notification")]
+    [JsonProperty("disable_notification")]
     public bool? DisableNotification { get; set; }
 
-    [JsonPropertyName("protect_content")]
+    [JsonProperty("protect_content")]
     public bool? ProtectContent { get; set; }
 
-    [JsonPropertyName("allow_paid_broadcast")]
+    [JsonProperty("allow_paid_broadcast")]
     public bool? AllowPaidBroadcast { get; set; }
 
-    [JsonPropertyName("message_effect_id")]
+    [JsonProperty("message_effect_id")]
     public string? MessageEffectId { get; set; }
 
-    [JsonPropertyName("reply_parameters")]
-    public ReplyParamDto? ReplyParameters { get; set; }
+    [JsonProperty("reply_parameters")]
+    public ReplyParameters? ReplyParameters { get; set; }
 }

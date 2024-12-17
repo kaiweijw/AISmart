@@ -1,18 +1,19 @@
 using System;
 using System.ComponentModel;
-using System.Threading;
 using System.Threading.Tasks;
 using AISmart.Agent.GEvents;
 using AISmart.Agents;
+using AISmart.Agents.AutoGen;
 using AISmart.Application.Grains;
 using AISmart.Events;
 using AISmart.Grains;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Orleans.Providers;
 
 namespace AISmart.Agent;
 
-[Description("Represents an agent responsible for informing other agents when a Telegram thread is published.")]
+[Description("Handle telegram")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, ITelegramGAgent
@@ -32,7 +33,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
     [EventHandler]
     public async Task ExecuteAsync(ReceiveMessageEvent @event)
     { 
-        _logger.LogInformation("ReceiveMessageEvent "+@event.MessageId);
+        _logger.LogInformation("Telegram ReceiveMessageEvent "+@event.MessageId);
        RaiseEvent(new ReceiveMessageGEvent
        {
            MessageId = @event.MessageId,
@@ -40,7 +41,13 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
            Message = @event.Message
        });
        await ConfirmEvents();
-       
+       await PublishAsync(new AutoGenCreatedEvent
+       {
+           EventId = Guid.NewGuid(),
+           Content = $"I received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}. Please parse the message content, generate a response Based on the JSON Message, and then call the SendMessageEvent event of TelegramGAgent"
+       });
+
+
     }
     [EventHandler]
     public async Task ExecuteAsync(SendMessageEvent @event)

@@ -22,7 +22,7 @@ public class DrawOperationGAgent : GAgentBase<DrawOperationState, DrawOperateEve
     }
 
     [EventHandler]
-    protected async Task ExecuteAsync(DrawTriangleEvent drawTriangleEvent)
+    public async Task ExecuteAsync(DrawTriangleEvent drawTriangleEvent)
     {
         await PublishAsync(new DrawTriangleResultEvent()
         {
