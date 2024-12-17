@@ -1,6 +1,10 @@
+using AISmart.Agents;
 using AISmart.Agents.AutoGen;
+using AISmart.Agents.Group;
+using AISmart.Agents.X;
 using AISmart.Application.Grains.Agents.Group;
 using AISmart.Application.Grains.Agents.Publisher;
+using AISmart.Application.Grains.Agents.X;
 using AISmart.GAgent.Autogen;
 using AISmart.GAgent.Autogen.Events;
 using AISmart.Sender;
@@ -31,6 +35,7 @@ public class AutoGenTest : TestKitBase
 
         Silo.AddProbe<IPublishingGAgent>(_ => publishingGAgent);
         Silo.AddProbe<IAutoGenExecutor>(_ => autoGenExecutor);
+        Silo.AddProbe<IStateGAgent<GroupAgentState>>(_ => groupGAgent);
 
         await autogenGAgent.SubscribeTo(publishingGAgent);
         await publishingGAgent.PublishTo(autogenGAgent);
@@ -41,5 +46,7 @@ public class AutoGenTest : TestKitBase
         {
             Content = "What is 3+3, and then generate the corresponding polygon?"
         });
+
+        await Task.Delay(1000);
     }
 }

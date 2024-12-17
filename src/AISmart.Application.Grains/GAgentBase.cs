@@ -104,6 +104,25 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         await OnUnregisterAgentAsync(agent.GetPrimaryKey());
     }
 
+    [EventHandler]
+    public Task<SubscribedEventListEvent> GetAllSubscribedEventsAsync(RequestAllSubscriptionsEvent request)
+    {
+        if (request.RequestFromGAgentType == GetType())
+        {
+            ;
+        }
+        var eventHandlerMethods = GetEventHandlerMethods();
+        var handlingTypes = eventHandlerMethods
+            .Select(m => m.GetParameters().First().ParameterType)
+            .Where(t => t != typeof(RequestAllSubscriptionsEvent))
+            .ToList();
+        return Task.FromResult(new SubscribedEventListEvent
+        {
+            Value = handlingTypes,
+            GAgentType = GetType()
+        });
+    }
+
     protected virtual async Task OnRegisterAgentAsync(Guid agentGuid)
     {
     }
@@ -238,12 +257,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     private Task UpdateObserverList()
     {
-        var eventHandlerMethods = GetType()
-            .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-            .Where(m => m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync))
-            .Where(m => m.GetParameters().Length == 1 &&
-                        (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
-                         m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
+        var eventHandlerMethods = GetEventHandlerMethods();
 
         foreach (var eventHandlerMethod in eventHandlerMethods)
         {
@@ -269,6 +283,18 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         }
 
         return Task.CompletedTask;
+    }
+
+    private IEnumerable<MethodInfo> GetEventHandlerMethods()
+    {
+        return GetType()
+            .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            .Where(m => 
+                (m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync)) &&
+                (m.GetParameters()[0].ParameterType != typeof(EventWrapperBase) || m.GetCustomAttribute<AllEventHandlerAttribute>() != null))
+            .Where(m => m.GetParameters().Length == 1 &&
+                        (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
+                         m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
     }
 
     private async Task HandleMethodInvocationAsync(MethodInfo method, ParameterInfo parameter, object eventType, Guid eventId)

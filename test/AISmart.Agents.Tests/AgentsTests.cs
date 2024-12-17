@@ -24,19 +24,19 @@ public class AgentsTests : TestKitBase
     [Fact]
     public async Task GroupTest()
     {
-        var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
-        var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(Guid.NewGuid());
-        var xAgent = await Silo.CreateGrainAsync<XGAgent>(Guid.NewGuid());
-        var marketLeaderAgent = await Silo.CreateGrainAsync<MarketLeaderGAgent>(Guid.NewGuid());
-        var developerAgent = await Silo.CreateGrainAsync<DeveloperGAgent>(Guid.NewGuid());
-        var investmentAgent = await Silo.CreateGrainAsync<InvestmentGAgent>(Guid.NewGuid());
+        var groupGAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
+        var publishingGAgent = await Silo.CreateGrainAsync<PublishingGAgent>(Guid.NewGuid());
+        var xGAgent = await Silo.CreateGrainAsync<XGAgent>(Guid.NewGuid());
+        var marketLeaderGAgent = await Silo.CreateGrainAsync<MarketLeaderGAgent>(Guid.NewGuid());
+        var developerGAgent = await Silo.CreateGrainAsync<DeveloperGAgent>(Guid.NewGuid());
+        var investmentGAgent = await Silo.CreateGrainAsync<InvestmentGAgent>(Guid.NewGuid());
 
-        await groupAgent.Register(xAgent);
-        await groupAgent.Register(marketLeaderAgent);
-        await groupAgent.Register(developerAgent);
-        await groupAgent.Register(investmentAgent);
+        await groupGAgent.Register(xGAgent);
+        await groupGAgent.Register(marketLeaderGAgent);
+        await groupGAgent.Register(developerGAgent);
+        await groupGAgent.Register(investmentGAgent);
 
-        await publishingAgent.PublishTo(groupAgent);
+        await publishingGAgent.PublishTo(groupGAgent);
 
         var xThreadCreatedEvent = new XThreadCreatedEvent
         {
@@ -44,15 +44,15 @@ public class AgentsTests : TestKitBase
             Content = "BTC REACHED 100k WOOHOOOO!"
         };
 
-        await publishingAgent.PublishEventAsync(xThreadCreatedEvent);
+        await publishingGAgent.PublishEventAsync(xThreadCreatedEvent);
 
-        var xAgentState = await xAgent.GetStateAsync();
+        var xAgentState = await xGAgent.GetStateAsync();
         xAgentState.ThreadIds.Count.ShouldBe(1);
         
-        var investmentAgentState = await investmentAgent.GetStateAsync();
+        var investmentAgentState = await investmentGAgent.GetStateAsync();
         investmentAgentState.Content.Count.ShouldBe(1);
         
-        var developerAgentState = await developerAgent.GetStateAsync();
+        var developerAgentState = await developerGAgent.GetStateAsync();
         developerAgentState.Content.Count.ShouldBe(1);
     }
 
