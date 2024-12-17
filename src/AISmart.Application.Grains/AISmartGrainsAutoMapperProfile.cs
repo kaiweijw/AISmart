@@ -13,7 +13,6 @@ public class AISmartGrainsAutoMapperProfile : Profile
         // User AutoMap
         CreateMap<BasicEvent, TelegramEvent>().ReverseMap();
         CreateMap<AgentTaskState, AgentTaskDto>().ReverseMap();
-        CreateMap<SaveStateCommand, CreateTransactionEventIndex>();
-
+        // CreateMap<SaveStateCommand, CreateTransactionEventIndex>();
     }
 }

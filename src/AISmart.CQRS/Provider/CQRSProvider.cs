@@ -1,14 +1,15 @@
 using System.Threading.Tasks;
 using AISmart.Cqrs.Command;
+using AISmart.CQRS.Dto;
 using MediatR;
 using Volo.Abp.DependencyInjection;
 
-namespace AISmart.Cqrs;
+namespace AISmart.CQRS.Provider;
 
-public class CqrsProvider : ICqrsProvider, ISingletonDependency
+public class CQRSProvider : ICQRSProvider, ISingletonDependency
 {
     private readonly IMediator _mediator;
-    public CqrsProvider(IMediator mediator)
+    public CQRSProvider(IMediator mediator)
     {
         _mediator = mediator;
     }

@@ -1,12 +1,11 @@
 using System.Reflection;
 using AElf.Indexing.Elasticsearch.Options;
-using AISmart.Application.Grains.Command;
+using AISmart.CQRS;
 using Elasticsearch.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.EventBus;
 using Volo.Abp.Modularity;
-using MediatR;
 using Nest;
 using Volo.Abp;
 namespace AISmart.Application.Grains;
@@ -14,7 +13,8 @@ namespace AISmart.Application.Grains;
 [DependsOn(
     typeof(AbpAutoMapperModule),
     typeof(AbpEventBusModule),
-    typeof(AISmartApplicationContractsModule)
+    typeof(AISmartApplicationContractsModule),
+    typeof(AISmartCQRSModule)
    //,typeof(AISmartApplicationModule)
 )]
 public class AIApplicationGrainsModule : AbpModule
@@ -22,7 +22,7 @@ public class AIApplicationGrainsModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        context.Services.AddMediatR(Assembly.GetExecutingAssembly());
+        // context.Services.AddMediatR(Assembly.GetExecutingAssembly());
         //context.Services.AddSingleton<ILocalEventBus, LocalEventBus>();
         //context.Services.AddTransient<ILocalEventHandler<CreateEventComamand>, CreateEventCommandHandler>();
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AIApplicationGrainsModule>(); });

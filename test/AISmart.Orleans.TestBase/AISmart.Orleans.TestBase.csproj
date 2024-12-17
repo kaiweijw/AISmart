@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\AISmart.CQRS\AISmart.CQRS.csproj" />
         <ProjectReference Include="..\AISmart.TestBase\AISmart.TestBase.csproj" />
         <ProjectReference Include="..\..\src\AISmart.Application\AISmart.Application.csproj" />
         <PackageReference Include="AElf.Indexing.ElasticSearch" Version="0.0.16" />

@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AISmart.Application.Grains;
-using AISmart.Cqrs;
-using AISmart.Cqrs.CommandHandler;
+using AISmart.CQRS.Handler;
+using AISmart.CQRS.Provider;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Configuration;
@@ -80,7 +80,7 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
                 services.AddTransient<SaveStateCommandHandler>();
                 
-                services.AddSingleton(typeof(ICqrsProvider), typeof(CqrsProvider));
+                services.AddSingleton(typeof(ICQRSProvider), typeof(CQRSProvider));
                 services.AddSingleton<IElasticClient>(provider =>
                 {
                     var settings =new ConnectionSettings(new Uri("http://127.0.0.1:9200"))

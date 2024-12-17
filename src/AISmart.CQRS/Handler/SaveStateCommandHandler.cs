@@ -1,14 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
-using AISmart.Application.Grains.Agents.Developer;
-using AISmart.Application.Grains.CommandHandler;
-using AISmart.Application.Grains.Dto;
+// using AElf.Indexing.Elasticsearch.Services;
 using AISmart.Cqrs.Command;
+using AISmart.CQRS.Dto;
 using MediatR;
 using Nest;
 using Newtonsoft.Json;
 
-namespace AISmart.Cqrs.CommandHandler;
+namespace AISmart.CQRS.Handler;
 
 public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
 {
@@ -54,22 +53,20 @@ public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
         var typeName = request.State.GetType().Name;
         var indexName = request.State.GetType().Name.ToLower() + "index";
         var state = request.State;
-        switch (typeName)
-        {
-            case nameof(DeveloperAgentState):
-                var dto = (DeveloperAgentState)state;
-                var index = new DeveloperAgentStateIndex()
-                {
-                    Id = documentId,
-                    Content = JsonConvert.SerializeObject(dto.Content)
-                };
-                await _elasticClient.IndexAsync(index, i => i
-                    .Index(indexName)
-                    .Id(documentId)
-                );
-                break;
-        }
+        // switch (typeName)
+        // {
+        //     case nameof(DeveloperAgentState):
+        //         var dto = (DeveloperAgentState)state;
+        //         var index = new DeveloperAgentStateIndex()
+        //         {
+        //             Id = documentId,
+        //             Content = JsonConvert.SerializeObject(dto.Content)
+        //         };
+        //         await _elasticClient.IndexAsync(index, i => i
+        //             .Index(indexName)
+        //             .Id(documentId)
+        //         );
+        //         break;
+        // }
     }
-
-
 }

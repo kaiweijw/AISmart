@@ -1,10 +1,11 @@
-using AISmart.Application.Grains.Agents.Developer;
-using AISmart.Application.Grains.Dto;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using AISmart.Cqrs.Command;
 using Microsoft.Extensions.Logging;
 using Nest;
 
-namespace AISmart.Application.Grains.CommandHandler;
+namespace AISmart.CQRS;
 
 public class ElasticIndexService
 {
@@ -63,16 +64,15 @@ public class ElasticIndexService
     {
         var indexName = typeName.ToLower() + "index";
 
-        switch (typeName)
-        {
-            case nameof(DeveloperAgentState):
-                _elasticClient.Indices.Create(indexName, c => c
-                    .Map<DeveloperAgentStateIndex>(m => m
-                        .AutoMap()
-                    )
-                );
-                break;
-        }
+        // switch (typeName)
+        // {
+        //     case nameof(DeveloperAgentState):
+        //         _elasticClient.Indices.Create(indexName, c => c
+        //             .Map<DeveloperAgentStateIndex>(m => m
+        //                 .AutoMap()
+        //             )
+        //         );
+        //         break;
+        // }
     }
-
 }

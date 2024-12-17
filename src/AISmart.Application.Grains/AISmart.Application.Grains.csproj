@@ -11,7 +11,6 @@
         <PackageReference Include="AElf.Indexing.Elasticsearch" Version="0.0.18" />
 -->
         <PackageReference Include="AutoGen.Core" Version="0.2.1" />
-        <PackageReference Include="MediatR" Version="11.1.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
         <PackageReference Include="Microsoft.Orleans.Sdk" Version="7.2.6" />
         <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="7.2.6" />
@@ -21,12 +20,12 @@
         <PackageReference Include="Volo.Abp.AutoMapper" Version="8.2.0" />
         <PackageReference Include="Volo.Abp.Core" Version="8.2.0" />
         <PackageReference Include="Volo.Abp.EventBus.Abstractions" Version="8.2.0" />
-        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
         <PackageReference Include="AElf.Indexing.ElasticSearch" Version="0.0.16" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\AISmart.Application.Contracts\AISmart.Application.Contracts.csproj" />
+        <ProjectReference Include="..\AISmart.CQRS\AISmart.CQRS.csproj" />
         <ProjectReference Include="..\AISmart.Domain.Grains\AISmart.Domain.Grains.csproj" />
     </ItemGroup>
 

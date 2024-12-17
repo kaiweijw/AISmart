@@ -1,14 +1,15 @@
 using AISmart.Agents;
-using AISmart.Cqrs;
+// using AISmart.Cqrs;
+using AISmart.CQRS;
 using AISmart.Cqrs.Command;
+using AISmart.CQRS.Provider;
+// using AISmart.Cqrs.Command;
 using AISmart.Dapr;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
 using Orleans.Runtime;
 using Orleans.Streams;
-using Volo.Abp.EventBus.Local;
 
 namespace AISmart.Application.Grains;
 
@@ -25,7 +26,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
-    public ICqrsProvider CqrsProvider { get; set; }
+    public ICQRSProvider CqrsProvider { get; set; }
 
     protected GAgent(ILogger logger)
     {
@@ -223,7 +224,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         await base.OnActivateAsync(cancellationToken);
-        CqrsProvider = this.ServiceProvider.GetRequiredService<ICqrsProvider>();
+        CqrsProvider = this.ServiceProvider.GetRequiredService<ICQRSProvider>();
     }
     
     protected abstract Task ExecuteAsync(TEvent eventData);
