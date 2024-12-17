@@ -6,11 +6,12 @@ using Volo.Abp.ObjectMapping;
 
 namespace AISmart.Application.Grains.Handler;
 
-public class CreateTransaction1CommandHandler : IRequestHandler<DeveloperAgentCommand, int>
+public class DeveloperAgentCommandHandler : IRequestHandler<DeveloperAgentCommand, int>
 {
     private readonly IObjectMapper _objectMapper;
     private readonly IElasticClient _elasticClient;
-    public CreateTransaction1CommandHandler(
+    private const string _indxeName = "stateindex";
+    public DeveloperAgentCommandHandler(
         IObjectMapper objectMapper
         , IElasticClient elasticClient
     )
@@ -22,22 +23,10 @@ public class CreateTransaction1CommandHandler : IRequestHandler<DeveloperAgentCo
 
     public async Task<int> Handle(DeveloperAgentCommand request, CancellationToken cancellationToken)
     {
-        // var settings = new ConnectionSettings(new Uri("http://localhost:9200"))
-        //     .DefaultIndex("createtransactioneventindex")
-        //     .DefaultMappingFor<CreateTransactionEventIndex>(m => m.IndexName("createtransactioneventindex")); 
-        // var client = new ElasticClient(settings);
-        //
-        // var createTransactionEventIndex = _objectMapper.Map<CreateTransactionCommand, CreateTransactionEventIndex>(request);
-        //
-        // client.IndexDocument(createTransactionEventIndex);
         var documentId = request.Id.ToString();
         var state = request.State;
-        var indexData = new EventIndex
-        {
-            EventType = "type1"
-        };
         var response = await _elasticClient.IndexAsync(state, i => i
-            .Index("eventindex")
+            .Index(_indxeName)
             .Id(documentId)
         );
         return await Task.FromResult(1); 
@@ -45,7 +34,7 @@ public class CreateTransaction1CommandHandler : IRequestHandler<DeveloperAgentCo
     
     public static void CreateIndex(IElasticClient elasticClient)
     {
-        var createIndex1Response = elasticClient.Indices.Create("eventindex", c => c
+        var createIndex1Response = elasticClient.Indices.Create(_indxeName, c => c
             .Map<EventIndex>(m => m
                 .AutoMap()
             )

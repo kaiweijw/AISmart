@@ -81,8 +81,9 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
                 services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
                 services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
-                services.AddMediatR(typeof(CreateTransaction1CommandHandler).Assembly);
+                services.AddMediatR(typeof(DeveloperAgentCommandHandler).Assembly);
                 services.AddTransient<CreateTransactionCommandHandler>();
+                services.AddTransient<DeveloperAgentCommandHandler>();
                 services.AddSingleton<IElasticClient>(provider =>
                 {
                     var settings =new ConnectionSettings(new Uri("http://127.0.0.1:9200"))
