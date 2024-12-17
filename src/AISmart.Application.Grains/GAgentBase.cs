@@ -198,7 +198,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     protected async Task<Guid> PublishAsync<T>(T @event) where T : EventBase
     {
         var eventId = Guid.NewGuid();
-        var eventWrapper = new EventWrapper<T>(@event, eventId);
+        var eventWrapper = new EventWrapper<T>(@event, eventId, this.GetPrimaryKey());
 
         await PublishAsync(eventWrapper);
 
@@ -300,8 +300,16 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         {
             var observer = new EventWrapperBaseAsyncObserver(async item =>
             {
+                var grainId = (Guid)item.GetType().GetProperty(nameof(EventWrapper<object>.GrainId))?.GetValue(item)!;
+                if (grainId == this.GetPrimaryKey())
+                {
+                    // Skip the event if it is sent by itself.
+                    return;
+                }
+                
                 var eventId = (Guid)item.GetType().GetProperty(nameof(EventWrapper<object>.EventId))?.GetValue(item)!;
                 var eventType = item.GetType().GetProperty(nameof(EventWrapper<object>.Event))?.GetValue(item);
+                
                 var parameter = eventHandlerMethod.GetParameters()[0];
                 if (parameter.ParameterType == eventType!.GetType())
                 {
@@ -310,7 +318,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
                 if (parameter.ParameterType == typeof(EventWrapperBase))
                 {
-                    var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId);
+                    var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId, this.GetPrimaryKey());
                     var result = eventHandlerMethod.Invoke(this, [invokeParameter]);
                     await (Task)result!;
                 }
@@ -362,7 +370,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
             if (typeof(EventBase).IsAssignableFrom(resultType))
             {
                 var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
-                var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId);
+                var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId, this.GetPrimaryKey());
                 await PublishAsync(eventWrapper);
             }
             else
