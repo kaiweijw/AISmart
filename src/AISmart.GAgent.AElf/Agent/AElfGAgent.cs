@@ -115,6 +115,7 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
         aelfAgentDto.PendingTransactions = State.PendingTransactions;
         return aelfAgentDto;
     }
+    
 
     
     protected Task ExecuteAsync(TransactionGEvent eventData)
