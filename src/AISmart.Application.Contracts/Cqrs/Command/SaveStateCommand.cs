@@ -10,5 +10,5 @@ public class SaveStateCommand : IRequest<int>
 
 public class BaseState
 {
-    
+    public string Id { get; set; }
 }

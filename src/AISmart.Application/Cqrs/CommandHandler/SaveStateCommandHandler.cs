@@ -7,7 +7,6 @@ using AISmart.Cqrs.Command;
 using MediatR;
 using Nest;
 using Newtonsoft.Json;
-using Volo.Abp.ObjectMapping;
 
 namespace AISmart.Cqrs.CommandHandler;
 
