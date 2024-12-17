@@ -134,4 +134,12 @@ public sealed class TestGrainFactory : IGrainFactory
 
         return grain!;
     }
+
+
+    private readonly Dictionary<GrainId, IGrainBase> _registeredGrains;
+
+    public void RegisterGrain<T>(GrainId grainId, T grain) where T : IGrainBase
+    {
+        _registeredGrains[grainId] = grain;
+    }
 }
