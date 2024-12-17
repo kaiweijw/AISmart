@@ -8,7 +8,6 @@ using AISmart.Agents;
 using AISmart.Options;
 using Orleans;
 using Volo.Abp.DependencyInjection;
-using Xunit;
 
 namespace AISmart.AgentsNetwork;
 

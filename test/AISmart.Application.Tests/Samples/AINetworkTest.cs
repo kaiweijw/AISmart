@@ -1,21 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using AISmart.Agents;
 using AISmart.Agents.Developer;
-using AISmart.Agents.Group;
 using AISmart.Agents.Investment;
-using AISmart.Agents.MarketLeader;
-using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
 using AISmart.AgentsNetwork;
 using AISmart.Application.Grains;
-using AISmart.Application.Grains.Agents.Developer;
-using AISmart.Application.Grains.Agents.Group;
-using AISmart.Application.Grains.Agents.MarketLeader;
-using AISmart.Application.Grains.Agents.X;
 using AISmart.Options;
 using AISmart.Sender;
 using Microsoft.Extensions.Options;
@@ -24,8 +15,6 @@ using Orleans;
 using Orleans.TestingHost.Utils;
 using Shouldly;
 using Xunit;
-using Xunit.Abstractions;
-using ChatConfigOptions = AISmart.Mock.ChatConfigOptions;
 
 namespace AISmart.Samples
 {
