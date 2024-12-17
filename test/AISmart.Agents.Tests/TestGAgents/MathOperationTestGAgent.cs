@@ -5,23 +5,23 @@ using AISmart.Application.Grains;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
-namespace AISmart.Grains.Tests.AutoGenTest;
+namespace AISmart.Grains.Tests.TestGAgents;
 
 [Description("i can add two integer")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class MathOperationGAgent: GAgentBase<MathOperationState, MathOperationEvent>
+public class MathOperationTestGAgent: GAgentBase<MathOperationTestGAgentState, MathOperationTestGEvent>
 {
-    public MathOperationGAgent(ILogger logger) : base(logger)
+    public MathOperationTestGAgent(ILogger logger) : base(logger)
     {
     }
     
     [EventHandler]
-    public async Task ExecuteAsync(AddNumberEvent numberEvent)
+    public async Task ExecuteAsync(AddNumberTestEvent numberTestEvent)
     {
-        await PublishAsync(new AddNumberResultEvent()
+        await PublishAsync(new AddNumberResultTestEvent()
         {
-            Total = numberEvent.B + numberEvent.A + 1
+            Total = numberTestEvent.B + numberTestEvent.A + 1
         });
     }
 
@@ -32,18 +32,17 @@ public class MathOperationGAgent: GAgentBase<MathOperationState, MathOperationEv
 }
 
 [GenerateSerializer]
-public class MathOperationState
+public class MathOperationTestGAgentState
 {
 }
 
-public class MathOperationEvent : GEventBase
+public class MathOperationTestGEvent : GEventBase
 {
 }
 
 [Serializable]
 [Description("add Two number")]
-[assembly: InternalsVisibleTo("AnotherAssembly")]
-public class AddNumberEvent : EventBase
+public class AddNumberTestEvent : EventBase
 {
     [Description("First Number")]
     public int A { get; set; }
@@ -53,8 +52,7 @@ public class AddNumberEvent : EventBase
 
 [Serializable]
 [Description("Sub Two number")]
-[assembly: InternalsVisibleTo("AnotherAssembly")]
-public class SubNumberEvent : EventBase
+public class SubNumberTestEvent : EventBase
 {
     [Description("First Number")]
     public int A { get; set; }
@@ -63,7 +61,7 @@ public class SubNumberEvent : EventBase
 }
 
 [Serializable]
-public class AddNumberResultEvent : EventBase
+public class AddNumberResultTestEvent : EventBase
 {
     public int Total { get; set; }
 }

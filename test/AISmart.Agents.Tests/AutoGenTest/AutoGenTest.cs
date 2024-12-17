@@ -4,12 +4,13 @@ using AISmart.Application.Grains.Agents.Group;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.GAgent.Autogen;
 using AISmart.GAgent.Autogen.Events;
+using AISmart.Grains.Tests.TestGAgents;
 using AISmart.Sender;
 using Orleans.TestKit;
 
 namespace AISmart.Grains.Tests.AutoGenTest;
 
-public class AutoGenTest : TestKitBase
+public class AutoGenTest : GAgentTestKitBase
 {
     [Fact]
     public async Task AutogenGAgentTest()
@@ -17,22 +18,14 @@ public class AutoGenTest : TestKitBase
         var groupGAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
         var autogenGAgent = await Silo.CreateGrainAsync<AutogenGAgent>(Guid.NewGuid());
         var publishingGAgent = await Silo.CreateGrainAsync<PublishingGAgent>(Guid.NewGuid());
-        var drawGAgent = await Silo.CreateGrainAsync<DrawOperationGAgent>(Guid.NewGuid());
-        var mathGAgent = await Silo.CreateGrainAsync<MathOperationGAgent>(Guid.NewGuid());
+        var drawGAgent = await Silo.CreateGrainAsync<DrawOperationTestGAgent>(Guid.NewGuid());
+        var mathGAgent = await Silo.CreateGrainAsync<MathOperationTestGAgent>(Guid.NewGuid());
         var autoGenExecutor = await Silo.CreateGrainAsync<AutoGenExecutor>(Guid.NewGuid());
 
-        autogenGAgent.RegisterAgentEvent(typeof(DrawOperationGAgent), [typeof(DrawTriangleEvent)]);
-        autogenGAgent.RegisterAgentEvent(typeof(MathOperationGAgent), [typeof(AddNumberEvent), typeof(SubNumberEvent)]);
+        autogenGAgent.RegisterAgentEvent(typeof(DrawOperationTestGAgent), [typeof(DrawTriangleTestEvent)]);
+        autogenGAgent.RegisterAgentEvent(typeof(MathOperationTestGAgent), [typeof(AddNumberTestEvent), typeof(SubNumberTestEvent)]);
 
-        Silo.AddProbe<IGAgent>(idSpan => (idSpan switch
-        {
-            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(autogenGAgent.GetPrimaryKey()) => autogenGAgent,
-            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(drawGAgent.GetPrimaryKey()) => drawGAgent,
-            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(mathGAgent.GetPrimaryKey()) => mathGAgent,
-            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(publishingGAgent.GetPrimaryKey()) => publishingGAgent,
-            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(groupGAgent.GetPrimaryKey()) => groupGAgent,
-            _ => null
-        })!);
+        AddProbes(autogenGAgent, drawGAgent, mathGAgent, publishingGAgent, groupGAgent);
 
         await groupGAgent.Register(autogenGAgent);
         await groupGAgent.Register(drawGAgent);

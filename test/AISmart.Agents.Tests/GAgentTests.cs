@@ -24,32 +24,19 @@ using Shouldly;
 
 namespace AISmart.Grains.Tests;
 
-public class GAgentTests : TestKitBase
+public class GAgentTests : GAgentTestKitBase
 {
-    [Fact]
-    public async Task BasicTest()
-    {
-        var naiveTestGAgent = await Silo.CreateGrainAsync<NaiveTestGAgent>(Guid.NewGuid());
-        var state = await naiveTestGAgent.GetStateAsync();
-    }
-    
     [Fact]
     public async Task GroupTest()
     {
-        var groupGAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
-        var publishingGAgent = await Silo.CreateGrainAsync<PublishingGAgent>(Guid.NewGuid());
         var xGAgent = await Silo.CreateGrainAsync<XGAgent>(Guid.NewGuid());
         var marketLeaderGAgent = await Silo.CreateGrainAsync<MarketLeaderGAgent>(Guid.NewGuid());
         var developerGAgent = await Silo.CreateGrainAsync<DeveloperGAgent>(Guid.NewGuid());
         var investmentGAgent = await Silo.CreateGrainAsync<InvestmentGAgent>(Guid.NewGuid());
 
-        await groupGAgent.Register(xGAgent);
-        await groupGAgent.Register(marketLeaderGAgent);
-        await groupGAgent.Register(developerGAgent);
-        await groupGAgent.Register(investmentGAgent);
-        await groupGAgent.Register(groupGAgent);
+        var groupGAgent = await CreateGroupGAgentAsync(xGAgent, marketLeaderGAgent, developerGAgent, investmentGAgent);
 
-        await publishingGAgent.PublishTo(groupGAgent);
+        var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
 
         var xThreadCreatedEvent = new XThreadCreatedEvent
         {
@@ -57,21 +44,16 @@ public class GAgentTests : TestKitBase
             Content = "BTC REACHED 100k WOOHOOOO!"
         };
 
-        //Silo.AddProbe<IGAgent>(xGAgent.GetGrainId().GetGuidKey(), xGAgent.GetType().Namespace, _ => xGAgent);
-        Silo.AddProbe<IStateGAgent<XAgentState>>(_ => xGAgent);
-        Silo.AddProbe<IStateGAgent<GroupAgentState>>(_ => groupGAgent);
-        Silo.AddProbe<IStateGAgent<MarketLeaderAgentState>>(_ => marketLeaderGAgent);
-        Silo.AddProbe<IStateGAgent<DeveloperAgentState>>(_ => developerGAgent);
-        Silo.AddProbe<IStateGAgent<InvestmentAgentState>>(_ => investmentGAgent);
+        AddProbes(xGAgent, groupGAgent, marketLeaderGAgent, developerGAgent, investmentGAgent);
 
         await publishingGAgent.PublishEventAsync(xThreadCreatedEvent);
 
         var xAgentState = await xGAgent.GetStateAsync();
         xAgentState.ThreadIds.Count.ShouldBe(1);
-        
+
         var investmentAgentState = await investmentGAgent.GetStateAsync();
         investmentAgentState.Content.Count.ShouldBe(1);
-        
+
         var developerAgentState = await developerGAgent.GetStateAsync();
         developerAgentState.Content.Count.ShouldBe(1);
     }

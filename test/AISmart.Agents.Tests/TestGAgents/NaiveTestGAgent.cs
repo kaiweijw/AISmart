@@ -16,8 +16,7 @@ public class NaiveTestGEvent : GEventBase
     
 }
 
-[StorageProvider(ProviderName = "PubSubStore")]
-[LogConsistencyProvider(ProviderName = "LogStorage")]
+[GAgent]
 public class NaiveTestGAgent : GAgentBase<NaiveTestGAgentState, NaiveTestGEvent>
 {
     public NaiveTestGAgent(ILogger logger) : base(logger)
