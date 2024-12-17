@@ -82,36 +82,36 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
         var success = await agent.SubscribeTo(this);
         success = await agent.PublishTo(this) | success;
-    
+
         if (!success)
         {
             return;
         }
-    
+
         await OnRegisterAgentAsync(agent.GetPrimaryKey());
     }
-    
+
     public async Task Unregister(IGAgent agent)
     {
         var success = await agent.UnsubscribeFrom(this);
         success = await agent.UnpublishFrom(this) | success;
-    
+
         if (!success)
         {
             return;
         }
-    
+
         await OnUnregisterAgentAsync(agent.GetPrimaryKey());
     }
 
     protected virtual async Task OnRegisterAgentAsync(Guid agentGuid)
     {
     }
-    
+
     protected virtual async Task OnUnregisterAgentAsync(Guid agentGuid)
     {
     }
-    
+
     // protected Task SubscribeAsync<TEventWithResponse, TResponseEvent>(Func<TEventWithResponse, Task<TResponseEvent>> onEvent) 
     //     where TEventWithResponse : EventWithResponseBase<TResponseEvent>
     //     where TResponseEvent : EventBase
@@ -145,17 +145,17 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     protected async Task PublishAsync<T>(T @event) where T : EventBase
     {
         var eventWrapper = new EventWrapper<T>(@event, Guid.NewGuid());
-        
+
         await PublishAsync(eventWrapper);
     }
 
     private async Task PublishAsync<T>(EventWrapper<T> eventWrapper) where T : EventBase
     {
-        if(_publishers.Count == 0)
+        if (_publishers.Count == 0)
         {
             return;
         }
-        
+
         foreach (var publisher in _publishers.Select(kp => kp.Value))
         {
             await publisher.OnNextAsync(eventWrapper);
@@ -236,53 +236,71 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         await UpdateObserverList();
     }
 
-    private async Task UpdateObserverList()
+    private Task UpdateObserverList()
     {
-        var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+        var eventHandlerMethods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
             .Where(m => m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync))
             .Where(m => m.GetParameters().Length == 1 &&
                         typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType));
 
-        foreach (var method in methods)
+        foreach (var eventHandlerMethod in eventHandlerMethods)
         {
             var observer = new EventWrapperBaseAsyncObserver(async item =>
             {
                 var eventType = item.GetType().GetProperty(nameof(EventWrapper<object>.Event))?.GetValue(item);
-                var parameter = method.GetParameters()[0];
+                var parameter = eventHandlerMethod.GetParameters()[0];
                 if (parameter.ParameterType == eventType!.GetType())
                 {
-                    if (parameter.ParameterType.BaseType is { IsGenericType: true } &&
-                        parameter.ParameterType.BaseType.GetGenericTypeDefinition() == typeof(EventWithResponseBase<>))
-                    {
-                        // With response.
-                        if (method.ReturnType.IsGenericType &&
-                            method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
-                        {
-                            var resultType = method.ReturnType.GetGenericArguments()[0];
-                            if (typeof(EventBase).IsAssignableFrom(resultType))
-                            {
-                                var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
-                                await PublishAsync((EventBase)eventResult);
-                            }
-                            else
-                            {
-                                throw new InvalidOperationException($"The event handler of {eventType.GetType()} need to have a return value.");
-                            }
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"The event handler of {eventType.GetType()} need to have a return value.");
-                        }
-                    }
-                    else if (method.ReturnType == typeof(Task))
-                    {
-                        var result = method.Invoke(this, [eventType]);
-                        await (Task)result!;
-                    }
+                    await HandleMethodInvocationAsync(eventHandlerMethod, parameter, eventType);
                 }
             });
 
             _observers.Add(observer);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleMethodInvocationAsync(MethodInfo method, ParameterInfo parameter, object eventType)
+    {
+        if (IsEventWithResponse(parameter))
+        {
+            await HandleEventWithResponseAsync(method, eventType);
+        }
+        else if (method.ReturnType == typeof(Task))
+        {
+            var result = method.Invoke(this, [eventType]);
+            await (Task)result!;
+        }
+    }
+
+    private bool IsEventWithResponse(ParameterInfo parameter)
+    {
+        return parameter.ParameterType.BaseType is { IsGenericType: true } &&
+               parameter.ParameterType.BaseType.GetGenericTypeDefinition() == typeof(EventWithResponseBase<>);
+    }
+
+    private async Task HandleEventWithResponseAsync(MethodInfo method, object eventType)
+    {
+        if (method.ReturnType.IsGenericType &&
+            method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+        {
+            var resultType = method.ReturnType.GetGenericArguments()[0];
+            if (typeof(EventBase).IsAssignableFrom(resultType))
+            {
+                var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
+                await PublishAsync((EventBase)eventResult);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The event handler of {eventType.GetType()}'s return type needs to be inherit from EventBase.");
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"The event handler of {eventType.GetType()} needs to have a return value.");
         }
     }
 }
