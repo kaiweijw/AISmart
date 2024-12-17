@@ -10,41 +10,25 @@ namespace AISmart.CQRS.Handler;
 public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
 {
     private readonly IElasticClient _elasticClient;
+    private readonly IElasticIndexService _elasticIndexService;
 
     public SaveStateCommandHandler(
-        IElasticClient elasticClient
+        IElasticClient elasticClient,
+        IElasticIndexService elasticIndexService
     )
     {
         _elasticClient = elasticClient;
+        _elasticIndexService = elasticIndexService;
     }
 
     public async Task<int> Handle(SaveStateCommand request, CancellationToken cancellationToken)
     {
-        //await CreateIndex(_elasticClient, request.State);
-        await CreateIndexByTypeAsync(_elasticClient, request.State);
+        _elasticIndexService.CreateIndexFromEntity(request.State.GetType().Name);
        
         await SaveIndexAsync(request);
         return await Task.FromResult(1); 
     }
-    
-    public static async Task CreateIndexAsync(IElasticClient elasticClient, BaseState state)
-    {
-        var indexService = new ElasticIndexService(elasticClient);
-        var stateType = state.GetType();
-        
-        var method = typeof(ElasticIndexService).GetMethod("CreateIndexFromEntityAsync");
-        var genericMethod = method.MakeGenericMethod(stateType);
-        
-        await (Task)genericMethod.Invoke(indexService, null);
-    }
 
-    private static async Task CreateIndexByTypeAsync(IElasticClient elasticClient, BaseState state)
-    {
-        var indexService = new ElasticIndexService(elasticClient);
-        var stateType = state.GetType();
-        await indexService.CreateIndexFromTypeAsync(stateType.Name);
-    }
-    
     private async Task SaveIndexAsync(SaveStateCommand request)
     {
         var documentId = request.Id.ToString();

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AISmart.Application.Grains;
+using AISmart.CQRS;
 using AISmart.CQRS.Handler;
 using AISmart.CQRS.Provider;
 using AISmart.Mock;
@@ -82,7 +83,8 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                // services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
                 services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
                 services.AddTransient<SaveStateCommandHandler>();
-                
+                services.AddSingleton<IElasticIndexService, ElasticIndexService>();
+
                 services.AddSingleton(typeof(ICQRSProvider), typeof(CQRSProvider));
                 services.AddSingleton<IElasticClient>(provider =>
                 {
