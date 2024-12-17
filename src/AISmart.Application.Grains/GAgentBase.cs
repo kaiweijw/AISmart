@@ -233,7 +233,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
         if (State is BaseState baseState)
         {
-            await CqrsProvider.Publish(baseState, this.GetGrainId().ToString());
+            await CqrsProvider.PublishAsync(baseState, this.GetGrainId().ToString());
         }
     }
 }

@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using AISmart.Cqrs.Command;
+using AISmart.Agents;
 using AISmart.CQRS.Dto;
 using MediatR;
 using Nest;
