@@ -1,7 +1,5 @@
-using AISmart.Agents;
 using AISmart.Agents.Developer;
 using AISmart.Agents.ImplementationAgent.Events;
-using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
@@ -20,7 +18,7 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
-    public async Task HandleEventAsync(ImplementationEvent eventData)
+    public async Task<WorkCompleteEvent> HandleEventAsync(ImplementationEvent eventData)
     {
         Logger.LogInformation($"{GetType()} ExecuteAsync: DeveloperAgent analyses content:{eventData.Content}");
         if (State.Content.IsNullOrEmpty())
@@ -28,6 +26,10 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
             State.Content = [];
         }
         State.Content.Add(eventData.Content);
+        return new WorkCompleteEvent
+        {
+            Content = eventData.Content
+        };
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)

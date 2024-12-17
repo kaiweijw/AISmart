@@ -82,35 +82,58 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
         var success = await agent.SubscribeTo(this);
         success = await agent.PublishTo(this) | success;
-    
+
         if (!success)
         {
             return;
         }
-    
+
         await OnRegisterAgentAsync(agent.GetPrimaryKey());
     }
-    
+
     public async Task Unregister(IGAgent agent)
     {
         var success = await agent.UnsubscribeFrom(this);
         success = await agent.UnpublishFrom(this) | success;
-    
+
         if (!success)
         {
             return;
         }
-    
+
         await OnUnregisterAgentAsync(agent.GetPrimaryKey());
     }
 
     protected virtual async Task OnRegisterAgentAsync(Guid agentGuid)
     {
     }
-    
+
     protected virtual async Task OnUnregisterAgentAsync(Guid agentGuid)
     {
     }
+
+    // protected Task SubscribeAsync<TEventWithResponse, TResponseEvent>(Func<TEventWithResponse, Task<TResponseEvent>> onEvent) 
+    //     where TEventWithResponse : EventWithResponseBase<TResponseEvent>
+    //     where TResponseEvent : EventBase
+    // {
+    //     _observers.Add(OnNextWrapperAsync);
+    //     return Task.CompletedTask;
+    //
+    //     async Task OnNextWrapperAsync(EventWrapperBase @event, StreamSequenceToken token = null)
+    //     {
+    //         Logger.LogInformation("Received message: {@Message}", @event);
+    //         if(@event is EventWrapper<TEventWithResponse> eventWrapper)
+    //         {
+    //             Logger.LogInformation("Received EventWrapper message: {@Message}", eventWrapper);
+    //
+    //             var response = await onEvent(eventWrapper.Event);
+    //             
+    //             var responseWrapper = new EventWrapper<TResponseEvent>(response, eventWrapper.EventId);
+    //             
+    //             await PublishAsync(responseWrapper);
+    //         }
+    //     }
+    // }
 
     public abstract Task<string> GetDescriptionAsync();
 
@@ -121,12 +144,17 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     protected async Task PublishAsync<T>(T @event) where T : EventBase
     {
+        var eventWrapper = new EventWrapper<T>(@event, Guid.NewGuid());
+
+        await PublishAsync(eventWrapper);
+    }
+
+    private async Task PublishAsync<T>(EventWrapper<T> eventWrapper) where T : EventBase
+    {
         if (_publishers.Count == 0)
         {
             return;
         }
-
-        var eventWrapper = new EventWrapper<T>(@event, this.GetGrainId());
 
         foreach (var publisher in _publishers.Select(kp => kp.Value))
         {
@@ -198,30 +226,92 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         }
     }
 
-    private async Task HandleEventAsync(EventWrapperBase item, StreamSequenceToken? token)
+    private async Task HandleEventAsync(EventWrapperBase item)
     {
         Logger.LogInformation("Received message: {@Message}", item);
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-            .Where(m => m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync))
-            .Where(m => m.ReturnType == typeof(Task) && m.GetParameters().Length == 1 &&
-                        typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType));
+        await UpdateObserverList();
+    }
 
-        foreach (var method in methods)
+    private Task UpdateObserverList()
+    {
+        var eventHandlerMethods = GetType()
+            .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            .Where(m => m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync))
+            .Where(m => m.GetParameters().Length == 1 &&
+                        (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
+                         m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
+
+        foreach (var eventHandlerMethod in eventHandlerMethods)
         {
             var observer = new EventWrapperBaseAsyncObserver(async item =>
             {
+                var eventId = (Guid)item.GetType().GetProperty(nameof(EventWrapper<object>.EventId))?.GetValue(item)!;
                 var eventType = item.GetType().GetProperty(nameof(EventWrapper<object>.Event))?.GetValue(item);
-                if (method.GetParameters()[0].ParameterType == eventType!.GetType())
+                var parameter = eventHandlerMethod.GetParameters()[0];
+                if (parameter.ParameterType == eventType!.GetType())
                 {
-                    await (Task)method.Invoke(this, [eventType])!;
+                    await HandleMethodInvocationAsync(eventHandlerMethod, parameter, eventType, eventId);
+                }
+
+                if (parameter.ParameterType == typeof(EventWrapperBase))
+                {
+                    var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId);
+                    var result = eventHandlerMethod.Invoke(this, [invokeParameter]);
+                    await (Task)result!;
                 }
             });
 
             _observers.Add(observer);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleMethodInvocationAsync(MethodInfo method, ParameterInfo parameter, object eventType, Guid eventId)
+    {
+        if (IsEventWithResponse(parameter))
+        {
+            await HandleEventWithResponseAsync(method, eventType, eventId);
+        }
+        else if (method.ReturnType == typeof(Task))
+        {
+            var result = method.Invoke(this, [eventType]);
+            await (Task)result!;
+        }
+    }
+
+    private bool IsEventWithResponse(ParameterInfo parameter)
+    {
+        return parameter.ParameterType.BaseType is { IsGenericType: true } &&
+               parameter.ParameterType.BaseType.GetGenericTypeDefinition() == typeof(EventWithResponseBase<>);
+    }
+
+    private async Task HandleEventWithResponseAsync(MethodInfo method, object eventType, Guid eventId)
+    {
+        if (method.ReturnType.IsGenericType &&
+            method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+        {
+            var resultType = method.ReturnType.GetGenericArguments()[0];
+            if (typeof(EventBase).IsAssignableFrom(resultType))
+            {
+                var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
+                var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId);
+                await PublishAsync(eventWrapper);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The event handler of {eventType.GetType()}'s return type needs to be inherit from EventBase.");
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"The event handler of {eventType.GetType()} needs to have a return value.");
         }
     }
 }

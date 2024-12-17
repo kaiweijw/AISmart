@@ -15,7 +15,7 @@ namespace AISmart.Service;
 public class TelegramService :  ApplicationService,ITelegramService
 {
     private readonly IClusterClient _clusterClient;
-    private readonly Guid _publishId = Guid.NewGuid();
+    private static readonly Guid _publishId = Guid.NewGuid();
 
     public TelegramService(IClusterClient clusterClient)
     {

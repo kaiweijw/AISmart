@@ -13,9 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="AutoGen" Version="0.2.1" />
-      <PackageReference Include="AutoGen.Core" Version="0.2.1" />
-      <PackageReference Include="Volo.Abp.Core" Version="8.2.0" />
+      <PackageReference Include="AutoGen" />
+      <PackageReference Include="AutoGen.Core" />
+      <PackageReference Include="Volo.Abp.Core" />
     </ItemGroup>
 
 </Project>

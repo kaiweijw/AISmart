@@ -12,8 +12,6 @@ using AISmart.GAgent.Autogen.Events;
 using AISmart.GAgent.Autogen.EventSourcingEvent;
 using AISmart.GEvents.Autogen;
 using AISmart.Provider;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Orleans.Runtime;
 using Orleans.Streams;
 
 namespace AISmart.GAgent.Autogen;
@@ -98,6 +96,15 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    public async Task HandleEventAsync(EventWrapperBase eventWrapperBase)
+    {
+        if (eventWrapperBase is EventWrapper<EventBase> eventWrapper)
+        {
+            var eventId = eventWrapper.EventId;
+            // 
         }
     }
 
