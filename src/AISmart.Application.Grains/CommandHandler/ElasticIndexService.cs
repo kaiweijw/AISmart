@@ -9,7 +9,7 @@ namespace AISmart.Application.Grains.CommandHandler;
 public class ElasticIndexService
 {
     private readonly IElasticClient _elasticClient;
-    protected readonly ILogger Logger;
+    private readonly ILogger Logger;
 
     public ElasticIndexService(IElasticClient elasticClient)
     {
@@ -71,8 +71,6 @@ public class ElasticIndexService
                         .AutoMap()
                     )
                 );
-                break;
-            default:
                 break;
         }
     }

@@ -40,15 +40,15 @@ public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
         
         await (Task)genericMethod.Invoke(indexService, null);
     }
-    
-    public static async Task CreateIndexByTypeAsync(IElasticClient elasticClient, BaseState state)
+
+    private static async Task CreateIndexByTypeAsync(IElasticClient elasticClient, BaseState state)
     {
         var indexService = new ElasticIndexService(elasticClient);
         var stateType = state.GetType();
         await indexService.CreateIndexFromTypeAsync(stateType.Name);
     }
     
-    public async Task SaveIndexAsync(SaveStateCommand request)
+    private async Task SaveIndexAsync(SaveStateCommand request)
     {
         var documentId = request.Id.ToString();
         var typeName = request.State.GetType().Name;
@@ -67,8 +67,6 @@ public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
                     .Index(indexName)
                     .Id(documentId)
                 );
-                break;
-            default:
                 break;
         }
     }
