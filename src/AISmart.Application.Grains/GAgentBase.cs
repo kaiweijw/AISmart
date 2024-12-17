@@ -318,7 +318,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 {
                     try
                     {
-                        var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId);
+                        var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId, this.GetPrimaryKey());
                         var result = eventHandlerMethod.Invoke(this, [invokeParameter]);
                         await (Task)result!;
                     }
@@ -386,7 +386,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 try
                 {
                     var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
-                    var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId);
+                    var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId, this.GetPrimaryKey());
                     await PublishAsync(eventWrapper);
                 }
                 catch (Exception ex)
