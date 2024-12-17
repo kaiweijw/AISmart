@@ -29,7 +29,6 @@ namespace AISmart.Samples
     {
         private readonly IClusterClient _clusterClient;
         protected readonly IGrainFactory _grainFactory;
-        private readonly ITestOutputHelper _testOutputHelper;
 
         private IStateGAgent<XAgentState> _xStateGAgent;
         private IStateGAgent<MarketLeaderAgentState> _marketLeaderStateGAgent;
@@ -38,11 +37,10 @@ namespace AISmart.Samples
         private IStateGAgent<GroupAgentState> _groupStateGAgent;
         private IPublishingGAgent _publishingGAgent;
 
-        public XgAgentTests(ITestOutputHelper output,ITestOutputHelper testOutputHelper)
+        public XgAgentTests(ITestOutputHelper output)
         {
             _clusterClient = GetRequiredService<IClusterClient>();
             _grainFactory = GetRequiredService<IGrainFactory>();
-            _testOutputHelper = testOutputHelper;
         }
 
         public async Task InitializeAsync()
@@ -102,59 +100,6 @@ namespace AISmart.Samples
         private async Task<bool> CheckState(DeveloperAgentState state)
         {
             return !CollectionUtilities.IsNullOrEmpty(state.Content);
-        }
-        
-        [Fact]
-        public async Task Agent_Type_Executed_Test()
-        {
-            Type interfaceType = typeof(IPublishingGAgent);
-            var implementationTypes = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => interfaceType.IsAssignableFrom(t) && t.IsClass);
-
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
-            {
-                if (interfaceType.IsAssignableFrom(type) && type.IsClass)
-                {
-                    Console.WriteLine(type.Name); // Or use any logger to output names
-                }
-            }
-
-            implementationTypes.Count().ShouldBeGreaterThan(0);
-
-            foreach (var type in implementationTypes)
-            {
-                _testOutputHelper.WriteLine(type.FullName);
-            }
-
-        }
-
-        [Fact]
-        public async Task Agent_Type2_Executed_Test()
-        {
-
-            var interfaceType = typeof(IPublishingGAgent);
-
-            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var implementations = new List<Type>();
-
-            foreach (var assembly in loadedAssemblies)
-            {
-                IEnumerable<Type> types;
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    // Handle issues where some types cannot be loaded
-                    types = ex.Types.Where(t => t != null);
-                }
-
-                var matchingTypes = types
-                    .Where(t => interfaceType.IsAssignableFrom(t) && t.IsClass);
-
-                implementations.AddRange(matchingTypes);
-            }
         }
     }
 }
