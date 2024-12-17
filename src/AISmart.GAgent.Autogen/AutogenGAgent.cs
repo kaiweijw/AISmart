@@ -61,13 +61,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
         var grain = GrainFactory.GetGrain<IAutoGenExecutor>(Guid.NewGuid());
         await SubscribeStream(grain);
         _ = grain.ExecuteTaskAsync(new ExecutorTaskInfo() { TaskId = eventData.EventId, History = history });
-        // await grain.ExecuteTaskAsync(eventData.EventId, history);
-        // await grain.ExecuteTaskAsync(eventData.EventId);
         
-
-
-        // Task.Run(async () => { await _executor.ExecuteTask(eventData.EventId, history); });
-
         base.RaiseEvent(new Create()
         {
             Id = eventData.EventId,
