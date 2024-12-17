@@ -43,11 +43,18 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         var taskId = taskInfo.TaskId;
         _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
         var response = await _chatAgentProvider.SendAsync(AgentName, "What should be done next?", history);
+        if (response == null)
+        {
+            _logger.LogDebug(
+                $"[AutoGenExecutor] autoGen response is null, History:{JsonSerializer.Serialize(history)}");
+            return;
+        }
+
         var responseStr = response.GetContent();
         if (responseStr.IsNullOrEmpty())
         {
             _logger.LogDebug(
-                $"[AutoGenExecutor] autoGen response is null, History:{JsonSerializer.Serialize(history)}");
+                $"[AutoGenExecutor] autoGen responseStr is null, History:{JsonSerializer.Serialize(history)}");
             return;
         }
 
@@ -199,7 +206,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         var stream = StreamProvider.GetStream<AutoGenInternalEventBase>(streamId);
         await stream.OnNextAsync(publishData);
     }
-    
+
     #region Event hook
 
     /// <summary>
