@@ -12,8 +12,6 @@ using AISmart.GAgent.Autogen.Events;
 using AISmart.GAgent.Autogen.EventSourcingEvent;
 using AISmart.GEvents.Autogen;
 using AISmart.Provider;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Orleans.Runtime;
 using Orleans.Streams;
 
 namespace AISmart.GAgent.Autogen;

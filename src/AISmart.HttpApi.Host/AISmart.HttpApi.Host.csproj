@@ -26,6 +26,7 @@
     <PackageReference Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" />
     <PackageReference Include="AElf.OpenTelemetry" />
     <PackageReference Include="AutoResponseWrapper" />
+    <PackageReference Include="MongoDB.Driver" />
   </ItemGroup>
 
   <ItemGroup>
