@@ -1,3 +1,4 @@
+using AISmart.AgentsNetwork;
 using AISmart.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
@@ -19,6 +20,8 @@ public class AISmartApplicationTestModule : AbpModule
         base.ConfigureServices(context);
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
         var configuration = context.Services.GetConfiguration();
+        context.Services.AddSingleton<IAgentNetworkManager>();
         Configure<ChatConfigOptions>(configuration.GetSection("Chat"));   
+        Configure<AgentNetworkConfigOptions>(configuration.GetSection("NetWork"));   
     }
 }
