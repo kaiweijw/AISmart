@@ -260,9 +260,6 @@ public sealed class TestKitSilo
                 break;
         }
 
-        // Register the grain to the GrainFactory
-        RegisterGrainToFactory(grain, identity);
-
         // Trigger the lifecycle hook that will get the grain's state from the runtime
         await _grainLifecycle.TriggerStartAsync().ConfigureAwait(false);
 
@@ -281,12 +278,6 @@ public sealed class TestKitSilo
         _createdGrains[typeof(T)] = grain;
 
         return (T)grain;
-    }
-
-    private void RegisterGrainToFactory<T>(T grain, IdSpan identity) where T : IGrainBase
-    {
-        // var grainId = GrainId.Create(_grainTypeResolver.GetGrainType(typeof(T)), identity);
-        // GrainFactory.RegisterGrain(grainId, grain);
     }
 
     public bool IsGrainTypeCreated(Type grainType)
