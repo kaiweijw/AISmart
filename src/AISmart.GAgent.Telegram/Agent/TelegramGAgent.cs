@@ -31,7 +31,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
     
 
     [EventHandler]
-    public async Task ExecuteAsync(ReceiveMessageEvent @event)
+    public async Task HandleEventAsync(ReceiveMessageEvent @event)
     { 
         _logger.LogInformation("Telegram ReceiveMessageEvent "+@event.MessageId);
        RaiseEvent(new ReceiveMessageGEvent
@@ -50,7 +50,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
 
     }
     [EventHandler]
-    public async Task ExecuteAsync(SendMessageEvent @event)
+    public async Task HandleEventAsync(SendMessageEvent @event)
     {
         if (@event.ReplyMessageId != null)
         {

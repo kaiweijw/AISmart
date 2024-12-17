@@ -93,7 +93,7 @@ public class AgentsTests : TestKitBase
         Silo.AddProbe<ITelegramGrain>(_ => txGrain);
         var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
         await publishingAgent.PublishTo(groupAgent);
-        Silo.AddProbe<IPublishingAgent>(_ => publishingAgent);
+        Silo.AddProbe<IPublishingGAgent>(_ => publishingAgent);
         await publishingAgent.PublishEventAsync(new ReceiveMessageEvent
         {
             MessageId = "11",
@@ -115,7 +115,7 @@ public class AgentsTests : TestKitBase
         Silo.AddProbe<ITelegramGrain>(_ => txGrain);
         var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
         await publishingAgent.PublishTo(groupAgent);
-        Silo.AddProbe<IPublishingAgent>(_ => publishingAgent);
+        Silo.AddProbe<IPublishingGAgent>(_ => publishingAgent);
         await publishingAgent.PublishEventAsync(new SendMessageEvent
         {
             ChatId = "12",
