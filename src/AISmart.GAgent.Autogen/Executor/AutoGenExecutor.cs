@@ -27,6 +27,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
     private const string AgentName = "admin";
     private const string FinishFlag = "complete";
     private const string BreakFlag = "break";
+    private Guid _taskId;
 
     public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IGrainFactory clusterClient,
         AgentDescriptionManager agentDescriptionManager, IChatAgentProvider chatAgentProvider)
@@ -39,8 +40,8 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
 
     public async Task ExecuteTaskAsync(ExecutorTaskInfo taskInfo)
     {
+        _taskId = taskInfo.TaskId;
         var history = ConvertMessage(taskInfo.History);
-        var taskId = taskInfo.TaskId;
         _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
         var response = await _chatAgentProvider.SendAsync(AgentName, "What should be done next?", history);
         if (response == null)
@@ -66,7 +67,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                 // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
                 await PublishInternalEvent(new AutoGenExecutorEvent()
                 {
-                    TaskId = taskId,
+                    TaskId = _taskId,
                     ExecuteStatus = TaskExecuteStatus.Finish,
                     EndContent = completeEvent.Complete,
                 });
@@ -84,7 +85,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                 // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
                 await PublishInternalEvent(new AutoGenExecutorEvent()
                 {
-                    TaskId = taskId,
+                    TaskId = _taskId,
                     ExecuteStatus = TaskExecuteStatus.Break,
                     EndContent = breakInfo.Break,
                 });
@@ -101,7 +102,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
             // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
             await PublishInternalEvent(new AutoGenExecutorEvent()
             {
-                TaskId = taskId,
+                TaskId = _taskId,
                 ExecuteStatus = TaskExecuteStatus.Progressing,
                 CurrentCallInfo = responseStr
             });
@@ -240,7 +241,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         }
 
         // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-        await PublishInternalEvent(new PassThroughExecutorEvent() { PassThroughData = eventData });
+        await PublishInternalEvent(new PassThroughExecutorEvent() { PassThroughData = eventData, TaskId = _taskId });
 
         return JsonSerializer.Serialize(new HandleEventAsyncSchema()
             { AgentName = agentName, EventName = eventName, Parameters = parameters });
@@ -294,6 +295,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         string result;
         try
         {
+            _logger.LogInformation($"[AutogenExecutor] received autogen dispatch, parameter:{arguments}");
             result = await HandleEventAsync(schema.AgentName, schema.EventName, schema.Parameters);
         }
         catch (AutogenException e)

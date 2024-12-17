@@ -3,9 +3,9 @@ using Orleans;
 
 namespace AISmart.GEvents.Autogen;
 
-
 [GenerateSerializer]
-public class PassThroughExecutorEvent:AutoGenExecutorEvent
+public class PassThroughExecutorEvent : AutoGenExecutorEvent
 {
-    [Id(0)]public object PassThroughData { get; set; }
+    [Id(0)] public Guid TaskId { get; set; }
+    [Id(0)] public object PassThroughData { get; set; }
 }

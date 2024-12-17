@@ -13,8 +13,10 @@ using AISmart.GAgent.Autogen.EventSourcingEvent;
 using AISmart.GEvents.Autogen;
 using AISmart.Provider;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
 using Orleans.Runtime;
 using Orleans.Streams;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace AISmart.GAgent.Autogen;
 
@@ -48,6 +50,9 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
     [EventHandler]
     public async Task ExecuteAsync(AutoGenCreatedEvent eventData)
     {
+        Logger.LogInformation(
+            $"[AutogenGAgent] received AutoGenCreatedEvent message,taskId is{eventData.EventId}, {JsonSerializer.Serialize(eventData)}");
+
         List<AutogenMessage> history = new List<AutogenMessage>();
         var ragResponse = await _ragProvider.RetrieveAnswerAsync(eventData.Content);
         if (ragResponse.IsNullOrEmpty() == false)
@@ -57,16 +62,44 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
 
         history.Add(new AutogenMessage(Role.User.ToString(), eventData.Content));
 
-        var grain = GrainFactory.GetGrain<IAutoGenExecutor>(Guid.NewGuid());
-        await SubscribeStream(grain);
-        _ = grain.ExecuteTaskAsync(new ExecutorTaskInfo() { TaskId = eventData.EventId, History = history });
-        
+        await PublishEventToExecutor(eventData.EventId, history);
+
         base.RaiseEvent(new Create()
         {
-            Id = eventData.EventId,
+            TaskId = eventData.EventId,
             Messages = history,
             CreateTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()
         });
+    }
+
+    [EventHandler]
+    public async Task ExecuteAsync(EventWrapperBase eventWrapperBase)
+    {
+        if (eventWrapperBase is EventWrapper<EventBase> eventWrapper)
+        {
+            var eventId = Guid.NewGuid();
+            if (State.CheckEventIdExist(eventId) == false)
+            {
+                return;
+            }
+
+            var content = JsonSerializer.Serialize(eventWrapperBase);
+            Logger.LogInformation($"[AutogenGAgent] receive reply, eventId:{eventId}, receive message is{content}");
+
+            var taskInfo = State.GetStateInfoByEventId(eventId);
+            base.RaiseEvent(new CallAgentReply()
+            {
+                EventId = eventId,
+                Reply = new AutogenMessage(Role.Function.ToString(), content)
+            });
+
+            if (taskInfo == null)
+            {
+                Logger.LogWarning($"[AutogenGAgent] receive reply but not found taskInfo, eventId:{eventId}, receive message is{content}");
+                return;
+            }
+            await PublishEventToExecutor(taskInfo.TaskId, taskInfo.ChatHistory);
+        }
     }
 
     [EventHandler]
@@ -77,27 +110,32 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             case TaskExecuteStatus.Progressing:
                 base.RaiseEvent(new CallerProgressing()
                 {
-                    Id = eventData.TaskId,
+                    TaskId = eventData.TaskId,
                     CurrentCallInfo = eventData.CurrentCallInfo,
                 });
                 break;
             case TaskExecuteStatus.Break:
                 base.RaiseEvent(new Break()
                 {
-                    Id = eventData.TaskId,
+                    TaskId = eventData.TaskId,
                     BreakReason = eventData.EndContent
                 });
                 break;
             case TaskExecuteStatus.Finish:
                 base.RaiseEvent(new Complete()
                 {
-                    Id = eventData.TaskId,
+                    TaskId = eventData.TaskId,
                     Summary = eventData.EndContent
                 });
                 break;
-            default:
-                throw new ArgumentOutOfRangeException();
         }
+    }
+
+    public async Task PublishEventToExecutor(Guid taskId, List<AutogenMessage> history)
+    {
+        var grain = GrainFactory.GetGrain<IAutoGenExecutor>(Guid.NewGuid());
+        await SubscribeStream(grain);
+        _ = grain.ExecuteTaskAsync(new ExecutorTaskInfo() { TaskId = taskId, History = history });
     }
 
     private async Task SubscribeStream(IGrainWithGuidKey grain)
@@ -114,9 +152,18 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
 
             if (message is PassThroughExecutorEvent @event2)
             {
+                Guid eventId = Guid.NewGuid();
                 await PublishAsync(@event2.PassThroughData as EventBase);
+
+                Logger.LogInformation(
+                    $"[AutogenGAgent] Publish Event, EventId{@event2.TaskId.ToString()}, eventId:{eventId.ToString()}, publish content: {JsonSerializer.Serialize(@event2.PassThroughData)}");
+
+                base.RaiseEvent(new PublishEvent()
+                {
+                    TaskId = @event2.TaskId,
+                    EventId = eventId
+                });
             }
         });
-        
     }
 }
