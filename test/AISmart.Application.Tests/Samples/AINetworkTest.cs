@@ -60,7 +60,7 @@ namespace AISmart.Samples
         [Fact]
         public async Task Agent_NetWork_Test()
         {
-            _ = _agentNetworkManager.InitializeAgentsAsync(_agentNetworkConfigOptions);
+            await _agentNetworkManager.InitializeAgentsAsync(_agentNetworkConfigOptions);
 
             var agentDictionary = _agentNetworkManager.GetAgentInstances();
             agentDictionary.Count.ShouldBe(7);
@@ -75,7 +75,7 @@ namespace AISmart.Samples
             _publishingGAgent = _grainFactory.GetGrain<IPublishingGAgent>(Guid.NewGuid());
             await _publishingGAgent.PublishTo(groupStateGAgent);
 
-            const string content = "BTC REACHED 100k WOOHOOOO!";
+            const string content = "BTC REACHED 100k BOOHOO!";
             var xThreadCreatedEvent = new XThreadCreatedEvent
             {
                 Id = "mock_x_thread_id",
