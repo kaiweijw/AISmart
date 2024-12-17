@@ -255,17 +255,14 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     
     protected override async void OnStateChanged()
     {
-        base.OnStateChanged();
         var type = State.GetType();
         Mediator = ServiceProvider.GetRequiredService<IMediator>();
-        var command = new CreateTransactionCommand
+        var command = new SaveStateCommand
         {
-            Id = Guid.NewGuid(),
-            EventName = type.Name,//gEvent.GetType().Name,
-            EventInfo = JsonConvert.SerializeObject(type)
+            Id = Guid.NewGuid().ToString(),
+            State = State as BaseState
         };
         await Mediator.Send(command);
-
     }
 
 

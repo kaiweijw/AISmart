@@ -56,7 +56,7 @@ public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>, 
         await ExecuteAsync(gEventData);
     }
     
-    protected override void OnStateChanged()
+    /*protected override void OnStateChanged()
     {
         var type = State.GetType();
         Mediator = ServiceProvider.GetRequiredService<IMediator>();
@@ -68,7 +68,7 @@ public class DeveloperAgent : GAgent<DeveloperAgentState, ImplementationEvent>, 
 
         Mediator.Send(command);
         base.OnStateChanged();   
-    }
+    }*/
 }
 public interface IDeveloperAgent : IGrainWithGuidKey
 { 

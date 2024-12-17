@@ -39,8 +39,8 @@ public class AIApplicationGrainsModule : AbpModule
             options.Refresh = Refresh.True;
             options.IndexPrefix = "aismart";
         });
-        context.Services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
-        context.Services.AddTransient<CreateTransactionCommandHandler>();
+        context.Services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
+        context.Services.AddTransient<SaveStateCommandHandler>();
 
         ConfigureElasticsearch(context);
 

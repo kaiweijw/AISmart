@@ -80,9 +80,9 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 });
                 services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
                 services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
-                services.AddMediatR(typeof(CreateTransactionCommandHandler).Assembly);
+                services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
                 services.AddMediatR(typeof(DeveloperAgentCommandHandler).Assembly);
-                services.AddTransient<CreateTransactionCommandHandler>();
+                services.AddTransient<SaveStateCommandHandler>();
                 services.AddTransient<DeveloperAgentCommandHandler>();
                 services.AddSingleton<IElasticClient>(provider =>
                 {
