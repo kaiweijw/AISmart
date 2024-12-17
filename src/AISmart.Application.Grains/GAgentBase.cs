@@ -1,6 +1,8 @@
 using System.Reflection;
 using AISmart.Agents;
+using AISmart.CQRS.Provider;
 using AISmart.Dapr;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
 using Orleans.Runtime;
@@ -20,6 +22,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<EventWrapperBaseAsyncObserver> _observers = new();
+    public ICQRSProvider CqrsProvider { get; set; }
 
     protected GAgentBase(ILogger logger)
     {
@@ -222,6 +225,15 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
             });
 
             _observers.Add(observer);
+        }
+        CqrsProvider = this.ServiceProvider.GetRequiredService<ICQRSProvider>();
+
+    }
+    protected override async void OnStateChanged()
+    {
+        if (State is BaseState baseState)
+        {
+            await CqrsProvider.Publish(baseState, this.GetGrainId().ToString());
         }
     }
 }
