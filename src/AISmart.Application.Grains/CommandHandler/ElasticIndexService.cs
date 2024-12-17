@@ -1,5 +1,6 @@
 using AISmart.Application.Grains.Agents.Developer;
 using AISmart.Application.Grains.Dto;
+using AISmart.Cqrs.Command;
 using Microsoft.Extensions.Logging;
 using Nest;
 
