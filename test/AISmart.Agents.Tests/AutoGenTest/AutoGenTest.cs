@@ -28,11 +28,20 @@ public class AutoGenTest : TestKitBase
         autogenGAgent.RegisterAgentEvent(typeof(DrawOperationGAgent), [typeof(DrawTriangleEvent)]);
         autogenGAgent.RegisterAgentEvent(typeof(MathOperationGAgent), [typeof(AddNumberEvent), typeof(SubNumberEvent)]);
 
-        Silo.AddProbe<IStateGAgent<GroupAgentState>>(_ => groupGAgent);
+        Silo.AddProbe<IGAgent>(idSpan => (idSpan switch
+        {
+            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(autogenGAgent.GetPrimaryKey()) => autogenGAgent,
+            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(drawGAgent.GetPrimaryKey()) => drawGAgent,
+            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(mathGAgent.GetPrimaryKey()) => mathGAgent,
+            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(publishingGAgent.GetPrimaryKey()) => publishingGAgent,
+            _ when idSpan == GrainIdKeyExtensions.CreateGuidKey(groupGAgent.GetPrimaryKey()) => groupGAgent,
+            _ => null
+        })!);
 
         await groupGAgent.Register(autogenGAgent);
         await groupGAgent.Register(drawGAgent);
         await groupGAgent.Register(mathGAgent);
+        await groupGAgent.Register(groupGAgent);
 
         Silo.AddProbe<IPublishingGAgent>(_ => publishingGAgent);
         Silo.AddProbe<IAutoGenExecutor>(_ => autoGenExecutor);

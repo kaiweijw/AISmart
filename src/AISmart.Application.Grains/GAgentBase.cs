@@ -133,20 +133,23 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 GAgentType = GetType()
             };
         }
- 
-        var gAgentList = Subscribers.State.Select(keyPair => GrainFactory.GetGrain<IGAgent>(keyPair.Key, keyPair.Value));
-        var listOfEventList = await Task.WhenAll(gAgentList.AsParallel().Select(async grain => await grain.GetAllSubscribedEventsAsync()));
-        
-        if (listOfEventList.All(e => e == null))
+        var gAgentList = Subscribers.State.Select(keyPair => GrainFactory.GetGrain<IGAgent>(keyPair.Key, keyPair.Value)).ToList();
+
+        if (gAgentList.Any(grain => grain == null))
         {
-            return new SubscribedEventListEvent
-            {
-                Value = [],
-                GAgentType = GetType()
-            };
+            // Only happened on test environment.
+            throw new InvalidOperationException("One or more grains in gAgentList are null.");
         }
 
-        var eventList = listOfEventList.SelectMany(e => e).ToList();
+        var listOfEventList = await Task.WhenAll(gAgentList.AsParallel().Select(async grain => await grain.GetAllSubscribedEventsAsync()));
+
+        if (listOfEventList.Any(e => e == null))
+        {
+            // Only happened on test environment.
+            throw new InvalidOperationException("One or more grains' subscribed event list is null.");
+        }
+
+        var eventList = listOfEventList.SelectMany(e => e!).ToList();
         return new SubscribedEventListEvent
         {
             Value = eventList,
