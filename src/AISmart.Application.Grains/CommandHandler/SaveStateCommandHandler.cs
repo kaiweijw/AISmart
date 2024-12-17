@@ -1,5 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
+using AISmart.Application.Grains.Agents.Developer;
+using AISmart.Application.Grains.CommandHandler;
 using AISmart.Application.Grains.Dto;
 using MediatR;
 using Nest;
@@ -20,11 +22,12 @@ public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
     {
         _objectMapper = objectMapper;
         _elasticClient = elasticClient;
-        CreateIndex(_elasticClient);
     }
 
     public async Task<int> Handle(SaveStateCommand request, CancellationToken cancellationToken)
     {
+        //await CreateIndex(_elasticClient, request.State);
+        await CreateIndexByTypeAsync(_elasticClient, request.State);
         var documentId = request.Id.ToString();
         var state = request.State;
         var response = await _elasticClient.IndexAsync(state, i => i
@@ -34,13 +37,30 @@ public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
         return await Task.FromResult(1); 
     }
     
-    public static void CreateIndex(IElasticClient elasticClient)
+    public static async Task CreateIndexAsync(IElasticClient elasticClient, BaseState state)
     {
-        var createIndex1Response = elasticClient.Indices.Create(_indxeName, c => c
+        var indexService = new ElasticIndexService(elasticClient);
+        var stateType = state.GetType();
+        
+        var method = typeof(ElasticIndexService).GetMethod("CreateIndexFromEntityAsync");
+        var genericMethod = method.MakeGenericMethod(stateType);
+        
+        await (Task)genericMethod.Invoke(indexService, null);
+
+    }
+    
+    public static async Task CreateIndexByTypeAsync(IElasticClient elasticClient, BaseState state)
+    {
+        /*var createIndex1Response = elasticClient.Indices.Create(_indxeName, c => c
             .Map<EventIndex>(m => m
                 .AutoMap()
             )
-        );
+        );*/
+        var indexService = new ElasticIndexService(elasticClient);
+        var stateType = state.GetType();
+
+        await indexService.CreateIndexFromTypeAsync(stateType.Name);
+
     }
 
 

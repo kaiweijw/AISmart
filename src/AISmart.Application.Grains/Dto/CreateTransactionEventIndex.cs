@@ -4,7 +4,7 @@ using Volo.Abp.Domain.Entities;
 
 namespace AISmart.Application.Grains.Dto;
 
-public class CreateTransactionEventIndex:  IEntity<string>,IIndexBuild
+public class CreateTransactionEventIndex
 {
     [Keyword] public string Id { get; set; }
     [Keyword] public string EventType { get; set; }
