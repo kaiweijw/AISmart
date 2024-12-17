@@ -29,8 +29,8 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         await base.OnActivateAsync(cancellationToken);
-        await SubscribeAsync<ReceiveMessageEvent>(ExecuteAsync);
-        await SubscribeAsync<SendMessageEvent>(ExecuteAsync);
+        // await SubscribeAsync<ReceiveMessageEvent>(ExecuteAsync);
+        // await SubscribeAsync<SendMessageEvent>(ExecuteAsync);
     }
 
     

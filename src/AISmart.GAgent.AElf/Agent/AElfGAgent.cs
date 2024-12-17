@@ -98,9 +98,9 @@ public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfA
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
          await base.OnActivateAsync(cancellationToken);
-         await SubscribeAsync<CreateTransactionEvent>(ExecuteAsync);
-         await SubscribeAsync<SendTransactionCallBackEvent>(ExecuteAsync);
-         await SubscribeAsync<QueryTransactionCallBackEvent>(ExecuteAsync);
+         // await SubscribeAsync<CreateTransactionEvent>(ExecuteAsync);
+         // await SubscribeAsync<SendTransactionCallBackEvent>(ExecuteAsync);
+         // await SubscribeAsync<QueryTransactionCallBackEvent>(ExecuteAsync);
     }
 
     public async Task ExecuteTransactionAsync(CreateTransactionEvent gEventData)
