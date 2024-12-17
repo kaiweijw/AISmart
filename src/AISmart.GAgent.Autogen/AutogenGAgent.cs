@@ -77,7 +77,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
     {
         if (eventWrapperBase is EventWrapper<EventBase> eventWrapper)
         {
-            var eventId = Guid.NewGuid();
+            var eventId = eventWrapper.EventId;
             if (State.CheckEventIdExist(eventId) == false)
             {
                 return;
@@ -131,7 +131,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
         }
     }
 
-    public async Task PublishEventToExecutor(Guid taskId, List<AutogenMessage> history)
+    private async Task PublishEventToExecutor(Guid taskId, List<AutogenMessage> history)
     {
         var grain = GrainFactory.GetGrain<IAutoGenExecutor>(Guid.NewGuid());
         await SubscribeStream(grain);
@@ -148,11 +148,12 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             if (message is AutoGenExecutorEvent @event1)
             {
                 await ExecuteAsync(@event1);
+                return;
             }
 
             if (message is PassThroughExecutorEvent @event2)
             {
-                Guid eventId = Guid.NewGuid();
+                var eventId = Guid.NewGuid();
                 await PublishAsync(@event2.PassThroughData as EventBase);
 
                 Logger.LogInformation(
