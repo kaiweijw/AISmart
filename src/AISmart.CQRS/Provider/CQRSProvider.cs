@@ -14,13 +14,25 @@ public class CQRSProvider : ICQRSProvider, ISingletonDependency
         _mediator = mediator;
     }
     
-    public Task Publish(BaseState state, string id)
+    public async Task PublishAsync(BaseState state, string id)
     {
         var command = new SaveStateCommand
         {
             Id = id,
             State = state
         };
-        return _mediator.Send(command);
+        await _mediator.Send(command);
+    }
+
+    public async Task<BaseState> QueryAsync(string index, string id)
+    {
+        var getStateQuery = new GetStateQuery()
+        {
+            Index = index,
+            Id = id
+        };
+        
+        var state = await _mediator.Send(getStateQuery);
+        return state;
     }
 }
