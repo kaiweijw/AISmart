@@ -247,11 +247,12 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         {
             var observer = new EventWrapperBaseAsyncObserver(async item =>
             {
+                var eventId = (Guid)item.GetType().GetProperty(nameof(EventWrapper<object>.EventId))?.GetValue(item)!;
                 var eventType = item.GetType().GetProperty(nameof(EventWrapper<object>.Event))?.GetValue(item);
                 var parameter = eventHandlerMethod.GetParameters()[0];
                 if (parameter.ParameterType == eventType!.GetType())
                 {
-                    await HandleMethodInvocationAsync(eventHandlerMethod, parameter, eventType);
+                    await HandleMethodInvocationAsync(eventHandlerMethod, parameter, eventType, eventId);
                 }
             });
 
@@ -261,11 +262,11 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         return Task.CompletedTask;
     }
 
-    private async Task HandleMethodInvocationAsync(MethodInfo method, ParameterInfo parameter, object eventType)
+    private async Task HandleMethodInvocationAsync(MethodInfo method, ParameterInfo parameter, object eventType, Guid eventId)
     {
         if (IsEventWithResponse(parameter))
         {
-            await HandleEventWithResponseAsync(method, eventType);
+            await HandleEventWithResponseAsync(method, eventType, eventId);
         }
         else if (method.ReturnType == typeof(Task))
         {
@@ -280,7 +281,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                parameter.ParameterType.BaseType.GetGenericTypeDefinition() == typeof(EventWithResponseBase<>);
     }
 
-    private async Task HandleEventWithResponseAsync(MethodInfo method, object eventType)
+    private async Task HandleEventWithResponseAsync(MethodInfo method, object eventType, Guid eventId)
     {
         if (method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
@@ -289,7 +290,8 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
             if (typeof(EventBase).IsAssignableFrom(resultType))
             {
                 var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
-                await PublishAsync((EventBase)eventResult);
+                var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId);
+                await PublishAsync(eventWrapper);
             }
             else
             {
