@@ -29,11 +29,12 @@ public class CqrsTests : AISmartApplicationTestBase
     {
         string chainId = "AELF";
         string senderName = "Test";
+        string address = "JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE";
         var createTransactionEvent = new CreateTransactionEvent()
         {
             ChainId = chainId,
             SenderName = senderName,
-            ContractAddress = "JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE",
+            ContractAddress = address,
             MethodName = "Transfer",
         };
         var guid = Guid.NewGuid();
@@ -47,6 +48,7 @@ public class CqrsTests : AISmartApplicationTestBase
         grainResult.PendingTransactions.FirstOrDefault().Value.ChainId.ShouldBe(createTransactionEvent.ChainId);
         
         //get cqrs
-        //var esResult = _cqrsProvider.PublishAsync();
+        var esResult = await _cqrsProvider.QueryAsync("aelfagentgstateindex", guid.ToString());
+        Assert.Contains(esResult.State, address);
     }
 }
