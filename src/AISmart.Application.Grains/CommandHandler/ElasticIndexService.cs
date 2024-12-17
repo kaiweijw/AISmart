@@ -1,6 +1,5 @@
 using AISmart.Application.Grains.Agents.Developer;
 using AISmart.Application.Grains.Dto;
-using Json.Schema;
 using Microsoft.Extensions.Logging;
 using Nest;
 
@@ -18,12 +17,6 @@ public class ElasticIndexService
 
     public async Task CreateIndexFromEntityAsync<T>() where T : BaseState
     {
-        /*var createIndex1Response = _elasticClient.Indices.Create("eventindexes", c => c
-                .Map<EventIndex>(m => m
-                    .AutoMap()
-                )
-            );*/
-            
         var indexName = typeof(T).Name.ToLower() + "index";
         var type = typeof(T);
         var createIndexResponse = await _elasticClient.Indices.CreateAsync(indexName, c => c
