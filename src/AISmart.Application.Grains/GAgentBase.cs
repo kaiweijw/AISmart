@@ -264,6 +264,10 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                                 var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
                                 await PublishAsync((EventBase)eventResult);
                             }
+                            else
+                            {
+                                throw new InvalidOperationException($"The event handler of {eventType.GetType()} need to have a return value.");
+                            }
                         }
                         else
                         {
