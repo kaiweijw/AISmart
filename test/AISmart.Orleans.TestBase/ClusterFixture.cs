@@ -82,7 +82,9 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
                // services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
                 services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
+                services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
                 services.AddTransient<SaveStateCommandHandler>();
+                services.AddTransient<GetStateQueryHandler>();
                 services.AddSingleton<IElasticIndexService, ElasticIndexService>();
 
                 services.AddSingleton(typeof(ICQRSProvider), typeof(CQRSProvider));

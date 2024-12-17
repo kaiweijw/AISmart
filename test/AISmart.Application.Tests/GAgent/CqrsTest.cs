@@ -48,7 +48,8 @@ public class CqrsTests : AISmartApplicationTestBase
         grainResult.PendingTransactions.FirstOrDefault().Value.ChainId.ShouldBe(createTransactionEvent.ChainId);
         
         //get cqrs
-        var esResult = await _cqrsProvider.QueryAsync("aelfagentgstateindex", guid.ToString());
-        Assert.Contains(esResult.State, address);
+        var grainId =  _clusterClient.GetGrain<IAElfAgent>(guid).GetGrainId();
+        var esResult = await _cqrsProvider.QueryAsync("aelfagentgstateindex", grainId.ToString());
+        Assert.Contains(address, esResult.State);
     }
 }
