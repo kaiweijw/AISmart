@@ -49,8 +49,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
     public async Task ExecuteAsync(AutoGenCreatedEvent eventData)
     {
         List<AutogenMessage> history = new List<AutogenMessage>();
-        // var ragResponse = await _ragProvider.RetrieveAnswerAsync(eventData.Content);
-        var ragResponse = string.Empty;
+        var ragResponse = await _ragProvider.RetrieveAnswerAsync(eventData.Content);
         if (ragResponse.IsNullOrEmpty() == false)
         {
             history.Add(new AutogenMessage(Role.System.ToString(), ragResponse));
