@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using AISmart.Agents;
 using AISmart.Dapr;
@@ -141,7 +142,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
             throw new InvalidOperationException("One or more grains in gAgentList are null.");
         }
 
-        var dict = new Dictionary<Type, List<Type>>();
+        var dict = new ConcurrentDictionary<Type, List<Type>>();
         foreach (var gAgent in gAgentList.AsParallel())
         {
             var eventList = await gAgent.GetAllSubscribedEventsAsync();
@@ -150,7 +151,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
         return new SubscribedEventListEvent
         {
-            Value = dict,
+            Value = dict.ToDictionary(),
             GAgentType = GetType()
         };
     }
