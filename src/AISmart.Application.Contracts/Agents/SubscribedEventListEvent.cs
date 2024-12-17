@@ -7,6 +7,10 @@ namespace AISmart.Agents;
 [GenerateSerializer]
 public class SubscribedEventListEvent : EventBase
 {
-    [Id(0)] public List<Type> Value { get; set; }
+    /// <summary>
+    /// Key: GAgent Type.
+    /// Value: Subscribed Event Types.
+    /// </summary>
+    [Id(0)] public Dictionary<Type, List<Type>> Value { get; set; }
     [Id(1)] public Type GAgentType { get; set; }
 }
