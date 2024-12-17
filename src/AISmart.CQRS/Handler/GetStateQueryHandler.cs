@@ -19,10 +19,7 @@ public class GetStateQueryHandler : IRequestHandler<GetStateQuery, BaseState>
     
     public async Task<BaseState> Handle(GetStateQuery request, CancellationToken cancellationToken)
     {
-        // var response = await _elasticClient.IndexAsync(request.Index, i => i
-        //     .Index(request.Index)
-        //     .Id(request.StateId)
-        var response = await _elasticClient.GetAsync<BaseState>(request.Id, g => g.Index(request.Index));
+        var response = await _elasticClient.GetAsync<BaseState>(request.Id, g => g.Index(request.Index), cancellationToken);
         return response.Source; 
     }
 }

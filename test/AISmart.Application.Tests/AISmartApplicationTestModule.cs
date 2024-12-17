@@ -1,4 +1,6 @@
+using AISmart.CQRS.Handler;
 using AISmart.Options;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.EventBus;
@@ -20,5 +22,7 @@ public class AISmartApplicationTestModule : AbpModule
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
         var configuration = context.Services.GetConfiguration();
         Configure<ChatConfigOptions>(configuration.GetSection("Chat"));   
+        context.Services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
+
     }
 }
