@@ -5,5 +5,5 @@ namespace AISmart.Cqrs;
 
 public interface ICqrsProvider
 {
-    Task Publish(BaseState state);
+    Task Publish(BaseState state, string id);
 }
