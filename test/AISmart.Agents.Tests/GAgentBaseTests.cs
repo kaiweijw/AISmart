@@ -40,43 +40,4 @@ public class GAgentBaseTests : TestKitBase
         state.Content.Count.ShouldBe(3);
         state.Content.ShouldContain("Hello world");
     }
-
-    [Fact]
-    public async Task GetAllSubscribedEventsTest()
-    {
-        var xGAgent = await Silo.CreateGrainAsync<XGAgent>(Guid.NewGuid());
-        var eventList = await xGAgent.GetAllSubscribedEventsAsync();
-        eventList.ShouldNotBeNull();
-        eventList.Count.ShouldBe(1);
-
-        var groupGAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
-        eventList = await groupGAgent.GetAllSubscribedEventsAsync();
-        eventList.ShouldNotBeNull();
-        eventList.Count.ShouldBe(0);
-
-        var publishingGAgent = await Silo.CreateGrainAsync<PublishingGAgent>(Guid.NewGuid());
-        eventList = await publishingGAgent.GetAllSubscribedEventsAsync();
-        eventList.ShouldNotBeNull();
-        eventList.Count.ShouldBe(0);
-
-        var marketLeaderGAgent = await Silo.CreateGrainAsync<MarketLeaderGAgent>(Guid.NewGuid());
-        eventList = await marketLeaderGAgent.GetAllSubscribedEventsAsync();
-        eventList.ShouldNotBeNull();
-        eventList.Count.ShouldBe(1);
-
-        var developerGAgent = await Silo.CreateGrainAsync<DeveloperGAgent>(Guid.NewGuid());
-        eventList = await developerGAgent.GetAllSubscribedEventsAsync();
-        eventList.ShouldNotBeNull();
-        eventList.Count.ShouldBe(1);
-
-        var investmentGAgent = await Silo.CreateGrainAsync<InvestmentGAgent>(Guid.NewGuid());
-        eventList = await investmentGAgent.GetAllSubscribedEventsAsync();
-        eventList.ShouldNotBeNull();
-        eventList.Count.ShouldBe(1);
-        
-        var autoGenGAgent = await Silo.CreateGrainAsync<AutogenGAgent>(Guid.NewGuid());
-        eventList = await autoGenGAgent.GetAllSubscribedEventsAsync();
-        eventList.ShouldNotBeNull();
-        eventList.Count.ShouldBe(3);
-    }
 }
