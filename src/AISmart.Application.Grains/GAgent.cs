@@ -1,5 +1,7 @@
 using AISmart.Agents;
 using AISmart.Application.Grains.Command;
+using AISmart.Cqrs;
+using AISmart.Cqrs.Command;
 using AISmart.Dapr;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,7 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     private readonly List<Func<EventWrapperBase, StreamSequenceToken, Task>> _subscriptionHandlers = new();
     public IMediator Mediator { get; set; }
     private readonly ILocalEventBus _eventBus;
+    public ICqrsProvider CqrsProvider { get; set; }
 
     protected GAgent(ILogger logger)
     {
@@ -257,13 +260,14 @@ public abstract class GAgent<TState, TEvent> : JournaledGrain<TState, TEvent>, I
     {
         var type = State.GetType();
         Mediator = ServiceProvider.GetRequiredService<IMediator>();
-        var command = new SaveStateCommand
-        {
-            Id = Guid.NewGuid().ToString(),
-            State = State as BaseState
-        };
-        await Mediator.Send(command);
+        // var command = new SaveStateCommand
+        // {
+        //     Id = Guid.NewGuid().ToString(),
+        //     State = State as BaseState
+        // };
+        // await Mediator.Send(command);
+        CqrsProvider = ServiceProvider.GetRequiredService<ICqrsProvider>();
+        var baseState = State as BaseState;
+        await CqrsProvider.Publish(baseState);
     }
-
-
 }

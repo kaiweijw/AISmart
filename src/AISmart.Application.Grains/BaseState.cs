@@ -1,6 +1,6 @@
 namespace AISmart.Application.Grains;
 
-public class BaseState
+public class Base1State
 {
     
 }
