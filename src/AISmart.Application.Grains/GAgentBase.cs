@@ -193,11 +193,14 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         return Task.FromResult(State);
     }
 
-    protected async Task PublishAsync<T>(T @event) where T : EventBase
+    protected async Task<Guid> PublishAsync<T>(T @event) where T : EventBase
     {
-        var eventWrapper = new EventWrapper<T>(@event, Guid.NewGuid());
+        var eventId = Guid.NewGuid();
+        var eventWrapper = new EventWrapper<T>(@event, eventId);
 
         await PublishAsync(eventWrapper);
+
+        return eventId;
     }
 
     private async Task PublishAsync<T>(EventWrapper<T> eventWrapper) where T : EventBase
