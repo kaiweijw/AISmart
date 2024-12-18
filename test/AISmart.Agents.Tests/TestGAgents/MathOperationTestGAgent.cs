@@ -1,28 +1,31 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using AISmart.Agents;
 using AISmart.Application.Grains;
 using Microsoft.Extensions.Logging;
+using Orleans;
 using Orleans.Providers;
 
-namespace AISmart.Grains.Tests.TestGAgents;
+namespace AISmart.Grains.Tests.AutoGenTest;
 
 [Description("i can add two integer")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class MathOperationTestGAgent: GAgentBase<MathOperationTestGAgentState, MathOperationTestGEvent>
+public class MathOperationGAgent : GAgentBase<MathOperationState, MathOperationEvent>
 {
-    public MathOperationTestGAgent(ILogger logger) : base(logger)
+    public MathOperationGAgent(ILogger<MathOperationGAgent> logger) : base(logger)
     {
     }
-    
+
     [EventHandler]
-    public async Task ExecuteAsync(AddNumberTestEvent numberTestEvent)
+    public async Task<AddNumberResultEvent> ExecuteAsync(AddNumberEvent numberEvent)
     {
-        await PublishAsync(new AddNumberResultTestEvent()
+        return new AddNumberResultEvent()
         {
-            Total = numberTestEvent.B + numberTestEvent.A + 1
-        });
+            Total = numberEvent.B + numberEvent.A + 1
+        };
     }
 
     public override Task<string> GetDescriptionAsync()
@@ -32,36 +35,35 @@ public class MathOperationTestGAgent: GAgentBase<MathOperationTestGAgentState, M
 }
 
 [GenerateSerializer]
-public class MathOperationTestGAgentState
+public class MathOperationState
 {
 }
 
-public class MathOperationTestGEvent : GEventBase
+public class MathOperationEvent : GEventBase
 {
 }
 
-[Serializable]
+[GenerateSerializer]
 [Description("add Two number")]
-public class AddNumberTestEvent : EventBase
+[assembly: InternalsVisibleTo("AnotherAssembly")]
+public class AddNumberEvent : EventWithResponseBase<AddNumberResultEvent>
 {
-    [Description("First Number")]
-    public int A { get; set; }
-    [Description("Second Number")]
-    public int B { get; set; }
+    [Description("First Number")] [Id(0)] public int A { get; set; }
+    [Description("Second Number")] [Id(1)] public int B { get; set; }
 }
 
-[Serializable]
+[GenerateSerializer]
 [Description("Sub Two number")]
-public class SubNumberTestEvent : EventBase
+[assembly: InternalsVisibleTo("AnotherAssembly")]
+public class SubNumberEvent : EventBase
 {
-    [Description("First Number")]
-    public int A { get; set; }
-    [Description("Second Number")]
-    public int B { get; set; }
+    [Description("First Number")] [Id(0)] public int A { get; set; }
+    [Description("Second Number")] [Id(1)] public int B { get; set; }
 }
 
-[Serializable]
-public class AddNumberResultTestEvent : EventBase
+[GenerateSerializer]
+[Description("Add Two number's Result")]
+public class AddNumberResultEvent : EventBase
 {
-    public int Total { get; set; }
+    [Id(0)] public int Total { get; set; }
 }
