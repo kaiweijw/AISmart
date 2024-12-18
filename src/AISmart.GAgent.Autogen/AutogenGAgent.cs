@@ -70,6 +70,8 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             Messages = history,
             CreateTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()
         });
+        
+        await base.ConfirmEvents();
     }
 
     [AllEventHandler]
@@ -86,31 +88,40 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             Logger.LogInformation(
                 $"[AutogenGAgent] receive reply, eventId:{eventId}, receive message is{eventWrapper.Event}");
 
+            var eventInfo = State.GetEventInfoByEventId(eventId);
+            if (eventInfo == null)
+            {
+                Logger.LogWarning(
+                    $"[AutogenGAgent] receive reply but not found eventInfo, eventId:{eventId}, receive message is{eventWrapper.Event}");
+                return;
+            }
+
+            var agentName = eventInfo.AgentName;
+            var eventName = eventInfo.EventName;
+            var content = JsonConvert.SerializeObject(new AgentResponse<EventBase>()
+                { AgentName = agentName, EventName = eventName, Response = eventWrapper.Event });
+           
             var taskInfo = State.GetStateInfoByEventId(eventId);
             if (taskInfo == null)
             {
                 Logger.LogWarning(
-                    $"[AutogenGAgent] receive reply but not found taskInfo, eventId:{eventId}, receive message is{eventWrapper.Event}");
+                    $"[AutogenGAgent] receive reply but not found taskInfo, eventId:{eventId}, taskId{taskInfo.TaskId}, receive message is{eventWrapper.Event}");
                 return;
             }
-
-            var agentName = string.Empty;
-            var eventName = string.Empty;
-            if (taskInfo.CurrentCallInfo.IsNullOrEmpty() == false)
-            {
-                var handlerSchema = JsonSerializer.Deserialize<HandleEventAsyncSchema>(taskInfo.CurrentCallInfo);
-                agentName = handlerSchema.AgentName;
-                eventName = handlerSchema.EventName;
-            }
-
-            var content = JsonConvert.SerializeObject(new AgentResponse<EventBase>()
-                { AgentName = agentName, EventName = eventName, Response = eventWrapper.Event });
+            
             base.RaiseEvent(new CallAgentReply()
             {
                 EventId = eventId,
                 Reply = new AutogenMessage(Role.Assistant.ToString(), content)
             });
-
+            
+            await base.ConfirmEvents();
+            
+            if (State.CheckIsRunning(taskInfo.TaskId))
+            {
+                return;
+            } 
+            
             await PublishEventToExecutor(taskInfo.TaskId, taskInfo.ChatHistory);
         }
     }
@@ -160,6 +171,8 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 });
                 break;
         }
+
+        await base.ConfirmEvents();
     }
 
     private async Task PublishEventToExecutor(Guid taskId, List<AutogenMessage> history)
@@ -191,8 +204,12 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 base.RaiseEvent(new PublishEvent()
                 {
                     TaskId = @event2.TaskId,
-                    EventId = eventId
+                    EventId = eventId,
+                    AgentName = @event2.AgentName,
+                    EventName = @event2.EventName
                 });
+                
+                await base.ConfirmEvents();
             }
         });
     }
