@@ -41,7 +41,7 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
 
         return new WorkCompleteEvent
         {
-            Content = "The financing has been completed."
+            Content = "The financing....."
         };
     }
 
