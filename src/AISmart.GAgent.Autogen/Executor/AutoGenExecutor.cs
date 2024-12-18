@@ -115,6 +115,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         }
 
         var responseEvents = responseStr.SplitToLines();
+        
         foreach (var responseEvent in responseEvents)
         {
             var handleEventSchema = JsonSerializer.Deserialize<HandleEventAsyncSchema>(responseEvent);
@@ -125,7 +126,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                 {
                     TaskId = _taskId,
                     ExecuteStatus = TaskExecuteStatus.Progressing,
-                    CurrentCallInfo = responseStr
+                    CurrentCallInfo = responseEvent
                 });
             }
         }
