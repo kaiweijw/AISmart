@@ -40,6 +40,24 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
 
     public async Task ExecuteTaskAsync(ExecutorTaskInfo taskInfo)
     {
+        try
+        {
+            await CallAutogen(taskInfo);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[AutogenExecutor] ExecuteTaskAsync error, TaskInfo:{@TaskInfo}",taskInfo);
+            await PublishInternalEvent(new AutoGenExecutorEvent()
+            {
+                TaskId = _taskId,
+                ExecuteStatus = TaskExecuteStatus.Break,
+                EndContent = "Internal error",
+            });
+        }
+    }
+
+    public async Task CallAutogen(ExecutorTaskInfo taskInfo)
+    {
         _taskId = taskInfo.TaskId;
         var history = ConvertMessage(taskInfo.History);
         _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
@@ -180,24 +198,24 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                    You need to analyze the response information to decide whether to proceed to the next round. 
                    The response information will be used during the final summary. The JSON format is as follows:
                    {
-                    "EventName":"", 
-                    "Reply":"",
+                    "AgentName":"", 
+                    "EventName":"",
+                    "Response":{}
                    }
-                   JSON explanation:EventName is the name of the event,and Reply is the response from the event corresponding to EventName.
+                   JSON explanation:
+                   AgentName is the caller of Agent.
+                   EventName is the name of the agent's event.
+                   Response is the response from the event corresponding to agent's EventName,It could be in JSON format,You need to understand the meaning of each field and potentially use the values as parameters for the next event.
                    
                  - If the user's request is completed, please output the Json format:
-                    ```
                     {
                         "complete":"{reply summary}"
                     }
-                    ```
                     
                  - If the user's request cannot continue, please output the Json format:
-                    ```
                     {
                         "break": "{question}"
                     }
-                    ```
                  """;
     }
 
@@ -306,13 +324,6 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         return result;
     }
 
-    public class HandleEventAsyncSchema
-    {
-        [JsonPropertyName(@"agentName")] public string AgentName { get; set; }
-        [JsonPropertyName(@"eventName")] public string EventName { get; set; }
-        [JsonPropertyName(@"parameters")] public string Parameters { get; set; }
-    }
-
     public class EventBreak
     {
         [JsonPropertyName(@"break")] public string Break { get; set; }
@@ -320,7 +331,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
 
     public class EventComplete
     {
-        [JsonPropertyName(@"compete")] public string Complete { get; set; }
+        [JsonPropertyName(@"complete")] public string Complete { get; set; }
     }
 
     #endregion

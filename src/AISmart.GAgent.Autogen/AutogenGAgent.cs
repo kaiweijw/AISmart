@@ -1,3 +1,4 @@
+using System.Text.Json;
 using AISmart.Agents;
 using AISmart.Agents.AutoGen;
 using AISmart.GAgent.Autogen.State;
@@ -54,11 +55,11 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             $"[AutogenGAgent] received AutoGenCreatedEvent message,taskId is{eventData.EventId}, {JsonSerializer.Serialize(eventData)}");
 
         List<AutogenMessage> history = new List<AutogenMessage>();
-        var ragResponse = await _ragProvider.RetrieveAnswerAsync(eventData.Content);
-        if (ragResponse.IsNullOrEmpty() == false)
-        {
-            history.Add(new AutogenMessage(Role.System.ToString(), ragResponse));
-        }
+        // var ragResponse = await _ragProvider.RetrieveAnswerAsync(eventData.Content);
+        // if (ragResponse.IsNullOrEmpty() == false)
+        // {
+        //     history.Add(new AutogenMessage(Role.System.ToString(), ragResponse));
+        // }
 
         history.Add(new AutogenMessage(Role.User.ToString(), eventData.Content));
 
@@ -72,32 +73,47 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
         });
     }
 
-    [EventHandler]
-    public async Task ExecuteAsync(EventWrapperBase eventWrapperBase)
+    [AllEventHandler]
+    public async Task HandleEventAsync(EventWrapperBase eventWrapperBase)
     {
         if (eventWrapperBase is EventWrapper<EventBase> eventWrapper)
         {
             var eventId = eventWrapper.EventId;
+
             if (State.CheckEventIdExist(eventId) == false)
             {
                 return;
             }
 
-            var content = JsonSerializer.Serialize(eventWrapperBase);
-            Logger.LogInformation($"[AutogenGAgent] receive reply, eventId:{eventId}, receive message is{content}");
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = false
+            };
+
+            Logger.LogInformation($"[AutogenGAgent] receive reply, eventId:{eventId}, receive message is{eventWrapper.Event}");
 
             var taskInfo = State.GetStateInfoByEventId(eventId);
+            if (taskInfo == null)
+            {
+                Logger.LogWarning($"[AutogenGAgent] receive reply but not found taskInfo, eventId:{eventId}, receive message is{eventWrapper.Event}");
+                return;
+            }
+            var agentName = string.Empty;
+            var eventName = string.Empty;
+            if (taskInfo.CurrentCallInfo.IsNullOrEmpty() == false)
+            {
+                var handlerSchema = JsonSerializer.Deserialize<HandleEventAsyncSchema>(taskInfo.CurrentCallInfo);
+                agentName = handlerSchema.AgentName;
+                eventName = handlerSchema.EventName;
+            }
+            
+            var content = JsonConvert.SerializeObject(new AgentResponse<EventBase>(){AgentName= agentName, EventName = eventName, Response = eventWrapper.Event});
             base.RaiseEvent(new CallAgentReply()
             {
                 EventId = eventId,
-                Reply = new AutogenMessage(Role.Function.ToString(), content)
+                Reply = new AutogenMessage(Role.Assistant.ToString(), content)
             });
 
-            if (taskInfo == null)
-            {
-                Logger.LogWarning($"[AutogenGAgent] receive reply but not found taskInfo, eventId:{eventId}, receive message is{content}");
-                return;
-            }
             await PublishEventToExecutor(taskInfo.TaskId, taskInfo.ChatHistory);
         }
     }
@@ -148,13 +164,11 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             if (message is AutoGenExecutorEvent @event1)
             {
                 await ExecuteAsync(@event1);
-                return;
             }
 
             if (message is PassThroughExecutorEvent @event2)
             {
-                var eventId = Guid.NewGuid();
-                await PublishAsync(@event2.PassThroughData as EventBase);
+                var eventId = await PublishAsync(@event2.PassThroughData as EventBase);
 
                 Logger.LogInformation(
                     $"[AutogenGAgent] Publish Event, EventId{@event2.TaskId.ToString()}, eventId:{eventId.ToString()}, publish content: {JsonSerializer.Serialize(@event2.PassThroughData)}");

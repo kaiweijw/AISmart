@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AISmart.Agents;
+using AISmart.Agents.AutoGen;
 using AISmart.Agents.Developer;
 using AISmart.Agents.Group;
 using AISmart.Agents.Investment;
@@ -10,6 +11,7 @@ using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
 using AISmart.Sender;
 using Orleans;
+using Orleans.Runtime;
 using Volo.Abp.Application.Services;
 
 namespace AISmart.Application;

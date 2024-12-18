@@ -64,13 +64,13 @@ public class AutoGenAgentState
     
     public void Apply(CallerProgressing @event)
     {
-        var state = GetStateInfo(@event.EventId);
+        var state = GetStateInfo(@event.TaskId);
         if (state == null)
         {
             return;
         }
 
-        StartEvent(@event.TaskId, @event.EventId);
+        // StartEvent(@event.TaskId, @event.EventId);
         state.CurrentCallInfo = @event.CurrentCallInfo;
     }
 
