@@ -39,7 +39,7 @@ public class TelegramService :  ApplicationService,ITelegramService
        // await SetGroupsAsync();
         // To filter only messages that mention the bot, check if message.Entities.type == "mention".
         // Group message auto-reply, just add the bot as a group admin.
-        _logger.LogDebug("IPublishingGAgent {PublishId}",PublishId);
+        _logger.LogInformation("IPublishingGAgent {PublishId}",PublishId);
         if (updateMessage.Message != null)
         {
             var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(PublishId);
