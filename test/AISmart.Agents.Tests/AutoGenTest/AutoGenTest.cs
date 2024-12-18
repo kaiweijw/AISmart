@@ -25,7 +25,7 @@ public class AutoGenTest : GAgentTestKitBase
         autogenGAgent.RegisterAgentEvent(typeof(DrawOperationGAgent), [typeof(DrawOperateEvent)]);
         autogenGAgent.RegisterAgentEvent(typeof(MathOperationGAgent), [typeof(AddNumberEvent), typeof(AddNumberResultEvent)]);
 
-        AddProbes(autogenGAgent, drawGAgent, mathGAgent, publishingGAgent, groupGAgent);
+        AddProbesByGrainId(autogenGAgent, drawGAgent, mathGAgent, publishingGAgent, groupGAgent);
 
         await groupGAgent.Register(autogenGAgent);
         await groupGAgent.Register(drawGAgent);

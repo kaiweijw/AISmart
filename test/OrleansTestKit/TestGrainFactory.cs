@@ -8,6 +8,7 @@ public sealed class TestGrainFactory : IGrainFactory
     private readonly TestKitOptions _options;
 
     private readonly Dictionary<Type, Func<IdSpan, IGrain>> _probeFactories;
+    private readonly Dictionary<GrainId, IGrain> _probesOfGrainId = new();
 
     private readonly Dictionary<string, IGrain> _probes;
 
@@ -46,8 +47,15 @@ public sealed class TestGrainFactory : IGrainFactory
         where TGrainInterface : IGrainWithIntegerCompoundKey =>
         GetProbe<TGrainInterface>(GrainIdKeyExtensions.CreateIntegerKey(primaryKey, keyExtension), grainClassNamePrefix);
 
-    public TGrainInterface GetGrain<TGrainInterface>(GrainId grainId) where TGrainInterface : IAddressable =>
-        throw new NotImplementedException();
+    public TGrainInterface GetGrain<TGrainInterface>(GrainId grainId) where TGrainInterface : IAddressable
+    {
+        if (_probesOfGrainId.TryGetValue(grainId, out var grain))
+        {
+            return (TGrainInterface)grain;
+        }
+
+        return default;
+    }
 
     public IAddressable GetGrain(GrainId grainId) =>
         throw new NotImplementedException();
@@ -78,10 +86,15 @@ public sealed class TestGrainFactory : IGrainFactory
         _probes.Add(key, mock.Object);
         return mock;
     }
+    
 
     internal void AddProbe<T>(Func<IdSpan, T> factory)
         where T : class, IGrain =>
         _probeFactories.Add(typeof(T), factory);
+
+    internal void AddProbe<T>(GrainId grainId, T grain)
+        where T : class, IGrain =>
+        _probesOfGrainId.Add(grainId, grain);
 
     internal void AddProbe<T>(Func<IdSpan, IMock<T>> factory)
         where T : class, IGrain

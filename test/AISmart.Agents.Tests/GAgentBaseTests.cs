@@ -75,7 +75,7 @@ public class GAgentBaseTests : GAgentTestKitBase
             subscribeTestGAgent);
         var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
 
-        AddProbes(eventHandlerTestGAgent, eventHandlerWithResponseTestGAgent, subscribeTestGAgent, groupGAgent,
+        AddProbesByGrainId(eventHandlerTestGAgent, eventHandlerWithResponseTestGAgent, subscribeTestGAgent, groupGAgent,
             publishingGAgent);
 
         await publishingGAgent.PublishEventAsync(new RequestAllSubscriptionsEvent());

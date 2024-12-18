@@ -38,6 +38,7 @@ public class DrawOperationState
 }
 
 [GenerateSerializer]
+[Description("Draw Triangle")]
 public class DrawOperateEvent : GEventBase
 {
 }

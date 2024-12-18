@@ -35,7 +35,7 @@ public class GAgentTests : GAgentTestKitBase
             Content = "BTC REACHED 100k WOOHOOOO!"
         };
 
-        AddProbes(xGAgent, groupGAgent, marketLeaderGAgent, developerGAgent, investmentGAgent);
+        AddProbesByGrainId(xGAgent, groupGAgent, marketLeaderGAgent, developerGAgent, investmentGAgent);
 
         await publishingGAgent.PublishEventAsync(xThreadCreatedEvent);
 

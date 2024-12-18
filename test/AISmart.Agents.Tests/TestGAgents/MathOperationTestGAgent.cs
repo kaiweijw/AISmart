@@ -62,6 +62,7 @@ public class SubNumberEvent : EventBase
 }
 
 [GenerateSerializer]
+[Description("Add Two number's Result")]
 public class AddNumberResultEvent : EventBase
 {
     [Id(0)] public int Total { get; set; }

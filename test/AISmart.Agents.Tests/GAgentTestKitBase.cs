@@ -29,10 +29,21 @@ public abstract class GAgentTestKitBase : TestKitBase
             await groupGAgent.Register(gAgent);
         }
 
+        //await groupGAgent.Register(groupGAgent);
+
         return groupGAgent;
     }
 
-    protected void AddProbes(params IGAgent?[] gAgents)
+    protected void AddProbesByGrainId(params IGAgent?[] gAgents)
+    {
+        foreach (var gAgent in gAgents)
+        {
+            Silo.AddProbe(gAgent.GetGrainId(), gAgent);
+        }
+    }
+
+    [Obsolete("Use AddProbesByGrainId.")]
+    protected void AddProbesByIdSpan(params IGAgent?[] gAgents)
     {
         var parameter = Expression.Parameter(typeof(IdSpan), "idSpan");
         Expression body = Expression.Constant(null, typeof(IGAgent));
