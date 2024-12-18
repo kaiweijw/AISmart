@@ -80,10 +80,24 @@ public class GAgentBaseTests : GAgentTestKitBase
 
         await publishingGAgent.PublishEventAsync(new RequestAllSubscriptionsEvent());
         var state = await subscribeTestGAgent.GetStateAsync();
-        state.SubscriptionInfo.Count.ShouldBe(4);
+        state.SubscriptionInfo.Count.ShouldBe(3);
         state.SubscriptionInfo[typeof(EventHandlerTestGAgent)].Count.ShouldBe(3);
         state.SubscriptionInfo[typeof(EventHandlerWithResponseTestGAgent)].Count.ShouldBe(1);
-        state.SubscriptionInfo[typeof(GroupGAgent)].Count.ShouldBe(0);
         state.SubscriptionInfo[typeof(SubscribeTestGAgent)].Count.ShouldBe(1);
+    }
+    
+    [Fact]
+    public async Task TaskDelayTest()
+    {
+        var taskDelayTestGAgent = await Silo.CreateGrainAsync<TaskDelayTestGAgent>(Guid.NewGuid());
+        var groupGAgent = await CreateGroupGAgentAsync(taskDelayTestGAgent);
+        var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
+        await publishingGAgent.PublishEventAsync(new ResponseTestEvent
+        {
+            Greeting = "Hello, this is AISmart."
+        });
+        var state = await taskDelayTestGAgent.GetStateAsync();
+        state.Contet.Count.ShouldBe(1);
+        state.Contet.ShouldContain("Hello, this is AISmart.");
     }
 }

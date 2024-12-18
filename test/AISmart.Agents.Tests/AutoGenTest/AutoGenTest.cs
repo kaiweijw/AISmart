@@ -30,7 +30,6 @@ public class AutoGenTest : GAgentTestKitBase
         await groupGAgent.Register(autogenGAgent);
         await groupGAgent.Register(drawGAgent);
         await groupGAgent.Register(mathGAgent);
-        await groupGAgent.Register(groupGAgent);
 
         Silo.AddProbe<IPublishingGAgent>(_ => publishingGAgent);
         Silo.AddProbe<IAutoGenExecutor>(_ => autoGenExecutor);

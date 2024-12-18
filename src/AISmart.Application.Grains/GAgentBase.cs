@@ -17,14 +17,14 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     where TEvent : GEventBase
 {
     public IPersistentState<Dictionary<Guid, string>>? Subscribers { get; }
-    private IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
+    protected IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
 
     protected readonly ILogger Logger;
 
     // need to use persistent storage to store this
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
-    private readonly List<EventWrapperBaseAsyncObserver> _observers = new();
+    protected readonly List<EventWrapperBaseAsyncObserver> Observers = new();
 
     protected GAgentBase(ILogger logger, [PersistentState("subscribers")] IPersistentState<Dictionary<Guid, string>>? subscribers = null)
     {
@@ -70,7 +70,12 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        return Task.FromResult(_publishers.TryAdd(agentGuid, stream));
+        return Task.FromResult(TryAddPublisher(agentGuid, stream));
+    }
+
+    protected bool TryAddPublisher(Guid agentGuid, IAsyncStream<EventWrapperBase> stream)
+    {
+        return _publishers.TryAdd(agentGuid, stream);
     }
 
     public Task<bool> UnpublishFrom(IGAgent agent)
@@ -279,7 +284,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     private async Task SubscribeAsync(IAsyncStream<EventWrapperBase> stream)
     {
-        foreach (var observer in _observers)
+        foreach (var observer in Observers)
         {
             await stream.SubscribeAsync(observer);
         }
@@ -334,7 +339,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 }
             });
 
-            _observers.Add(observer);
+            Observers.Add(observer);
         }
 
         return Task.CompletedTask;

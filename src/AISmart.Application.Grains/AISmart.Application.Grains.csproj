@@ -14,6 +14,7 @@
         <PackageReference Include="Microsoft.Orleans.EventSourcing" />
         <PackageReference Include="Microsoft.Orleans.Streaming" />
         <PackageReference Include="AElf.OpenTelemetry" />
+        <PackageReference Include="Orleans.SyncWork" />
         <PackageReference Include="Volo.Abp.AutoMapper" />
         <PackageReference Include="Volo.Abp.Core" />
         <PackageReference Include="Volo.Abp.EventBus.Abstractions" />
