@@ -3,22 +3,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using AISmart.CQRS.Dto;
 using MediatR;
-using Nest;
 using Newtonsoft.Json;
+using Volo.Abp.DependencyInjection;
 
 namespace AISmart.CQRS.Handler;
 
-public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
+public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>,ISingletonDependency
 {
-    private readonly IElasticClient _elasticClient;
     private readonly IIndexingService  _indexingService ;
 
     public SaveStateCommandHandler(
-        IElasticClient elasticClient,
         IIndexingService indexingService
     )
     {
-        _elasticClient = elasticClient;
         _indexingService = indexingService;
     }
 

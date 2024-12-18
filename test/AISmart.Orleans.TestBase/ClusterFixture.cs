@@ -87,12 +87,11 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddSingleton<IIndexingService, ElasticIndexingService>();
 
                 services.AddSingleton(typeof(ICQRSProvider), typeof(CQRSProvider));
-                services.AddSingleton<IElasticClient>(provider =>
-                {
-                    var settings =new ConnectionSettings(new Uri("http://127.0.0.1:9200"))
-                        .DefaultIndex("cqrs");
-                    return new ElasticClient(settings);
-                });
+                var mockElasticClient = new Mock<IElasticClient>();
+                services.AddSingleton<IElasticClient>(mockElasticClient.Object);
+                var _mockIndexingService = new Mock<IIndexingService>();
+                services.AddSingleton<IIndexingService>(_mockIndexingService.Object); 
+
             })
             .AddMemoryStreams("AISmart")
             .AddMemoryGrainStorage("PubSubStore")
