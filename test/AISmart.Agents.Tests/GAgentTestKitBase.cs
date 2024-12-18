@@ -29,7 +29,6 @@ public abstract class GAgentTestKitBase : TestKitBase
             await groupGAgent.Register(gAgent);
         }
 
-        await groupGAgent.Register(groupGAgent);
         return groupGAgent;
     }
 
