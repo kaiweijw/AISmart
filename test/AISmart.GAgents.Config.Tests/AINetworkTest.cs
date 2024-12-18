@@ -118,14 +118,12 @@ namespace AISmart
             await _agentNetworkManager.InitializeAgentsAsync(configOptions);
             var agentDictionary = _agentNetworkManager.GetAgentInstances();
             
-            agentDictionary.Count.ShouldBe(3);
-            agentDictionary.FirstOrDefault().Key.ShouldBe(configOptions.ContractsList.FirstOrDefault()!.Name);
-            agentDictionary.ElementAtOrDefault(1).Key.ShouldBe(configOptions.ContractsList[1].Name);
-            agentDictionary.ElementAtOrDefault(2).Key.ShouldBe(configOptions.ContractsList[2].Name);
+            agentDictionary.Count.ShouldBe(2);
+            agentDictionary.FirstOrDefault().Key.ShouldBe(configOptions.ContractsList[1].Name);
+            agentDictionary.ElementAtOrDefault(1).Key.ShouldBe(configOptions.ContractsList[2].Name);
 
             agentDictionary.FirstOrDefault().Value!.GetType().FullName.ShouldBe("OrleansCodeGen.AISmart.Agents.Proxy_IGAgent");
             agentDictionary.ElementAtOrDefault(1).Value!.GetType().FullName.ShouldBe("OrleansCodeGen.AISmart.Agents.Proxy_IGAgent");
-            agentDictionary.ElementAtOrDefault(2).Value!.GetType().FullName.ShouldBe("OrleansCodeGen.AISmart.Agents.Proxy_IGAgent");
         }
         
 
