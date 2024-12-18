@@ -14,7 +14,7 @@ public class CQRSProvider : ICQRSProvider, ISingletonDependency
         _mediator = mediator;
     }
     
-    public async Task PublishAsync(BaseState state, string id)
+    public async Task PublishAsync(StateBase state, string id)
     {
         var command = new SaveStateCommand
         {

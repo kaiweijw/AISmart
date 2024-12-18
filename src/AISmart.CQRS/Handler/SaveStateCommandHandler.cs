@@ -11,20 +11,20 @@ namespace AISmart.CQRS.Handler;
 public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
 {
     private readonly IElasticClient _elasticClient;
-    private readonly IElasticIndexService _elasticIndexService;
+    private readonly IIndexingService  _indexingService ;
 
     public SaveStateCommandHandler(
         IElasticClient elasticClient,
-        IElasticIndexService elasticIndexService
+        IIndexingService indexingService
     )
     {
         _elasticClient = elasticClient;
-        _elasticIndexService = elasticIndexService;
+        _indexingService = indexingService;
     }
 
     public async Task<int> Handle(SaveStateCommand request, CancellationToken cancellationToken)
     {
-        _elasticIndexService.CheckExistOrCreateIndex(request.State.GetType().Name);
+        _indexingService.CheckExistOrCreateIndex(request.State.GetType().Name);
         await SaveIndexAsync(request);
         return await Task.FromResult(1); 
     }
@@ -37,6 +37,6 @@ public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
             Ctime = DateTime.Now,
             State = JsonConvert.SerializeObject(request.State)
         };
-        await _elasticIndexService.SaveOrUpdateIndexAsync(request.State.GetType().Name, index);
+        await _indexingService.SaveOrUpdateIndexAsync(request.State.GetType().Name, index);
     }
 }

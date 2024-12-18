@@ -10,7 +10,7 @@ public class AISmartCQRSModule : AbpModule
         {
             Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartCQRSModule>(); });
 
-            context.Services.AddSingleton<IElasticIndexService, ElasticIndexService>();
+            context.Services.AddSingleton<IIndexingService, ElasticIndexingService>();
            
         }
         

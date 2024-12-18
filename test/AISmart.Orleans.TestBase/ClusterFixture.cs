@@ -84,7 +84,7 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
                 services.AddTransient<SaveStateCommandHandler>();
                 services.AddTransient<GetStateQueryHandler>();
-                services.AddSingleton<IElasticIndexService, ElasticIndexService>();
+                services.AddSingleton<IIndexingService, ElasticIndexingService>();
 
                 services.AddSingleton(typeof(ICQRSProvider), typeof(CQRSProvider));
                 services.AddSingleton<IElasticClient>(provider =>

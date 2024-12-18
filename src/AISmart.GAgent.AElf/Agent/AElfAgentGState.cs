@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
-using AISmart.Agent.Event;
 using AISmart.Agent.GEvents;
 using AISmart.Agents;
-using Google.Protobuf;
 using Orleans;
 
 namespace AISmart.Agent;
 
 [GenerateSerializer]
-public class AElfAgentGState : BaseState
+public class AElfAgentGState : StateBase
 {
     [Id(0)]  public  Guid Id { get; set; }
     

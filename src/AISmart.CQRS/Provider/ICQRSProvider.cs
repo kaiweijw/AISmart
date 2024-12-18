@@ -6,7 +6,7 @@ namespace AISmart.CQRS.Provider;
 
 public interface ICQRSProvider
 {
-    Task PublishAsync(BaseState state, string id);
+    Task PublishAsync(StateBase state, string id);
     
     Task<BaseStateIndex> QueryAsync(string index, string id);
 }

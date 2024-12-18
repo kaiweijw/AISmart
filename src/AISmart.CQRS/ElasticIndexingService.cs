@@ -5,12 +5,12 @@ using Nest;
 
 namespace AISmart.CQRS;
 
-public class ElasticIndexService : IElasticIndexService
+public class ElasticIndexingService : IIndexingService
 {
     private readonly IElasticClient _elasticClient;
     private readonly ILogger Logger;
 
-    public ElasticIndexService(IElasticClient elasticClient)
+    public ElasticIndexingService(IElasticClient elasticClient)
     {
         _elasticClient = elasticClient;
     }
