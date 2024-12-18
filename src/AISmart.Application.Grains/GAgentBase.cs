@@ -4,10 +4,14 @@ using AISmart.Agents;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
+using Orleans.Providers;
 using Orleans.Streams;
 
 namespace AISmart.Application.Grains;
 
+[GAgent]
+[StorageProvider(ProviderName = "PubSubStore")]
+[LogConsistencyProvider(ProviderName = "LogStorage")]
 public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateGAgent<TState>
     where TState : class, new()
     where TEvent : GEventBase
@@ -340,12 +344,23 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
         return GetType()
             .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-            .Where(m => 
-                (m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync)) &&
-                (m.GetParameters()[0].ParameterType != typeof(EventWrapperBase) || m.GetCustomAttribute<AllEventHandlerAttribute>() != null))
-            .Where(m => m.GetParameters().Length == 1 &&
-                        (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
-                         m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
+            .Where(IsEventHandlerMethod);
+    }
+
+    private bool IsEventHandlerMethod(MethodInfo methodInfo)
+    {
+        return methodInfo.GetParameters().Length == 1 && (
+            // Either the method has the EventHandlerAttribute
+            // Or is named HandleEventAsync
+            //     and the parameter is not EventWrapperBase 
+            //     and the parameter is inherited from EventBase
+            ((methodInfo.GetCustomAttribute<EventHandlerAttribute>() != null ||
+              methodInfo.Name == nameof(HandleEventAsync)) &&
+             methodInfo.GetParameters()[0].ParameterType != typeof(EventWrapperBase) &&
+             typeof(EventBase).IsAssignableFrom(methodInfo.GetParameters()[0].ParameterType))
+            // Or the method has the AllEventHandlerAttribute and the parameter is EventWrapperBase
+            || (methodInfo.GetCustomAttribute<AllEventHandlerAttribute>() != null &&
+                methodInfo.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
     }
 
     private async Task HandleMethodInvocationAsync(MethodInfo method, ParameterInfo parameter, object eventType, Guid eventId)
