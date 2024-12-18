@@ -6,6 +6,9 @@ namespace AISmart.Provider;
 
 public interface IChatProvider
 {
-    public Task<ResponseDto> ReceiveMessagesAsync(MessageDto message);
-    public Task SendMessageAsync(SendMessageDto message);
+    public Task<AskOutputDto> AskAsync(AskInputDto askInputDto);
+    
+    public Task AnswerAsync(SearchAnswerOutputDto searchAnswerOutput);
+    
+    public Task<SearchAnswerOutputDto> SearchAnswerAsync(string replyId);
 }
