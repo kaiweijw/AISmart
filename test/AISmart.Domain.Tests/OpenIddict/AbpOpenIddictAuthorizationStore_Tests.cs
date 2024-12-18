@@ -44,6 +44,7 @@ public class AbpOpenIddictAuthorizationStore_Tests : OpenIddictDomainTestBase
         authorization.ShouldNotBeNull();
         authorization.Status.ShouldBe("Processing");
         authorization.Subject.ShouldBe("Pump.Fun");
+        authorization.ApplicationId.ShouldBe(_testData.App1Id);
         authorization.Type.ShouldBe(OpenIddictConstants.AuthorizationTypes.Permanent);
     }
 
