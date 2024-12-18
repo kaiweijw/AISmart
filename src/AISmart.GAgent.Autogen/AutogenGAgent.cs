@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AISmart.Agents;
 using AISmart.Agents.AutoGen;
 using AISmart.GAgent.Autogen.State;
@@ -79,25 +78,22 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
         if (eventWrapperBase is EventWrapper<EventBase> eventWrapper)
         {
             var eventId = eventWrapper.EventId;
-
             if (State.CheckEventIdExist(eventId) == false)
             {
                 return;
             }
 
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = false
-            };
-
-            Logger.LogInformation($"[AutogenGAgent] receive reply, eventId:{eventId}, receive message is{eventWrapper.Event}");
+            Logger.LogInformation(
+                $"[AutogenGAgent] receive reply, eventId:{eventId}, receive message is{eventWrapper.Event}");
 
             var taskInfo = State.GetStateInfoByEventId(eventId);
             if (taskInfo == null)
             {
-                Logger.LogWarning($"[AutogenGAgent] receive reply but not found taskInfo, eventId:{eventId}, receive message is{eventWrapper.Event}");
+                Logger.LogWarning(
+                    $"[AutogenGAgent] receive reply but not found taskInfo, eventId:{eventId}, receive message is{eventWrapper.Event}");
                 return;
             }
+
             var agentName = string.Empty;
             var eventName = string.Empty;
             if (taskInfo.CurrentCallInfo.IsNullOrEmpty() == false)
@@ -106,8 +102,9 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 agentName = handlerSchema.AgentName;
                 eventName = handlerSchema.EventName;
             }
-            
-            var content = JsonConvert.SerializeObject(new AgentResponse<EventBase>(){AgentName= agentName, EventName = eventName, Response = eventWrapper.Event});
+
+            var content = JsonConvert.SerializeObject(new AgentResponse<EventBase>()
+                { AgentName = agentName, EventName = eventName, Response = eventWrapper.Event });
             base.RaiseEvent(new CallAgentReply()
             {
                 EventId = eventId,
@@ -131,6 +128,8 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 });
                 break;
             case TaskExecuteStatus.Break:
+                Logger.LogInformation(
+                    $"[AutogenGAgent] Task Break,TaskId:{eventData.TaskId}, finish content:{eventData.EndContent}");
                 base.RaiseEvent(new Break()
                 {
                     TaskId = eventData.TaskId,
@@ -138,6 +137,8 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 });
                 break;
             case TaskExecuteStatus.Finish:
+                Logger.LogInformation(
+                    $"[AutogenGAgent] Task Finished,TaskId:{eventData.TaskId}, finish content:{eventData.EndContent}");
                 base.RaiseEvent(new Complete()
                 {
                     TaskId = eventData.TaskId,
