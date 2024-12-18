@@ -4,10 +4,14 @@ using AISmart.Agents;
 using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
+using Orleans.Providers;
 using Orleans.Streams;
 
 namespace AISmart.Application.Grains;
 
+[GAgent]
+[StorageProvider(ProviderName = "PubSubStore")]
+[LogConsistencyProvider(ProviderName = "LogStorage")]
 public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateGAgent<TState>
     where TState : class, new()
     where TEvent : GEventBase
@@ -197,7 +201,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     protected async Task<Guid> PublishAsync<T>(T @event) where T : EventBase
     {
         var eventId = Guid.NewGuid();
-        var eventWrapper = new EventWrapper<T>(@event, eventId);
+        var eventWrapper = new EventWrapper<T>(@event, eventId, this.GetPrimaryKey());
 
         await PublishAsync(eventWrapper);
 
@@ -299,6 +303,13 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         {
             var observer = new EventWrapperBaseAsyncObserver(async item =>
             {
+                var grainId = (Guid)item.GetType().GetProperty(nameof(EventWrapper<object>.GrainId))?.GetValue(item)!;
+                if (grainId == this.GetPrimaryKey())
+                {
+                    // Skip the event if it is sent by itself.
+                    return;
+                }
+                
                 var eventId = (Guid)item.GetType().GetProperty(nameof(EventWrapper<object>.EventId))?.GetValue(item)!;
                 var eventType = item.GetType().GetProperty(nameof(EventWrapper<object>.Event))?.GetValue(item);
                 var parameter = eventHandlerMethod.GetParameters()[0];
@@ -311,7 +322,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 {
                     try
                     {
-                        var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId);
+                        var invokeParameter = new EventWrapper<EventBase>((EventBase)eventType, eventId, this.GetPrimaryKey());
                         var result = eventHandlerMethod.Invoke(this, [invokeParameter]);
                         await (Task)result!;
                     }
@@ -333,12 +344,23 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
         return GetType()
             .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-            .Where(m => 
-                (m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync)) &&
-                (m.GetParameters()[0].ParameterType != typeof(EventWrapperBase) || m.GetCustomAttribute<AllEventHandlerAttribute>() != null))
-            .Where(m => m.GetParameters().Length == 1 &&
-                        (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
-                         m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
+            .Where(IsEventHandlerMethod);
+    }
+
+    private bool IsEventHandlerMethod(MethodInfo methodInfo)
+    {
+        return methodInfo.GetParameters().Length == 1 && (
+            // Either the method has the EventHandlerAttribute
+            // Or is named HandleEventAsync
+            //     and the parameter is not EventWrapperBase 
+            //     and the parameter is inherited from EventBase
+            ((methodInfo.GetCustomAttribute<EventHandlerAttribute>() != null ||
+              methodInfo.Name == nameof(HandleEventAsync)) &&
+             methodInfo.GetParameters()[0].ParameterType != typeof(EventWrapperBase) &&
+             typeof(EventBase).IsAssignableFrom(methodInfo.GetParameters()[0].ParameterType))
+            // Or the method has the AllEventHandlerAttribute and the parameter is EventWrapperBase
+            || (methodInfo.GetCustomAttribute<AllEventHandlerAttribute>() != null &&
+                methodInfo.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
     }
 
     private async Task HandleMethodInvocationAsync(MethodInfo method, ParameterInfo parameter, object eventType, Guid eventId)
@@ -379,7 +401,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 try
                 {
                     var eventResult = await (dynamic)method.Invoke(this, [eventType])!;
-                    var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId);
+                    var eventWrapper = new EventWrapper<EventBase>(eventResult, eventId, this.GetPrimaryKey());
                     await PublishAsync(eventWrapper);
                 }
                 catch (Exception ex)

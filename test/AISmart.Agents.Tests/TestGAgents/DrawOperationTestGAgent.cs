@@ -5,14 +5,14 @@ using AISmart.Application.Grains;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
-namespace AISmart.Grains.Tests.AutoGenTest;
+namespace AISmart.Grains.Tests.TestGAgents;
 
 [Description("I can draw a polygon")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class DrawOperationGAgent : GAgentBase<DrawOperationState, DrawOperateEvent>
+public class DrawOperationTestGAgent : GAgentBase<DrawOperationState, DrawOperateEvent>
 {
-    public DrawOperationGAgent(ILogger logger) : base(logger)
+    public DrawOperationTestGAgent(ILogger logger) : base(logger)
     {
     }
 
@@ -22,11 +22,11 @@ public class DrawOperationGAgent : GAgentBase<DrawOperationState, DrawOperateEve
     }
 
     [EventHandler]
-    public async Task ExecuteAsync(DrawTriangleEvent drawTriangleEvent)
+    public async Task ExecuteAsync(DrawTriangleTestEvent drawTriangleTestEvent)
     {
-        await PublishAsync(new DrawTriangleResultEvent()
+        await PublishAsync(new DrawTriangleResultTestEvent()
         {
-            DrawTriangleContent = $"I Have draw a {drawTriangleEvent.PolygonSides} Triangle"
+            DrawTriangleContent = $"I Have draw a {drawTriangleTestEvent.PolygonSides} Triangle"
         });
     }
 }
@@ -43,14 +43,14 @@ public class DrawOperateEvent : GEventBase
 
 [Serializable]
 [Description("Draw Triangle")]
-public class DrawTriangleEvent : EventBase
+public class DrawTriangleTestEvent : EventBase
 {
     [Description("Sides of a polygon")]
     public int PolygonSides { get; set; }
 }
 
 [Serializable]
-public class DrawTriangleResultEvent : EventBase
+public class DrawTriangleResultTestEvent : EventBase
 {
     public string DrawTriangleContent { get; set; }
 }

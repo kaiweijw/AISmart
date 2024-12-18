@@ -1,7 +1,6 @@
 using AISmart.Agents;
 using AISmart.Application.Grains;
 using Microsoft.Extensions.Logging;
-using Orleans.Providers;
 
 namespace AISmart.Grains.Tests.TestGAgents;
 
@@ -16,8 +15,7 @@ public class NaiveTestGEvent : GEventBase
     
 }
 
-[StorageProvider(ProviderName = "PubSubStore")]
-[LogConsistencyProvider(ProviderName = "LogStorage")]
+[GAgent]
 public class NaiveTestGAgent : GAgentBase<NaiveTestGAgentState, NaiveTestGEvent>
 {
     public NaiveTestGAgent(ILogger logger) : base(logger)

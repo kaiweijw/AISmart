@@ -2,7 +2,6 @@ using AISmart.Agents;
 using AISmart.Application.Grains;
 using AISmart.Grains.Tests.TestEvents;
 using Microsoft.Extensions.Logging;
-using Orleans.Providers;
 
 namespace AISmart.Grains.Tests.TestGAgents;
 
@@ -14,8 +13,7 @@ public class EventHandlerTestGAgentState
 
 public class EventHandlerTestGEvent : GEventBase;
 
-[StorageProvider(ProviderName = "PubSubStore")]
-[LogConsistencyProvider(ProviderName = "LogStorage")]
+[GAgent]
 public class EventHandlerTestGAgent : GAgentBase<EventHandlerTestGAgentState, EventHandlerTestGEvent>
 {
     public EventHandlerTestGAgent(ILogger logger) : base(logger)
