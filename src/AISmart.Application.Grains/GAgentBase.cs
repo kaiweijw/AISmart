@@ -1,9 +1,10 @@
 using System.Reflection;
 using AISmart.Agents;
+using AISmart.CQRS.Provider;
 using AISmart.Dapr;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
-using Orleans.Runtime;
 using Orleans.Streams;
 
 namespace AISmart.Application.Grains;
@@ -20,6 +21,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     private readonly List<EventWrapperBaseAsyncObserver> _observers = new();
+    private ICQRSProvider CqrsProvider { get; set; }
 
     protected GAgentBase(ILogger logger)
     {
@@ -312,6 +314,15 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         {
             throw new InvalidOperationException(
                 $"The event handler of {eventType.GetType()} needs to have a return value.");
+        }
+        CqrsProvider = this.ServiceProvider.GetRequiredService<ICQRSProvider>();
+
+    }
+    protected override async void OnStateChanged()
+    {
+        if (State is StateBase stateBase)
+        {
+            await CqrsProvider.PublishAsync(stateBase, this.GetGrainId().ToString());
         }
     }
 }
