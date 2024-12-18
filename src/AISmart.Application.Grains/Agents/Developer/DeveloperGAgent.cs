@@ -29,7 +29,7 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
         State.Content.Add(eventData.Content);
         return new WorkCompleteEvent
         {
-            Content = eventData.Content
+            Content = "It has already been developed."
         };
     }
 
