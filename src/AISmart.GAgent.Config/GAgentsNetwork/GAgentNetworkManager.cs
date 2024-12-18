@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using AISmart.Agents;
+using AISmart.AgentsNetwork;
 using AISmart.Application.Grains.Agents.Group;
 using AISmart.Options;
-using Orleans;
 using Volo.Abp.DependencyInjection;
 
-namespace AISmart.AgentsNetwork;
+namespace AISmart.GAgent.Config.GAgentsNetwork;
 
 
 public interface IAgentNetworkManager:ISingletonDependency

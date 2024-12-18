@@ -8,18 +8,15 @@ namespace AISmart;
 
 [DependsOn(
     typeof(AISmartApplicationModule),
-    typeof(AbpEventBusModule),
-    typeof(AISmartOrleansTestBaseModule),
-    typeof(AISmartAgentConfigModule),
-    typeof(AISmartDomainTestModule)
+    typeof(AbpEventBusModule)
 )]
-public class AISmartAgentsConfigTestModule : AbpModule
+public class AISmartAgentConfigModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         base.ConfigureServices(context);
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
         var configuration = context.Services.GetConfiguration();
-        Configure<AgentNetworkConfigOptions>(configuration.GetSection("NetWork"));
+        Configure<AgentNetworkConfigOptions>(configuration.GetSection("NetWork"));   
     }
 }
