@@ -6,6 +6,7 @@ using Shouldly;
 
 namespace AISmart.Grains.Tests;
 
+[Trait("Category", "BVT")]
 public class GAgentBaseTests : GAgentTestKitBase
 {
     [Fact]
@@ -52,6 +53,15 @@ public class GAgentBaseTests : GAgentTestKitBase
         state.Content.ShouldContain("Hello, this is AISmart.");
         state.Content.ShouldContain(content => content.Contains(nameof(ResponseTestEvent)));
         state.Content.ShouldContain(content => content.Contains(nameof(NaiveTestEvent)));
+    }
+
+    [Fact]
+    public async Task BadEventHandlerTest()
+    {
+        var badEventHandlerTestGAgent = await Silo.CreateGrainAsync<BadEventHandlerTestGAgent>(Guid.NewGuid());
+        var subscribedEventList = await badEventHandlerTestGAgent.GetAllSubscribedEventsAsync();
+        subscribedEventList.ShouldNotBeNull();
+        subscribedEventList.Count.ShouldBe(0);
     }
 
     [Fact]

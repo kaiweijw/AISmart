@@ -1,7 +1,6 @@
 using AISmart.Agents;
 using AISmart.Application.Grains;
 using Microsoft.Extensions.Logging;
-using Orleans.Providers;
 
 namespace AISmart.Grains.Tests.TestGAgents;
 
