@@ -14,14 +14,11 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
 {
     private readonly ILogViewAdaptorHost<TLogView, TLogEntry> _host;
     private readonly TLogView _initialState;
-    private readonly ILogConsistencyProtocolServices _services;
-    private readonly MongoDbLogConsistencyOptions _options;
-    private readonly string _primaryCluster;
 
-    private readonly IMongoCollection<MongoDbStateWrapper<TLogView>> _stateCollection;
-    private readonly IMongoCollection<MongoDbEventWrapper<TLogEntry>> _eventCollection;
+    private IMongoCollection<MongoDbViewStateWrapper<TLogView>> _viewStateCollection;
+    private IMongoCollection<MongoDbEventLogWrapper<TLogEntry>> _eventLogCollection;
 
-    private TLogView _cached;
+    private TLogView? _cachedView;
     private int _version;
 
     public MongoDbStorageAdaptor(ILogViewAdaptorHost<TLogView, TLogEntry> host, TLogView initialState,
@@ -30,28 +27,40 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
     {
         _host = host;
         _initialState = initialState;
-        _services = services;
-        _options = options;
-        // TODO: Maybe abstraction this collection management
-        _eventCollection = new MongoClient(options.MongoDBClient)
-            .GetDatabase(options.DataBase)
-            // TODO: Temporarily hard-coded collection name
-            .GetCollection<MongoDbEventWrapper<TLogEntry>>("AISmartEvents");
-        _stateCollection = new MongoClient(options.MongoDBClient)
-            .GetDatabase(options.DataBase)
-            // TODO: Temporarily hard-coded collection name
-            .GetCollection<MongoDbStateWrapper<TLogView>>("AISmartStates");
+
+        InitializeMongoCollections(options);
+    }
+
+    private void InitializeMongoCollections(MongoDbLogConsistencyOptions options)
+    {
+        var client = new MongoClient(options.MongoDBClient);
+        var database = client.GetDatabase(options.DataBase);
+
+        if (!database.ListCollectionNames().ToList().Contains(MongoDbStorageConstants.StateCollectionName))
+        {
+            database.CreateCollection(MongoDbStorageConstants.StateCollectionName);
+        }
+
+        if (!database.ListCollectionNames().ToList().Contains(MongoDbStorageConstants.EventCollectionName))
+        {
+            database.CreateCollection(MongoDbStorageConstants.EventCollectionName);
+        }
+
+        _viewStateCollection =
+            database.GetCollection<MongoDbViewStateWrapper<TLogView>>(MongoDbStorageConstants.StateCollectionName);
+        _eventLogCollection =
+            database.GetCollection<MongoDbEventLogWrapper<TLogEntry>>(MongoDbStorageConstants.EventCollectionName);
     }
 
     protected override void InitializeConfirmedView(TLogView initialstate)
     {
-        _cached = _initialState;
+        _cachedView = _initialState;
         _version = 0;
     }
 
     protected override TLogView LastConfirmedView()
     {
-        return _cached ?? new TLogView();
+        return _cachedView ?? new TLogView();
     }
 
     protected override int GetConfirmedVersion() => _version;
@@ -64,14 +73,12 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
         {
             try
             {
-                var result = _stateCollection.Find(FilterDefinition<MongoDbStateWrapper<TLogView>>.Empty)
-                    .SortByDescending(e => e.Version)
-                    .FirstOrDefault();
+                var result = await GetLatestViewAsync();
 
                 if (result != null)
                 {
                     _version = result.Version;
-                    _cached = result.State;
+                    _cachedView = result.State;
                 }
 
                 Services.Log(LogLevel.Debug, "read success v{0}", _version);
@@ -98,39 +105,76 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
 
     protected override async Task<int> WriteAsync()
     {
-        var currentView = await _stateCollection.Find(FilterDefinition<MongoDbStateWrapper<TLogView>>.Empty)
-            .SortByDescending(s => s.Version)
-            .FirstOrDefaultAsync();
-        var currentVersion = currentView.Version;
-
-        var newView = new MongoDbStateWrapper<TLogView>
+        var latestView = await GetLatestViewAsync();
+        if (latestView == null)
         {
-            Version = currentVersion + 1,
-            State = currentView.State
-        };
-        await _stateCollection.InsertOneAsync(newView);
-
-        var updates = GetCurrentBatchOfUpdates()
-            .Select(e => e.Entry)
-            .Select(e => new MongoDbEventWrapper<TLogEntry>
-            {
-                Version = currentVersion + 1,
-                Event = e
-            }).ToList();
-
-        await _eventCollection.InsertManyAsync(updates);
-
-        foreach (var update in updates)
-        {
-            _version++;
-            _host.UpdateView(_cached, update.Event);
+            return 0;
         }
 
-        _cached = currentView.State;
+        var latestVersion = latestView.Version;
+        if (latestVersion != _version)
+        {
+            // Return if version not match.
+            return 0;
+        }
+
+        var updates = GetCurrentBatchOfUpdates();
+        var logsToUpdate = updates
+            .Select(e => e.Entry)
+            .Select(e => new MongoDbEventLogWrapper<TLogEntry>
+            {
+                Version = latestVersion + 1,
+                Event = e
+            }).ToList();
+        
+        // Save logs to database.
+        await SaveEventsAsync(logsToUpdate);
+
+        // Update grain's view.
+        foreach (var eventLog in logsToUpdate)
+        {
+            _version++;
+            _host.UpdateView(_cachedView!, eventLog.Event);
+        }
+
+        // Update the view to database.
+        await SaveViewAsync(new MongoDbViewStateWrapper<TLogView>
+        {
+            Version = _version,
+            State = _cachedView!
+        });
 
         Services.Log(LogLevel.Debug, "write success v{0}", _version);
 
-        return updates.Count;
+        return updates.Length;
+    }
+
+    private async Task SaveViewAsync(MongoDbViewStateWrapper<TLogView> viewState)
+    {
+        await _viewStateCollection.ReplaceOneAsync(
+            filter: Builders<MongoDbViewStateWrapper<TLogView>>.Filter.Eq(v => v.Id, viewState.Id),
+            replacement: viewState,
+            options: new ReplaceOptions { IsUpsert = true });
+    }
+
+    private async Task SaveEventsAsync(IEnumerable<MongoDbEventLogWrapper<TLogEntry>> eventLogs)
+    {
+        await _eventLogCollection.InsertManyAsync(eventLogs);
+    }
+    
+    private async Task<MongoDbViewStateWrapper<TLogView>?> GetLatestViewAsync()
+    {
+        return await _viewStateCollection
+            .Find(FilterDefinition<MongoDbViewStateWrapper<TLogView>>.Empty)
+            .SortByDescending(v => v.Version)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<MongoDbViewStateWrapper<TLogView>> GetViewAsync(int version)
+    {
+        return await _viewStateCollection
+            .Find(v => v.Version == version)
+            .FirstOrDefaultAsync();
     }
 
     protected override SubmissionEntry<TLogEntry> MakeSubmissionEntry(TLogEntry entry)
@@ -146,7 +190,7 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
 
         if (_version > request.KnownVersion)
         {
-            response.Value = _cached;
+            response.Value = _cachedView;
         }
 
         return Task.FromResult<ILogConsistencyProtocolMessage>(response);
@@ -169,7 +213,7 @@ internal sealed class ReadResponse<TViewType> : ILogConsistencyProtocolMessage
     [Id(1)] public TViewType Value { get; set; }
 }
 
-public class MongoDbStateWrapper<T>
+public class MongoDbViewStateWrapper<T>
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -179,7 +223,7 @@ public class MongoDbStateWrapper<T>
     public T State { get; set; }
 }
 
-public class MongoDbEventWrapper<T>
+public class MongoDbEventLogWrapper<T>
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -187,6 +231,7 @@ public class MongoDbEventWrapper<T>
 
     public int Version { get; set; }
     public T Event { get; set; }
+    public DateTime Timestamp { get; set; }
 }
 
 [Serializable]
