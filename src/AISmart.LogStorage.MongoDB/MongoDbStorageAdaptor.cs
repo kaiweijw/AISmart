@@ -114,7 +114,7 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
             .Select(e => e.Entry)
             .Select(e => new MongoDbEventWrapper<TLogEntry>
             {
-                Version = currentVersion,
+                Version = currentVersion + 1,
                 Event = e
             }).ToList();
 
@@ -122,6 +122,7 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
 
         foreach (var update in updates)
         {
+            _version++;
             _host.UpdateView(_cached, update.Event);
         }
 
