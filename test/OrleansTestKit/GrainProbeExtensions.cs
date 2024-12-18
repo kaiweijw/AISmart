@@ -70,8 +70,6 @@ public static class GrainProbeExtensions
     public static void AddProbe<T>(this TestKitSilo silo, GrainId grainId, T grain)
         where T : class, IGrain
     {
-        ArgumentNullException.ThrowIfNull(silo);
-
         silo.GrainFactory.AddProbe(grainId, grain);
     }
 }

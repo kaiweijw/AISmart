@@ -8,7 +8,6 @@ public sealed class TestGrainFactory : IGrainFactory
     private readonly TestKitOptions _options;
 
     private readonly Dictionary<Type, Func<IdSpan, IGrain>> _probeFactories;
-    private readonly Dictionary<GrainId, IGrain> _probesOfGrainId = new();
 
     private readonly Dictionary<string, IGrain> _probes;
 
@@ -49,11 +48,12 @@ public sealed class TestGrainFactory : IGrainFactory
 
     public TGrainInterface GetGrain<TGrainInterface>(GrainId grainId) where TGrainInterface : IAddressable
     {
-        if (_probesOfGrainId.TryGetValue(grainId, out var grain))
+        if (_probes.TryGetValue(grainId.ToString(), out var grain))
         {
             return (TGrainInterface)grain;
         }
 
+        // TODO: Better mock a new grain.
         return default;
     }
 
@@ -86,7 +86,6 @@ public sealed class TestGrainFactory : IGrainFactory
         _probes.Add(key, mock.Object);
         return mock;
     }
-    
 
     internal void AddProbe<T>(Func<IdSpan, T> factory)
         where T : class, IGrain =>
@@ -94,7 +93,7 @@ public sealed class TestGrainFactory : IGrainFactory
 
     internal void AddProbe<T>(GrainId grainId, T grain)
         where T : class, IGrain =>
-        _probesOfGrainId.Add(grainId, grain);
+        _probes.Add(grainId.ToString(), grain);
 
     internal void AddProbe<T>(Func<IdSpan, IMock<T>> factory)
         where T : class, IGrain
@@ -146,13 +145,5 @@ public sealed class TestGrainFactory : IGrainFactory
         }
 
         return grain!;
-    }
-
-
-    private readonly Dictionary<GrainId, IGrainBase> _registeredGrains;
-
-    public void RegisterGrain<T>(GrainId grainId, T grain) where T : IGrainBase
-    {
-        _registeredGrains[grainId] = grain;
     }
 }

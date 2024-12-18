@@ -115,6 +115,5 @@ public class GAgentTests : GAgentTestKitBase
             SenderBotName ="Test",
             ReplyMessageId = "11"
         });
-        await Task.Delay(10000);
     }
 }
