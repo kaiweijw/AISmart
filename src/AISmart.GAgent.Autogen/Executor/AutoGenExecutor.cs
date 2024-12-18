@@ -58,6 +58,8 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
 
     public async Task CallAutogen(ExecutorTaskInfo taskInfo)
     {
+        _logger.LogDebug(
+            $"[AutoGenExecutor] receive task:{taskInfo.TaskId.ToString()}");
         _taskId = taskInfo.TaskId;
         var history = ConvertMessage(taskInfo.History);
         _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
@@ -115,7 +117,6 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         }
 
         var responseEvents = responseStr.SplitToLines();
-        
         foreach (var responseEvent in responseEvents)
         {
             var handleEventSchema = JsonSerializer.Deserialize<HandleEventAsyncSchema>(responseEvent);
@@ -272,11 +273,14 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                 $"Event name:{agentName} Deserialize object is null, the parameters is{parameters}");
         }
 
-        // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-        await PublishInternalEvent(new PassThroughExecutorEvent() { PassThroughData = eventData, TaskId = _taskId });
-
-        return JsonSerializer.Serialize(new HandleEventAsyncSchema()
+        var callEventOrignalData = JsonSerializer.Serialize(new HandleEventAsyncSchema()
             { AgentName = agentName, EventName = eventName, Parameters = parameters });
+
+        // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+        await PublishInternalEvent(new PassThroughExecutorEvent()
+            { AgentName = agentName, EventName = eventName, PassThroughData = eventData, TaskId = _taskId });
+
+        return callEventOrignalData;
     }
 
     public FunctionContract HandleEventAsyncContract

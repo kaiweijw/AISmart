@@ -45,6 +45,21 @@ public class AutoGenAgentState
         return null;
     }
 
+    public bool CheckIsRunning(Guid taskId)
+    {
+        if (TaskToEventDic.TryGetValue(taskId, out var taskInfo))
+        {
+            return taskInfo.Count > 0;
+        }
+
+        return false;
+    }
+    
+    public RequestInfo? GetEventInfoByEventId(Guid eventId)
+    {
+        return EventToTaskDic.TryGetValue(eventId, out var requestInfo) ? requestInfo : null;
+    }
+    
     public void Apply(CallAgentReply @event)
     {
         if (!EventToTaskDic.TryGetValue(@event.EventId, out var taskList))
@@ -61,7 +76,7 @@ public class AutoGenAgentState
         CompleteEvent(@event.EventId);
         state.ChatHistory.Add(@event.Reply);
     }
-    
+
     public void Apply(CallerProgressing @event)
     {
         var state = GetStateInfo(@event.TaskId);
@@ -71,7 +86,7 @@ public class AutoGenAgentState
         }
 
         // StartEvent(@event.TaskId, @event.EventId);
-        state.CurrentCallInfo = @event.CurrentCallInfo;
+        // state.CurrentCallInfo = @event.CurrentCallInfo;
     }
 
     public void Apply(Complete @event)
@@ -100,7 +115,7 @@ public class AutoGenAgentState
 
     public void Apply(PublishEvent @event)
     {
-        StartEvent(@event.TaskId, @event.EventId);
+        StartEvent(@event.TaskId, @event.AgentName, @event.EventName, @event.EventId);
     }
 
     private AutoGenAgentStateInfo? GetStateInfo(Guid taskId)
@@ -142,7 +157,7 @@ public class AutoGenAgentState
         AutoGenStateDic.Remove(taskId);
     }
 
-    private void StartEvent(Guid taskId, Guid eventId)
+    private void StartEvent(Guid taskId, string agentName, string eventName, Guid eventId)
     {
         if (EventToTaskDic.ContainsKey(eventId))
         {
@@ -150,7 +165,10 @@ public class AutoGenAgentState
         }
 
         EventToTaskDic[eventId] = new RequestInfo()
-            { TaskId = taskId, StartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() };
+        {
+            TaskId = taskId, StartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(), AgentName = agentName,
+            EventName = eventName
+        };
 
         if (TaskToEventDic.TryGetValue(taskId, out var eventList))
         {
@@ -189,4 +207,6 @@ public class RequestInfo
 {
     [Id(0)] public Guid TaskId { get; set; }
     [Id(1)] public long StartTime { get; set; }
+    [Id(2)] public string AgentName { get; set; }
+    [Id(3)] public string EventName { get; set; }
 }
