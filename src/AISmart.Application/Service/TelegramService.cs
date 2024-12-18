@@ -4,8 +4,13 @@ using AISmart.Agent;
 using AISmart.Agents;
 using AISmart.Agents.Developer;
 using AISmart.Agents.Group;
+using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.Investment;
 using AISmart.Agents.MarketLeader;
+using AISmart.Agents.MarketLeader.Events;
+using AISmart.Application.Grains.Agents.Developer;
+using AISmart.Application.Grains.Agents.Investment;
+using AISmart.Application.Grains.Agents.MarketLeader;
 using AISmart.Events;
 using AISmart.GAgent.Autogen;
 using AISmart.Sender;
@@ -56,6 +61,9 @@ public class TelegramService :  ApplicationService,ITelegramService
         var marketLeaderAgent = _clusterClient.GetGrain<IStateGAgent<MarketLeaderAgentState>>(Guid.NewGuid());
         var autogenAgent=  _clusterClient.GetGrain<IAutogenGAgent>(Guid.NewGuid());
         autogenAgent.RegisterAgentEvent(typeof(TelegramGAgent), [typeof(ReceiveMessageEvent), typeof(SendMessageEvent)]);
+        autogenAgent.RegisterAgentEvent(typeof(DeveloperGAgent), [typeof(ImplementationEvent)]);
+        autogenAgent.RegisterAgentEvent(typeof(InvestmentGAgent), [typeof(ImplementationEvent)]);
+        autogenAgent.RegisterAgentEvent(typeof(MarketLeaderGAgent), [typeof(SocialEvent)]);
         
         await groupAgent.Register(telegramAgent);
         await groupAgent.Register(autogenAgent);
