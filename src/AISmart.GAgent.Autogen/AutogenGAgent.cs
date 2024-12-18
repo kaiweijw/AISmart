@@ -116,6 +116,20 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
     }
 
     [EventHandler]
+    public async Task HandleEventAsync(SubscribedEventListEvent subscribedEventListEvent)
+    {
+        if (subscribedEventListEvent == null || subscribedEventListEvent.Value == null)
+        {
+            return;
+        }
+
+        foreach (var (agentType, eventTypeList) in subscribedEventListEvent.Value)
+        {
+            _agentDescriptionManager.AddAgentEvents(agentType, eventTypeList);
+        }
+    }
+
+    [EventHandler]
     public async Task ExecuteAsync(AutoGenExecutorEvent eventData)
     {
         switch (eventData.ExecuteStatus)
