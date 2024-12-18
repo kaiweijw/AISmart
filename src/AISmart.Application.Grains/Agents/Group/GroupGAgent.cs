@@ -11,7 +11,7 @@ namespace AISmart.Application.Grains.Agents.Group;
 public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
 {
     public GroupGAgent(ILogger<GroupGAgent> logger,
-        [PersistentState("subscribers")] IPersistentState<Dictionary<Guid, string>> subscribers) : base(logger,
+        [PersistentState("subscribers")] IPersistentState<List<GrainId>> subscribers) : base(logger,
         subscribers)
     {
     }

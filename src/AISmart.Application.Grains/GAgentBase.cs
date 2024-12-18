@@ -16,7 +16,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     where TState : class, new()
     where TEvent : GEventBase
 {
-    public IPersistentState<Dictionary<Guid, string>>? Subscribers { get; }
+    public IPersistentState<List<GrainId>>? Subscribers { get; }
     protected IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
 
     protected readonly ILogger Logger;
@@ -26,7 +26,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     protected readonly List<EventWrapperBaseAsyncObserver> Observers = new();
 
-    protected GAgentBase(ILogger logger, [PersistentState("subscribers")] IPersistentState<Dictionary<Guid, string>>? subscribers = null)
+    protected GAgentBase(ILogger logger, [PersistentState("subscribers")] IPersistentState<List<GrainId>>? subscribers = null)
     {
         Subscribers = subscribers;
         Logger = logger;
@@ -103,7 +103,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
         if (Subscribers != null)
         {
-            Subscribers?.State.Add(guid, agent.GetType().Namespace!);
+            Subscribers?.State.Add(agent.GetGrainId());
             await Subscribers?.WriteStateAsync()!;
         }
 
@@ -143,7 +143,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 GAgentType = GetType()
             };
         }
-        var gAgentList = Subscribers.State.Select(keyPair => GrainFactory.GetGrain<IGAgent>(keyPair.Key, keyPair.Value)).ToList();
+        var gAgentList = Subscribers.State.Select(grainId => GrainFactory.GetGrain<IGAgent>(grainId)).ToList();
 
         if (gAgentList.Any(grain => grain == null))
         {
