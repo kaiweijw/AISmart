@@ -13,6 +13,6 @@ public class ReceiveMessageEvent : EventBase
     [Id(1)]  public string ChatId { get; set; }
     [Description("Text content of the received message.")]
     [Id(2)] public string Message { get; set; }
-    [Description("The name of the bot that needs to reply to the received message.")]
-    [Id(3)] public string NeedReplyBotName { get; set; }
+    [Description("The name of the bot.")]
+    [Id(3)] public string BotName { get; set; }
 }

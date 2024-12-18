@@ -19,6 +19,6 @@ public class SendMessageEvent :EventBase
     [Id(3)]  public string? Caption { get; set; }
     [Description("Optional ID of the message to which this message is a reply.")]
     [Id(4)]   public string? ReplyMessageId { get; set; }
-    [Description("The name of the bot that sent the message.")]
-    [Id(5)]   public string SenderBotName { get; set; }
+    [Description("The name of the bot.")]
+    [Id(5)]   public string BotName { get; set; }
 }

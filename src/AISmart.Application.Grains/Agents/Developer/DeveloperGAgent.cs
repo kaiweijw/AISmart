@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Developer;
-[Description("Handle Development")]
+[Description("R&D department, and I can handle development-related tasks.")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
@@ -29,7 +29,7 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
         State.Content.Add(eventData.Content);
         return new WorkCompleteEvent
         {
-            Content = "It has already been developed."
+            Content = "Done"
         };
     }
 

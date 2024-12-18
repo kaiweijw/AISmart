@@ -48,7 +48,7 @@ public class TelegramService :  ApplicationService,ITelegramService
                 MessageId = updateMessage.Message.MessageId.ToString(),
                 ChatId = updateMessage.Message.Chat.Id.ToString(),
                 Message = updateMessage.Message.Text,
-                NeedReplyBotName = token
+                BotName = token
             });
         }
     }

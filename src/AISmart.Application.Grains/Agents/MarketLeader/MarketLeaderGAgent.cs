@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.MarketLeader;
-[Description("Handle Market Tasks")]
+[Description("Marketing department，I can handle tasks related to the marketing department.")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeaderGEvent>
@@ -26,7 +26,7 @@ public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeade
         
         return new ImplementationEvent
         {
-            Content = "Market execution."
+            Content = "Done"
         };
     }
 

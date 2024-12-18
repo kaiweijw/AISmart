@@ -9,7 +9,7 @@ using Orleans.Streams;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
-[Description("Handle Investment")]
+[Description("Investment department,")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEvent>, IInvestmentStateGAgent<InvestmentAgentState>
@@ -41,7 +41,7 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
 
         return new WorkCompleteEvent
         {
-            Content = "The financing....."
+            Content = "Done"
         };
     }
 
