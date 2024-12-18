@@ -44,4 +44,10 @@ public class ElasticIndexingService : IIndexingService
             .Id(baseStateIndex.Id)
         );
     }
+
+    public async Task<BaseStateIndex> QueryIndexAsync(string id,string indexName)
+    {
+        var response = await _elasticClient.GetAsync<BaseStateIndex>(id, g => g.Index(indexName));
+        return response.Source; 
+    }
 }

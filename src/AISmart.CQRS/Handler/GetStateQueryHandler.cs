@@ -9,17 +9,21 @@ namespace AISmart.CQRS.Handler;
 
 public class GetStateQueryHandler : IRequestHandler<GetStateQuery, BaseStateIndex>
 {
-    private readonly IElasticClient _elasticClient;
+    //private readonly IElasticClient _elasticClient;
+    private readonly IIndexingService  _indexingService ;
+
     public GetStateQueryHandler(
-        IElasticClient elasticClient
+       // IElasticClient elasticClient,
+        IIndexingService indexingService
     )
     {
-        _elasticClient = elasticClient;
+        //_elasticClient = elasticClient;
+        _indexingService = indexingService;
+
     }
     
     public async Task<BaseStateIndex> Handle(GetStateQuery request, CancellationToken cancellationToken)
     {
-        var response = await _elasticClient.GetAsync<BaseStateIndex>(request.Id, g => g.Index(request.Index));
-        return response.Source; 
+        return await _indexingService.QueryIndexAsync(request.Id, request.Index);
     }
 }
