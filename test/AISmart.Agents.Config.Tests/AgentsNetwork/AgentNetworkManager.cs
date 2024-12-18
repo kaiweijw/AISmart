@@ -52,6 +52,10 @@ public class AgentNetworkManager:IAgentNetworkManager
 
     private async Task InitGroupAsync(AgentNetworkConfigOptions config)
     {
+        if (config is { Groups: null } || config.Groups.Count == 0)
+        {
+            return;
+        }
         foreach (var group in config.Groups)
         {
             // Register Agents in their respective groups
@@ -60,9 +64,9 @@ public class AgentNetworkManager:IAgentNetworkManager
             Debug.Assert(_agentInstances.ContainsKey(groupGAgentName), "Group leader agent not found.");
 
             var groupGAgent = _agentInstances[groupGAgentName];
-            foreach (var relation in group.RelationList)
+            foreach (var name in group.AgentsList)
             {
-                if (_agentInstances.TryGetValue(relation.To, out var agent))
+                if (_agentInstances.TryGetValue(name, out var agent))
                 {
                     Debug.Assert(agent != null , "agent should not be null.");
                     await groupGAgent?.Register(agent)!;
@@ -78,9 +82,9 @@ public class AgentNetworkManager:IAgentNetworkManager
         // Create Agents
         foreach (var contract in config.ContractsList)
         {
-            var agentType = Type.GetType(contract.AgentState);
-            Debug.Assert(agentType != null, "agentType should not be null.");
-            var instance = _grainFactory.GetGrain(typeof(IStateGAgent<>), Guid.NewGuid(), agentType.Namespace);
+            // // var agentType = Type.GetType(contract.GrainType);
+            // Debug.Assert(agentType != null, "agentType should not be null.");
+            var instance = _grainFactory.GetGrain<IGAgent>(Guid.NewGuid(), contract.GrainType);
             _agentInstances[contract.Name] = instance as IGAgent;
         }
     }

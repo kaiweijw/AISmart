@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.GAgent.Pumpfun", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.AutoGen.Tests", "test\AISmart.AutoGen.Tests\AISmart.AutoGen.Tests.csproj", "{148533FE-CAD9-4F79-872C-3608F36C2E68}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Agents.Config.Tests", "test\AISmart.Agents.Config.Tests\AISmart.Agents.Config.Tests.csproj", "{482AC386-F3A8-4791-A708-414E52A8177A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -157,6 +159,10 @@ Global
 		{148533FE-CAD9-4F79-872C-3608F36C2E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{148533FE-CAD9-4F79-872C-3608F36C2E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{148533FE-CAD9-4F79-872C-3608F36C2E68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{482AC386-F3A8-4791-A708-414E52A8177A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{482AC386-F3A8-4791-A708-414E52A8177A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{482AC386-F3A8-4791-A708-414E52A8177A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{482AC386-F3A8-4791-A708-414E52A8177A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
