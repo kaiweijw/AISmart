@@ -1,7 +1,8 @@
+using System.ComponentModel;
 using Orleans;
 
 namespace AISmart.Agents.ImplementationAgent.Events;
-
+[Description("Developer Base Event.")]
 [GenerateSerializer]
 public class DeveloperEvent : EventBase
 {
