@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="..\..\common.props" />
+    <Import Project="..\..\common.props"/>
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -9,19 +9,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\AISmart.Application\AISmart.Application.csproj" />
-        <ProjectReference Include="..\..\src\AISmart.GAgent.Twitter\AISmart.GAgent.Twitter.csproj" />
-        <ProjectReference Include="..\AISmart.Domain.Tests\AISmart.Domain.Tests.csproj" />
-        <ProjectReference Include="..\AISmart.Orleans.TestBase\AISmart.Orleans.TestBase.csproj" />
+        <ProjectReference Include="..\..\src\AISmart.Application\AISmart.Application.csproj"/>
+        <ProjectReference Include="..\..\src\AISmart.GAgent.Twitter\AISmart.GAgent.Twitter.csproj"/>
+        <ProjectReference Include="..\AISmart.Domain.Tests\AISmart.Domain.Tests.csproj"/>
+        <ProjectReference Include="..\AISmart.Orleans.TestBase\AISmart.Orleans.TestBase.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoGen" Version="0.2.1" />
-        <PackageReference Include="Azure.AI.TextAnalytics" Version="5.3.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-        <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="7.2.6" />
-        <PackageReference Include="Microsoft.Orleans.TestingHost" Version="7.2.6" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+        <PackageReference Include="Microsoft.Orleans.Core.Abstractions"/>
+        <PackageReference Include="Microsoft.Orleans.TestingHost"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -37,10 +35,10 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
         <None Update="ConfigFile\singleDevelopGAgent.json">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
         <None Update="ConfigFile\singleGroupGAgent.json">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 
