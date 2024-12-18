@@ -29,7 +29,7 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
     }
 
     [EventHandler]
-    public async Task<WorkCompleteEvent> HandleEventAsync(ImplementationEvent eventData)
+    public async Task<WorkCompleteEvent> HandleEventAsync(InvestmentEvent eventData)
     {
         if (State.Content.IsNullOrEmpty())
         {
