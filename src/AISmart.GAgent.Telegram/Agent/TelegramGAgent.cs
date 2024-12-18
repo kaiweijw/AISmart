@@ -57,6 +57,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
     [EventHandler]
     public async Task HandleEventAsync(SendMessageEvent @event)
     {
+        _logger.LogDebug("Publish SendMessageEvent for Telegram Message: " + @event.Message);
         var senderBotName = @event.SenderBotName;
         if (@event.ReplyMessageId != null)
         {

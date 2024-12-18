@@ -6,7 +6,7 @@ using AISmart.Application.Grains;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
-namespace AISmart.Grains.Tests.AutoGenTest;
+namespace AISmart.Application.Grains.Agents.Draw;
 
 [Description("I can draw a polygon")]
 [StorageProvider(ProviderName = "PubSubStore")]

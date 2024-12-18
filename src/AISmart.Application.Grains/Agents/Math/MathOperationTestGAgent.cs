@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Providers;
 
-namespace AISmart.Grains.Tests.AutoGenTest;
+namespace AISmart.Application.Grains.Agents.Math;
 
 [Description("i can add two integer")]
 [StorageProvider(ProviderName = "PubSubStore")]

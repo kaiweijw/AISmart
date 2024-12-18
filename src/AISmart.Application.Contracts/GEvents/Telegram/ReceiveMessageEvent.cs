@@ -3,7 +3,7 @@ using AISmart.Agents;
 using Orleans;
 
 namespace AISmart.Events;
-[Description("Represents an event corresponding to receiving a message within a chat.")]
+[Description("Receive a message from telegram.")]
 [GenerateSerializer]
 public class ReceiveMessageEvent : EventBase
 {

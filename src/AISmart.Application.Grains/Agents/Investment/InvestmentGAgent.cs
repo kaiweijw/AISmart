@@ -9,7 +9,7 @@ using Orleans.Streams;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
-[Description("Handle Investment Tasks")]
+[Description("Handle Investment")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEvent>, IInvestmentStateGAgent<InvestmentAgentState>
