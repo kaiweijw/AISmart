@@ -338,8 +338,8 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         return GetType()
             .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
             .Where(m => 
-                (m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync)) &&
-                (m.GetParameters()[0].ParameterType != typeof(EventWrapperBase) || m.GetCustomAttribute<AllEventHandlerAttribute>() != null))
+                ((m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync)) && (m.GetParameters()[0].ParameterType != typeof(EventWrapperBase)))
+                 || (m.GetCustomAttribute<AllEventHandlerAttribute>() != null && m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)))
             .Where(m => m.GetParameters().Length == 1 &&
                         (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
                          m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
