@@ -26,7 +26,7 @@ public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeade
         
         return new ImplementationEvent
         {
-            Content = eventData.Content
+            Content = "Market execution has been completed."
         };
     }
 
