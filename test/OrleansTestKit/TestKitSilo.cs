@@ -1,8 +1,13 @@
 ﻿using System.Linq.Expressions;
+using AISmart.GAgent.Autogen;
+using AISmart.GAgent.Autogen.Common;
 using AISmart.Mock;
 using AISmart.Provider;
+using AutoGen.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using OpenAI.Chat;
 using Orleans.EventSourcing;
 using Orleans.Metadata;
 using Orleans.Serialization;
@@ -59,6 +64,10 @@ public sealed class TestKitSilo
         _grainCreator = new TestGrainCreator(GrainRuntime, ReminderRegistry, ServiceProvider);
 
         ServiceProvider.AddService<IAElfNodeProvider>(new MockAElfNodeProvider());
+        
+        var manager = new AgentDescriptionManager();
+        ServiceProvider.AddService(manager);
+        ServiceProvider.AddService(new AutoGenExecutor(NullLogger<AutoGenExecutor>.Instance, GrainFactory, manager, new TestChatAgentProvider()));
 
         var provider = new ServiceCollection()
             .AddSingleton<GrainTypeResolver>()

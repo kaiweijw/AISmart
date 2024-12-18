@@ -1,10 +1,6 @@
-using System.Reflection;
-using AISmart.Agents;
 using AISmart.Agents.Group;
-using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
-using Orleans.Streams;
 
 namespace AISmart.Application.Grains.Agents.Group;
 
@@ -12,7 +8,9 @@ namespace AISmart.Application.Grains.Agents.Group;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
 {
-    public GroupGAgent(ILogger<GroupGAgent> logger) : base(logger)
+    public GroupGAgent(ILogger<GroupGAgent> logger,
+        [PersistentState("subscribers")] IPersistentState<Dictionary<Guid, string>> subscribers) : base(logger,
+        subscribers)
     {
     }
 
@@ -32,10 +30,10 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
         --State.RegisteredAgents;
         return Task.CompletedTask;
     }
-
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         GrainTracker.GroupAgents.Enqueue(this);
-        return base.OnActivateAsync(cancellationToken);
+        await base.OnActivateAsync(cancellationToken);
     }
 }

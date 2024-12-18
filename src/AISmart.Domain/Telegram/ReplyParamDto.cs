@@ -1,19 +1,20 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
 namespace AISmart.Dto;
 
 public class ReplyParamDto
 {
-    [JsonProperty("message_id")] public long MessageId { get; set; }
-    [JsonProperty("chat_id")] public long? ChainId { get; set; }
+    [JsonPropertyName("message_id")] public long MessageId { get; set; }
+    [JsonPropertyName("chat_id")] public long? ChainId { get; set; }
 
-    [JsonProperty("allow_sending_without_reply")]
+    [JsonPropertyName("allow_sending_without_reply")]
     public bool? AllowSendingWithoutReply { get; set; }
 
-    [JsonProperty("quote")] public string? Quote { get; set; }
-    [JsonProperty("quote_parse_mode")] public string? QuoteParseMode { get; set; }
-    [JsonProperty("quote_entities")] public List<MessageEntity>? QuoteEntities { get; set; }
-    [JsonProperty("quote_position")] public int? QuotePosition { get; set; }
+    [JsonPropertyName("quote")] public string? Quote { get; set; }
+    [JsonPropertyName("quote_parse_mode")] public string? QuoteParseMode { get; set; }
+    [JsonPropertyName("quote_entities")] public List<MessageEntity>? QuoteEntities { get; set; }
+    [JsonPropertyName("quote_position")] public int? QuotePosition { get; set; }
 }
 
