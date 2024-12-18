@@ -337,12 +337,23 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
         return GetType()
             .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-            .Where(m => 
-                ((m.GetCustomAttribute<EventHandlerAttribute>() != null || m.Name == nameof(HandleEventAsync)) && (m.GetParameters()[0].ParameterType != typeof(EventWrapperBase)))
-                 || (m.GetCustomAttribute<AllEventHandlerAttribute>() != null && m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)))
+            .Where(IsEventHandlerMethod)
             .Where(m => m.GetParameters().Length == 1 &&
                         (typeof(EventBase).IsAssignableFrom(m.GetParameters()[0].ParameterType) ||
                          m.GetParameters()[0].ParameterType == typeof(EventWrapperBase)));
+    }
+
+    private bool IsEventHandlerMethod(MethodInfo methodInfo)
+    {
+        return 
+            // Either the method has the EventHandlerAttribute
+            // Or is named HandleEventAsync and the parameter is not EventWrapperBase 
+            ((methodInfo.GetCustomAttribute<EventHandlerAttribute>() != null ||
+              methodInfo.Name == nameof(HandleEventAsync)) &&
+             methodInfo.GetParameters()[0].ParameterType != typeof(EventWrapperBase))
+            // Or the method has the AllEventHandlerAttribute and the parameter is EventWrapperBase
+            || (methodInfo.GetCustomAttribute<AllEventHandlerAttribute>() != null &&
+                methodInfo.GetParameters()[0].ParameterType == typeof(EventWrapperBase));
     }
 
     private async Task HandleMethodInvocationAsync(MethodInfo method, ParameterInfo parameter, object eventType, Guid eventId)
