@@ -1,10 +1,11 @@
+using System.ComponentModel;
 using AISmart.Agents.Developer;
 using AISmart.Agents.ImplementationAgent.Events;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Developer;
-
+[Description("Handle Development Tasks")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>

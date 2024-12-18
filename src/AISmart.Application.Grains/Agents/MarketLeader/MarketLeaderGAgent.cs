@@ -1,15 +1,12 @@
-using AISmart.Agents;
+using System.ComponentModel;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.MarketLeader;
 using AISmart.Agents.MarketLeader.Events;
-using AISmart.Application.Grains.Agents.X;
-using AISmart.Dapr;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
-using Orleans.Streams;
 
 namespace AISmart.Application.Grains.Agents.MarketLeader;
-
+[Description("Handle Marketing Tasks")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeaderGEvent>

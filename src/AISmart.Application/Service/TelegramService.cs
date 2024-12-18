@@ -2,7 +2,10 @@ using System;
 using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agents;
+using AISmart.Agents.Developer;
 using AISmart.Agents.Group;
+using AISmart.Agents.Investment;
+using AISmart.Agents.MarketLeader;
 using AISmart.Events;
 using AISmart.GAgent.Autogen;
 using AISmart.Sender;
@@ -48,11 +51,17 @@ public class TelegramService :  ApplicationService,ITelegramService
     {
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
         var telegramAgent = _clusterClient.GetGrain<IStateGAgent<TelegramGAgentState>>(Guid.NewGuid());
+        var developerAgent = _clusterClient.GetGrain<IStateGAgent<DeveloperAgentState>>(Guid.NewGuid());
+        var investmentAgent = _clusterClient.GetGrain<IStateGAgent<InvestmentAgentState>>(Guid.NewGuid());
+        var marketLeaderAgent = _clusterClient.GetGrain<IStateGAgent<MarketLeaderAgentState>>(Guid.NewGuid());
         var autogenAgent=  _clusterClient.GetGrain<IAutogenGAgent>(Guid.NewGuid());
         autogenAgent.RegisterAgentEvent(typeof(TelegramGAgent), [typeof(ReceiveMessageEvent), typeof(SendMessageEvent)]);
         
         await groupAgent.Register(telegramAgent);
         await groupAgent.Register(autogenAgent);
+        await groupAgent.Register(developerAgent);
+        await groupAgent.Register(investmentAgent);
+        await groupAgent.Register(marketLeaderAgent);
         
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(PublishId);
         await publishingAgent.PublishTo(groupAgent);

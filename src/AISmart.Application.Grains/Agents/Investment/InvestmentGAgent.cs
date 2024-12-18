@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using AISmart.Agents;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.Investment;
@@ -8,6 +9,7 @@ using Orleans.Streams;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
+[Description("Handle Investment Tasks")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEvent>, IInvestmentStateGAgent<InvestmentAgentState>
