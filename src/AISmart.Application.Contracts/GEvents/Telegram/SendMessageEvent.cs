@@ -4,7 +4,7 @@ using Orleans;
 
 namespace AISmart.Events;
 
-[Description("Represents an event to send a telegram message within a chat.")]
+[Description("Send a message to telegram.")]
 [GenerateSerializer]
 public class SendMessageEvent :EventBase
 {
