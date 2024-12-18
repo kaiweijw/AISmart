@@ -36,7 +36,7 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
         _logger.LogInformation("Telegram ReceiveMessageEvent "+@event.MessageId);
         if (State.PendingMessages.TryGetValue(@event.MessageId,out _))
         {
-            _logger.LogDebug("Message reception repeated for Telegram Message ID: " + @event.MessageId);
+            _logger.LogDebug("Telegram Message reception repeated for Telegram Message ID: " + @event.MessageId);
             return;
         }
         RaiseEvent(new ReceiveMessageGEvent
@@ -52,11 +52,12 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
            EventId = Guid.NewGuid(),
            Content = $"I received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}. Please parse the message content, generate a response Based on the JSON Message, and then call the SendMessageEvent event of TelegramGAgent"
        });
-       _logger.LogDebug("Publish AutoGenCreatedEvent for Telegram Message ID: " + @event.MessageId);
+       _logger.LogDebug("Telegram Publish AutoGenCreatedEvent for Telegram Message ID: " + @event.MessageId);
     }
     [EventHandler]
     public async Task HandleEventAsync(SendMessageEvent @event)
     {
+        _logger.LogDebug("Telegram SendMessageEvent for Telegram Message: " + @event.Message);
         var senderBotName = @event.SenderBotName;
         if (@event.ReplyMessageId != null)
         {
