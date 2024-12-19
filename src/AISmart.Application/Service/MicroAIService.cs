@@ -35,13 +35,12 @@ public class MicroAIService :  ApplicationService,IMicroAIService
     public async Task SetGroupsAsync()
     {
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
-        var microAIGAgent = _clusterClient.GetGrain<IStateGAgent<MicroAIGAgent>>(Guid.NewGuid());
+        var microAIGAgent = _clusterClient.GetGrain<IMicroAIGAgent>(Guid.NewGuid());
+        await microAIGAgent.SetAgent("TestAI","You are a voter. Based on a proposal, provide a conclusion of agreement or disagreement and give reasons.");
+
         await groupAgent.Register(microAIGAgent);
         
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(PublishId);
         await publishingAgent.PublishTo(groupAgent);
-        
-        var aigAgent = _clusterClient.GetGrain<IMicroAIGAgent>(PublishId);
-        aigAgent.SetAgent("TestAI","you are a");
     }
 }
