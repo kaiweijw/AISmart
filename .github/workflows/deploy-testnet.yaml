@@ -13,14 +13,14 @@ on:
           - AISmart.HttpApi.Host
           - AISmart.Silo
 
-run-name: AiSmart Workflow on ${{ github.ref }} for ${{ inputs.servicename }}
+run-name: AiSmart Workflow on ${{ github.ref }} for ${{ inputs.servicename }} on ${{ github.sha }})
 
 env:
   DOTNET_INSTALL_DIR: "./.dotnet"
 
 concurrency:
   group: workflow-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   publish:
