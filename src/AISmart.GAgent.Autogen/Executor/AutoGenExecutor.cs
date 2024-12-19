@@ -180,7 +180,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
     {
         return $$"""
                  You are a manager who solves user problems by organizing agents,
-                 - The following is a JSON-formatted description of all proxies, including the events each proxy can handle and the parameters for each event:
+                 - The following is a JSON-formatted description of all agents, including the events each proxy can handle and the parameters for each event:
                  {{_agentDescriptionManager.GetAutoGenEventDescription()}}
                  JSON explanation:
                  "AgentName":Agent's name

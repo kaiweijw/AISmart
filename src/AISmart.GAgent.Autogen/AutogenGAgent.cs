@@ -29,6 +29,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
     private readonly IRagProvider _ragProvider;
 
     private readonly AgentDescriptionManager _agentDescriptionManager;
+    private readonly int _maxRaiseEventCount = 50;
 
     public AutogenGAgent(ILogger<AutogenGAgent> logger,
         IRagProvider ragProvider, AgentDescriptionManager agentDescriptionManager) : base(logger)
@@ -154,7 +155,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 });
                 break;
             case TaskExecuteStatus.Break:
-                Logger.LogInformation(
+                Logger.LogDebug(
                     $"[AutogenGAgent] Task Break,TaskId:{eventData.TaskId}, finish content:{eventData.EndContent}");
                 base.RaiseEvent(new Break()
                 {
@@ -163,7 +164,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 });
                 break;
             case TaskExecuteStatus.Finish:
-                Logger.LogInformation(
+                Logger.LogDebug(
                     $"[AutogenGAgent] Task Finished,TaskId:{eventData.TaskId}, finish content:{eventData.EndContent}");
                 base.RaiseEvent(new Complete()
                 {
@@ -197,8 +198,21 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
 
             if (message is PassThroughExecutorEvent @event2)
             {
-                var eventId = await PublishAsync(@event2.PassThroughData as EventBase);
+                var taskInfo = State.GetStateInfoByEventId(@event2.TaskId);
+                if (taskInfo == null)
+                {
+                    return;
+                }
 
+                if (taskInfo.RaiseEventCount >= _maxRaiseEventCount)
+                {
+                    var userInput = taskInfo.ChatHistory.First(f => f.Role == Role.User.ToString());
+                    Logger.LogWarning(
+                        $"[AutogenGAgent] Raise event Limit, TaskId:{event2.TaskId},input message is :{userInput.Content}");
+                    return;
+                }
+
+                var eventId = await PublishAsync(@event2.PassThroughData as EventBase);
                 Logger.LogInformation(
                     $"[AutogenGAgent] Publish Event, EventId{@event2.TaskId.ToString()}, eventId:{eventId.ToString()}, publish content: {JsonSerializer.Serialize(@event2.PassThroughData)}");
 
