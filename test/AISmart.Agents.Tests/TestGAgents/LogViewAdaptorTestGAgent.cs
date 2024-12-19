@@ -2,14 +2,17 @@ using AISmart.Agents;
 using AISmart.Application.Grains;
 using AISmart.Grains.Tests.TestEvents;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AISmart.Grains.Tests.TestGAgents;
 
 [GAgent]
-public class LogViewAdaptorTestGAgent : GAgentBase<LogViewAdaptorTestGState, LogViewAdaptorTestGEvent>
+public class LogViewAdaptorTestGAgent
+    : GAgentBase<LogViewAdaptorTestGState, LogViewAdaptorTestGEvent>
 {
-    public LogViewAdaptorTestGAgent(ILogger logger) : base(logger)
+    public LogViewAdaptorTestGAgent() : base(NullLogger.Instance)
     {
+        
     }
 
     public override Task<string> GetDescriptionAsync()
@@ -19,6 +22,10 @@ public class LogViewAdaptorTestGAgent : GAgentBase<LogViewAdaptorTestGState, Log
 
     public async Task HandleEventAsync(NaiveTestEvent eventData)
     {
+        if (State.Content.IsNullOrEmpty())
+        {
+            State.Content = new Dictionary<Guid, LogViewAdaptorTestGEvent>();
+        }
         base.RaiseEvent(new LogViewAdaptorTestGEvent
         {
             Greeting = eventData.Greeting

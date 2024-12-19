@@ -1,10 +1,14 @@
+using AISmart.EventSourcing.Core.LogConsistency;
+using AISmart.EventSourcing.Core.Storage;
+using AISmart.EventSourcing.MongoDB.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MongoDB.Driver;
 using Orleans.Configuration;
 using Orleans.EventSourcing;
 
-namespace AISmart.LogStorage.MongoDB;
+namespace AISmart.EventSourcing.MongoDB;
 
 public static class MongoDbStorageSiloBuilderExtensions
 {
@@ -20,23 +24,17 @@ public static class MongoDbStorageSiloBuilderExtensions
     
     internal static void AddMongoDbStorageBasedLogConsistencyProvider(this IServiceCollection services, string name)
     {
-        services.AddSingleton<ILogConsistencyProtocolServices, MongoDbLogConsistencyProtocolServices>();
-        services.AddSingleton<MongoDbLogConsistencyOptions>();
-        services.AddOptions<MongoDbLogConsistencyOptions>()
+        services.AddSingleton<ILogConsistencyProtocolServices, DefaultProtocolServices>();
+        services.AddSingleton<MongoDbStorageOptions>();
+        services.AddOptions<MongoDbStorageOptions>()
             .Configure(options =>
             {
                 var configuration = services.GetConfiguration().GetSection("Orleans");
-                options.MongoDBClient = configuration.GetValue<string>("MongoDBClient");
-                options.DataBase = configuration.GetValue<string>("DataBase");
+                options.ClientSettings =
+                    MongoClientSettings.FromConnectionString(configuration.GetValue<string>("MongoDBClient"));
             });
-        var configuration = services.GetConfiguration().GetSection("Orleans");
-        var options = new MongoDbLogConsistencyOptions
-        {
-            MongoDBClient = configuration.GetValue<string>("MongoDBClient"),
-            DataBase = configuration.GetValue<string>("DataBase")
-        };
-        services.ConfigureNamedOptionForLogging<MongoDbLogConsistencyOptions>(name)
-            .AddKeyedSingleton(name, (sp, _) => MongoDbLogConsistencyProviderFactory.Create(options))
+        services.AddKeyedSingleton<ILogConsistentStorage>(name, MongoDbLogConsistentStorageFactory.Create);
+        services.ConfigureNamedOptionForLogging<MongoDbStorageOptions>(name)
             .TryAddSingleton(sp => sp.GetKeyedService<ILogViewAdaptorFactory>("Default"));
     }
 }

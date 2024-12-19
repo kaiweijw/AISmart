@@ -13,6 +13,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AISmart.Application.Contracts\AISmart.Application.Contracts.csproj" />
+      <ProjectReference Include="..\AISmart.EventSourcing.Core\AISmart.EventSourcing.Core.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,9 @@
+using AISmart.Agents;
+using JetBrains.Annotations;
 using Orleans;
 using Orleans.EventSourcing;
 using Orleans.EventSourcing.Common;
+using Orleans.Storage;
 
 public class TestLogViewAdaptor<TLogView, TLogEntry> : 
     PrimaryBasedLogViewAdaptor<TLogView, TLogEntry, SubmissionEntry<TLogEntry>>
@@ -9,35 +12,40 @@ public class TestLogViewAdaptor<TLogView, TLogEntry> :
 {
     private readonly ILogViewAdaptorHost<TLogView, TLogEntry> _host;
     private readonly TLogView _initialState;
+    private readonly IGrainStorage _grainStorage;
+    private readonly string _grainTypeName;
 
-    public static readonly ICollection<ViewStateWrapper<TLogView>> ViewStateCollection =
+    public static readonly ICollection<ViewStateWrapper<TLogView>> SnapshotCollection =
         new List<ViewStateWrapper<TLogView>>();
-    public static readonly ICollection<MongoDbEventLogWrapper<TLogEntry>> EventLogCollection =
-        new List<MongoDbEventLogWrapper<TLogEntry>>();
+    public static readonly ICollection<EventLogWrapper<TLogEntry>> EventLogCollection =
+        new List<EventLogWrapper<TLogEntry>>();
 
-    private TLogView _cachedView;
-    private int _version;
+    private TLogView _confirmedView;
+    private int _confirmedVersion;
+    private int _globalVersion;
 
     public TestLogViewAdaptor(ILogViewAdaptorHost<TLogView, TLogEntry> host, TLogView initialState,
-        ILogConsistencyProtocolServices services)
+        ILogConsistencyProtocolServices services, string grainTypeName, IGrainStorage grainStorage)
         : base(host, initialState, services)
     {
         _host = host;
         _initialState = initialState;
+        _grainStorage = grainStorage;
+        _grainTypeName = grainTypeName;
     }
 
     protected override void InitializeConfirmedView(TLogView initialstate)
     {
-        _cachedView = _initialState ?? new TLogView();
-        _version = 0;
+        _confirmedView = _initialState ?? new TLogView();
+        _confirmedVersion = 0;
     }
 
     protected override TLogView LastConfirmedView()
     {
-        return _cachedView!;
+        return _confirmedView;
     }
 
-    protected override int GetConfirmedVersion() => _version;
+    protected override int GetConfirmedVersion() => _confirmedVersion;
 
     protected override bool SupportSubmissions => true;
 
@@ -47,13 +55,42 @@ public class TestLogViewAdaptor<TLogView, TLogEntry> :
         {
             try
             {
-                var result = await GetLatestViewAsync();
-
-                if (result != null)
+                var snapshot = await GetSnapshotAsync();
+                if (_confirmedVersion < snapshot?.Version)
                 {
-                    _version = result.Version;
-                    _cachedView = result.State;
+                    _confirmedVersion = snapshot.Version;
+                    _confirmedView = snapshot.State;
                 }
+                var eventLogs = await GetAllEventsAsync();
+                if (!eventLogs.Any())
+                {
+                    break;
+                }
+
+                var latestVersionOfEventLog = eventLogs.OrderByDescending(e => e.Version).FirstOrDefault();
+                if (latestVersionOfEventLog == null)
+                {
+                    break;
+                }
+
+                _globalVersion = latestVersionOfEventLog.Version;
+                if (snapshot != null
+                    && snapshot.EventLogTimestamp == latestVersionOfEventLog.Timestamp
+                    && snapshot.Version == latestVersionOfEventLog.Version)
+                {
+                    _confirmedVersion = snapshot.Version;
+                    _confirmedView = snapshot.State;
+                    break;
+                }
+                
+                // TODO: Can only retrieve log segment from _confirmedVersion to _globalVersion
+ 
+                foreach (var eventLog in eventLogs)
+                {
+                    _host.UpdateView(_confirmedView, eventLog.Event);
+                }
+
+                _confirmedVersion += eventLogs.Count;
 
                 LastPrimaryIssue.Resolve(_host, Services);
 
@@ -75,70 +112,81 @@ public class TestLogViewAdaptor<TLogView, TLogEntry> :
 
     protected override async Task<int> WriteAsync()
     {
-        var latestView = await GetLatestViewAsync() ?? new ViewStateWrapper<TLogView>
+        var snapshot = await GetSnapshotAsync() ?? new ViewStateWrapper<TLogView>
         {
-            Version = _version,
-            State = _cachedView
+            Version = _confirmedVersion,
+            State = _confirmedView
         };
 
-        var latestVersion = latestView.Version;
-        if (latestVersion != _version)
-        {
-            // Return if version not match.
-            return 0;
-        }
+        var latestVersion = snapshot.Version;
+        _confirmedVersion = latestVersion;
 
         var updates = GetCurrentBatchOfUpdates();
         var logsToUpdate = updates
             .Select(e => e.Entry)
-            .Select(e => new MongoDbEventLogWrapper<TLogEntry>
+            .Select(e => new EventLogWrapper<TLogEntry>
             {
                 Version = latestVersion + 1,
                 Event = e
             }).ToList();
-        
+
         // Save logs to database.
-        await SaveEventsAsync(logsToUpdate);
+        var lastTimestamp = await SaveEventsAsync(logsToUpdate);
+
+        // TODO: Need a easier way.
+        _globalVersion = (await GetAllEventsAsync()).Count;
 
         // Update grain's view.
         foreach (var eventLog in logsToUpdate)
         {
-            _version++;
-            _host.UpdateView(_cachedView!, eventLog.Event);
+            _host.UpdateView(_confirmedView!, eventLog.Event);
         }
 
+        _confirmedVersion += logsToUpdate.Count;
+
         // Update the view to database.
-        await SaveViewAsync(new ViewStateWrapper<TLogView>
+        await TakeSnapshotAsync(new ViewStateWrapper<TLogView>
         {
-            Version = _version,
-            State = _cachedView!
+            Version = _confirmedVersion,
+            State = _confirmedView,
+            EventLogTimestamp = lastTimestamp
         });
 
         return updates.Length;
     }
 
-    private Task SaveViewAsync(ViewStateWrapper<TLogView> viewState)
+    private Task TakeSnapshotAsync(ViewStateWrapper<TLogView> viewState)
     {
-        ViewStateCollection.Add(viewState);
+        SnapshotCollection.Clear();
+        SnapshotCollection.Add(viewState);
         return Task.CompletedTask;
     }
 
-    private Task SaveEventsAsync(IEnumerable<MongoDbEventLogWrapper<TLogEntry>> eventLogs)
+    private Task<DateTime> SaveEventsAsync(IEnumerable<EventLogWrapper<TLogEntry>> eventLogs)
     {
+        var timestamp = DateTime.UtcNow;
         foreach (var eventLog in eventLogs)
         {
-            eventLog.Timestamp = DateTime.UtcNow;
+            eventLog.Timestamp = timestamp;
             EventLogCollection.Add(eventLog);
+            timestamp = DateTime.UtcNow;
         }
-        return Task.CompletedTask;
+
+        return Task.FromResult(timestamp);
     }
     
-    private Task<ViewStateWrapper<TLogView>?> GetLatestViewAsync()
+    [ItemCanBeNull]
+    private Task<ViewStateWrapper<TLogView>> GetSnapshotAsync()
     {
-        return Task.FromResult(ViewStateCollection
+        return Task.FromResult(SnapshotCollection
             .ToList()
             .OrderByDescending(v => v.Version)
             .FirstOrDefault());
+    }
+
+    private Task<List<EventLogWrapper<TLogEntry>>> GetAllEventsAsync()
+    {
+        return Task.FromResult(EventLogCollection.ToList());
     }
 
     protected override SubmissionEntry<TLogEntry> MakeSubmissionEntry(TLogEntry entry)
@@ -150,11 +198,11 @@ public class TestLogViewAdaptor<TLogView, TLogEntry> :
     {
         var request = (ReadRequest)payload;
 
-        var response = new ReadResponse<TLogView>() { Version = _version };
+        var response = new ReadResponse<TLogView>() { Version = _confirmedVersion };
 
-        if (_version > request.KnownVersion)
+        if (_confirmedVersion > request.KnownVersion)
         {
-            response.Value = _cachedView;
+            response.Value = _confirmedView;
         }
 
         return Task.FromResult<ILogConsistencyProtocolMessage>(response);
@@ -183,9 +231,10 @@ public class ViewStateWrapper<T>
 
     public int Version { get; set; }
     public T State { get; set; }
+    public DateTime EventLogTimestamp { get; set; }
 }
 
-public class MongoDbEventLogWrapper<T>
+public class EventLogWrapper<T>
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
 

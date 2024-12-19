@@ -3,7 +3,6 @@ using AISmart.Domain.Grains;
 using Microsoft.Extensions.DependencyInjection;
 using AISmart.Application.Grains;
 using AISmart.GAgent.Autogen;
-using AISmart.LogStorage.MongoDB;
 using Serilog;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
@@ -30,7 +29,6 @@ public class SiloModule : AIApplicationGrainsModule, IDomainGrainsModule
         //add dependencies here
         context.Services.AddSerilog(loggerConfiguration => {},
             true, writeToProviders: true);
-        context.Services.AddSingleton<MongoDbLogConsistencyOptions>();
         context.Services.AddHttpClient();
     }
 }

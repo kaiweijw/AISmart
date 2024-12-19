@@ -1,4 +1,4 @@
-namespace AISmart.LogStorage.MongoDB;
+namespace AISmart.EventSourcing.MongoDB;
 
 public static class MongoDbStorageConstants
 {
