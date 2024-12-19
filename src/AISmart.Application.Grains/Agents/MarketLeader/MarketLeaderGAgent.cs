@@ -2,6 +2,7 @@ using System.ComponentModel;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.MarketLeader;
 using AISmart.Agents.MarketLeader.Events;
+using AISmart.Events;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
@@ -23,7 +24,10 @@ public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeade
     public async Task<ImplementationEvent> HandleEventAsync(SocialEvent eventData)
     {
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: Market Leader analyses content:{eventData.Content}");
-        
+        await PublishAsync(new SendMessageEvent
+        {
+            Message = "MarketLeaderGAgent Completed."
+        });
         return new ImplementationEvent
         {
             Content = "Done"
