@@ -20,6 +20,13 @@ public static class GrainProbeExtensions
         return silo.GrainFactory.AddProbe<T>(GrainIdKeyExtensions.CreateGuidKey(id), classPrefix);
     }
 
+    public static Mock<T> AddProbe<T>(this TestKitSilo silo, Guid id, string? classPrefix, Func<IdSpan, T> factory)
+        where T : class, IGrainWithGuidKey
+    {
+        ArgumentNullException.ThrowIfNull(silo);
+        return silo.GrainFactory.AddProbe<T>(GrainIdKeyExtensions.CreateGuidKey(id), classPrefix);
+    }
+
     public static Mock<T> AddProbe<T>(this TestKitSilo silo, long id, string keyExtension, string? classPrefix = null)
         where T : class, IGrainWithIntegerCompoundKey
     {
@@ -58,5 +65,11 @@ public static class GrainProbeExtensions
         ArgumentNullException.ThrowIfNull(silo);
 
         silo.GrainFactory.AddProbe(factory);
+    }
+    
+    public static void AddProbe<T>(this TestKitSilo silo, GrainId grainId, T grain)
+        where T : class, IGrain
+    {
+        silo.GrainFactory.AddProbe(grainId, grain);
     }
 }

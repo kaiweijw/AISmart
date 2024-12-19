@@ -1,13 +1,16 @@
+using System.ComponentModel;
 using AISmart.Agents;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.Investment;
 using AISmart.Dapr;
+using AISmart.Events;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 using Orleans.Streams;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
+[Description("Investment department,")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEvent>, IInvestmentStateGAgent<InvestmentAgentState>
@@ -27,7 +30,7 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
     }
 
     [EventHandler]
-    public async Task HandleEventAsync(ImplementationEvent eventData)
+    public async Task<WorkCompleteEvent> HandleEventAsync(InvestmentEvent eventData)
     {
         if (State.Content.IsNullOrEmpty())
         {
@@ -35,7 +38,16 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
         }
 
         State.Content.Add(eventData.Content);
+        await PublishAsync(new SendMessageEvent
+        {
+            Message = "InvestmentGAgent Completed."
+        });
         Logger.LogInformation($"{GetType()} ExecuteAsync: InvestmentAgent analyses content:{eventData.Content}");
+
+        return new WorkCompleteEvent
+        {
+            Content = "Done"
+        };
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)

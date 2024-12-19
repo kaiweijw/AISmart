@@ -1,12 +1,12 @@
-using AISmart.Agents;
+using System.ComponentModel;
 using AISmart.Agents.Developer;
 using AISmart.Agents.ImplementationAgent.Events;
-using AISmart.Dapr;
+using AISmart.Events;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Developer;
-
+[Description("R&D department, and I can handle development-related tasks.")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
@@ -20,7 +20,7 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
-    public async Task HandleEventAsync(ImplementationEvent eventData)
+    public async Task<WorkCompleteEvent> HandleEventAsync(ImplementationEvent eventData)
     {
         Logger.LogInformation($"{GetType()} ExecuteAsync: DeveloperAgent analyses content:{eventData.Content}");
         if (State.Content.IsNullOrEmpty())
@@ -28,6 +28,14 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
             State.Content = [];
         }
         State.Content.Add(eventData.Content);
+        await PublishAsync(new SendMessageEvent
+        {
+            Message = "DeveloperGAgent Completed."
+        });
+        return new WorkCompleteEvent
+        {
+            Content = "Done"
+        };
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)

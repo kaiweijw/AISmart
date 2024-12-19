@@ -5,12 +5,15 @@ using Orleans;
 
 namespace AISmart.Agent;
 
-public class TelegramGAgentState 
+public class TelegramGAgentState
 {
-    [Id(0)]  public  Guid Id { get; set; }
+    [Id(0)] public Guid Id { get; set; } = Guid.NewGuid();
     
     [Id(1)] public Dictionary<string, ReceiveMessageGEvent> PendingMessages { get; set; } = new Dictionary<string, ReceiveMessageGEvent>();
     
+    [Id(2)] public string ChatId { get; set; }
+    
+    [Id(3)] public string BotName { get; set; } 
     public void Apply(ReceiveMessageGEvent receiveMessageGEvent)
     {
         PendingMessages[receiveMessageGEvent.MessageId] = receiveMessageGEvent;
@@ -22,6 +25,12 @@ public class TelegramGAgentState
         {
             PendingMessages.Remove(sendMessageGEvent.ReplyMessageId);
         }
+    }
+    
+    public void Apply(SetTelegramConfigEvent setTelegramConfigEvent)
+    {
+        ChatId = setTelegramConfigEvent.ChatId;
+        BotName = setTelegramConfigEvent.BotName;
     }
 
 }
