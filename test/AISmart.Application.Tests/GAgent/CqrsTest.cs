@@ -44,6 +44,7 @@ public class CqrsTests : AISmartApplicationTestBase
         services.AddSingleton<IIndexingService>(_mockIndexingService.Object); 
         services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
         services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
+        services.AddMediatR(typeof(SendEventCommandHandler).Assembly);
         services.AddSingleton<ICQRSProvider,CQRSProvider>();
 
         var serviceProvider = services.BuildServiceProvider();

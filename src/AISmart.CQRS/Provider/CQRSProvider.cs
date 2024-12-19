@@ -35,4 +35,13 @@ public class CQRSProvider : ICQRSProvider, ISingletonDependency
         var state = await _mediator.Send(getStateQuery);
         return state;
     }
+
+    public async Task SendEventCommandAsync(EventBase eventBase)
+    {
+        var command = new SendEventCommand
+        {
+            Event = eventBase
+        };
+        await _mediator.Send(command);
+    }
 }
