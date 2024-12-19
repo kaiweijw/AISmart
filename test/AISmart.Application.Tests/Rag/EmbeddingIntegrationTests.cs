@@ -2,8 +2,6 @@
 using System.Threading.Tasks;
 using AISmart.Options;
 using AISmart.Provider;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 

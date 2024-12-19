@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AISmart.Chunk;
+using AISmart.Rag;
 using Volo.Abp.DependencyInjection;
 
 namespace AISmart.Provider;

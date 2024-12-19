@@ -1,7 +1,9 @@
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using AISmart.dto;
+using AISmart.Embedding;
+using AISmart.Embedding.Dto;
+using AISmart.Rag;
 using Newtonsoft.Json;
 using Volo.Abp.DependencyInjection;
 

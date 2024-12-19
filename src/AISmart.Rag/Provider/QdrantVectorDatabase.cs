@@ -5,7 +5,9 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
-using AISmart.dto;
+using AISmart.Rag;
+using AISmart.VectorStorage;
+using AISmart.VectorStorage.Dto;
 using Newtonsoft.Json;
 using Volo.Abp.DependencyInjection;
 

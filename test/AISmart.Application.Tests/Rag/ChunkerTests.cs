@@ -27,15 +27,4 @@ public class ChunkerTests : AISmartApplicationTestBase
         Assert.True(chunks.Count > 0);
     }
     
-    [Fact]
-    public async Task TestOpenAIChunk()
-    {
-        var openAiChunker = new OpenAIChunker();
-
-        Task<List<string>> result = openAiChunker.Chunk(text, 512);
-            
-        List<string> chunks = await result;
-        Assert.True(chunks.Count > 0);
-    }
-    
 }
