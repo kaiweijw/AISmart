@@ -56,7 +56,8 @@ public class TelegramService :  ApplicationService,ITelegramService
     public async Task SetGroupsAsync()
     {
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
-        var telegramAgent = _clusterClient.GetGrain<IStateGAgent<TelegramGAgentState>>(Guid.NewGuid());
+        var telegramAgent = _clusterClient.GetGrain<ITelegramGAgent>(Guid.NewGuid());
+        await telegramAgent.SetTelegramConfig("-1002473003637", "Test");
         var developerAgent = _clusterClient.GetGrain<IStateGAgent<DeveloperAgentState>>(Guid.NewGuid());
         var investmentAgent = _clusterClient.GetGrain<IStateGAgent<InvestmentAgentState>>(Guid.NewGuid());
         var marketLeaderAgent = _clusterClient.GetGrain<IStateGAgent<MarketLeaderAgentState>>(Guid.NewGuid());
