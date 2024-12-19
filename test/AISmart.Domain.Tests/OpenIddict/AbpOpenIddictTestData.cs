@@ -9,6 +9,9 @@ public class AbpOpenIddictTestData : ISingletonDependency
     public string App1ClientId { get; set; } = "Client1";
     public Guid App2Id { get; set; } = Guid.NewGuid();
     public string App2ClientId { get; set; } = "Client2";
+    
+    public Guid PumpFunId { get; set; } = Guid.NewGuid();
+    public string PumpFunIdClientId { get; set; } = "PumpFunIdClient";
 
     public Guid Scope1Id { get; set; } = Guid.NewGuid();
     public string Scope1Name { get; set; } = "Scope1";

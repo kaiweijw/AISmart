@@ -16,5 +16,8 @@ public static class CommonConstants
     public const string StreamProvider = "AISmart";
     public static Guid StreamGuid = Guid.NewGuid();
     
+    
+    public const string OpenID = "OpenID";
+
 
 }

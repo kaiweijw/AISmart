@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="OpenIddict.Server.AspNetCore" />
     <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Volo.Abp.Identity.EntityFrameworkCore" />
     <PackageReference Include="Volo.Abp.OpenIddict.EntityFrameworkCore" />
