@@ -79,6 +79,8 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 {
                     Mapper = sp.GetRequiredService<IMapper>()
                 });
+                //services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
+
                 services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
                 services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
                 services.AddMediatR(typeof(GetStateQueryHandler).Assembly);

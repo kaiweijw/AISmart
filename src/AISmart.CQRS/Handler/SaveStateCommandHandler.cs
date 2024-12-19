@@ -4,11 +4,10 @@ using System.Threading.Tasks;
 using AISmart.CQRS.Dto;
 using MediatR;
 using Newtonsoft.Json;
-using Volo.Abp.DependencyInjection;
 
 namespace AISmart.CQRS.Handler;
 
-public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>,ISingletonDependency
+public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
 {
     private readonly IIndexingService  _indexingService ;
 

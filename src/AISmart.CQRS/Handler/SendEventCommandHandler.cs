@@ -7,11 +7,10 @@ using AISmart.CQRS.Dto;
 using AISmart.Sender;
 using MediatR;
 using Orleans;
-using Volo.Abp.DependencyInjection;
 
 namespace AISmart.CQRS.Handler;
 
-public class SendEventCommandHandler : IRequestHandler<SendEventCommand, int>,ISingletonDependency
+public class SendEventCommandHandler : IRequestHandler<SendEventCommand, int>
 {
     private readonly IClusterClient _clusterClient;
 

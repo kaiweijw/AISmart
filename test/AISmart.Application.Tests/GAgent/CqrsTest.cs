@@ -1,12 +1,17 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agent.Events;
+using AISmart.Agents;
+using AISmart.Agents.Group;
+using AISmart.Agents.X.Events;
 using AISmart.CQRS;
 using AISmart.CQRS.Dto;
 using AISmart.CQRS.Handler;
 using AISmart.CQRS.Provider;
+using AISmart.Sender;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Orleans;
@@ -22,19 +27,28 @@ public class CqrsTests : AISmartApplicationTestBase
     private readonly ITestOutputHelper _output;
     private readonly ICQRSProvider _cqrsProvider;
     private readonly Mock<IIndexingService> _mockIndexingService;
+    private Mock<IClusterClient> _clusterClientMock;
     private const string ChainId = "AELF";
     private const string SenderName = "Test";
     private const string Address = "JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE";
     private const string IndexName = "aelfagentgstateindex";
     private const string IndexId = "1";
+    private SendEventCommandHandler _handler;
 
     public CqrsTests(ITestOutputHelper output)
     {
         _output = output;
-        
+        _clusterClientMock = new Mock<IClusterClient>();
+
         _clusterClient = GetRequiredService<IClusterClient>();
-        
         _mockIndexingService = new Mock<IIndexingService>();
+        _clusterClientMock = new Mock<IClusterClient>();
+        /*
+         _groupAgentMock = new Mock<IStateGAgent<GroupAgentState>>();
+         _clusterClientMock.Setup(client => client.GetGrain<IPublishingGAgent>(It.IsAny<Guid>()))
+            .Returns(_publishingAgentMock.Object);
+        _clusterClientMock.Setup(client => client.GetGrain<IStateGAgent<GroupAgentState>>(It.IsAny<Guid>()))
+            .Returns(_groupAgentMock.Object);*/
         _mockIndexingService.Setup(service => service.SaveOrUpdateIndexAsync(It.IsAny<string>(), It.IsAny<BaseStateIndex>()))
             .Returns(Task.CompletedTask);
         _mockIndexingService.Setup(b => b.QueryIndexAsync(It.IsAny<string>(), It.IsAny<string>()))
@@ -49,12 +63,13 @@ public class CqrsTests : AISmartApplicationTestBase
 
         var serviceProvider = services.BuildServiceProvider();
         _cqrsProvider = serviceProvider.GetRequiredService<ICQRSProvider>();
+        _handler = new SendEventCommandHandler(_clusterClientMock.Object);
+
     }
 
     [Fact]
     public async Task SendTransactionTest()
     {
-
         var createTransactionEvent = new CreateTransactionEvent()
         {
             ChainId = ChainId,
@@ -76,5 +91,21 @@ public class CqrsTests : AISmartApplicationTestBase
         var esResult = await _cqrsProvider.QueryAsync(IndexName, grainId.ToString());
         esResult.State.ShouldContain(Address);
         esResult.Id.ShouldBe(IndexId);
+    }
+
+    [Fact]
+    public async Task SendEventCommandTest()
+    {
+        var gevent = new XThreadCreatedEvent
+        {
+            Id = "mock_x_thread_id",
+            Content = "mock_x_thread_content"
+        };
+        await _cqrsProvider.SendEventCommandAsync(gevent);
+        var command = new SendEventCommand()
+        {
+            Event = gevent
+        };
+        await _handler.Handle(command, CancellationToken.None);
     }
 }
