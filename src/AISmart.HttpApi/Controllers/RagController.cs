@@ -17,9 +17,9 @@ public class RagController
 {
     private readonly IRagProvider _ragProvider;
     
-    public RagController(ILogger<RagProvider> logger, IOptionsMonitor<RagOptions> ragOptions)
+    public RagController(IRagProvider ragProvider)
     {
-        _ragProvider = new RagProvider(ragOptions, logger);
+        _ragProvider = ragProvider;
     }
     
     [HttpPost("add")]

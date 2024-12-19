@@ -1,14 +1,13 @@
-using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using AISmart.dto;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Volo.Abp.DependencyInjection;
 
 namespace AISmart.Provider;
 
-public class OpenAIEmbeddingProvider : IEmbeddingProvider
+public class OpenAIEmbeddingProvider : IEmbeddingProvider, ISingletonDependency
 {
     private readonly string _apiKey;
     private readonly HttpClient _httpClient;

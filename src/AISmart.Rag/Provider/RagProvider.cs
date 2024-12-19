@@ -19,17 +19,20 @@ public class RagProvider : IRagProvider, ISingletonDependency
 
     public RagProvider(IOptionsMonitor<RagOptions> ragOptions, ILogger<RagProvider> logger)
     {
-        var options = ragOptions.CurrentValue;
+        _ragOptions = ragOptions;
         _chunker = new SimpleChunker();
-        _embeddingProvider = new OpenAIEmbeddingProvider(options.APIKey);
-        _vectorDatabase = new QdrantVectorDatabase(options.QdrantUrl, options.CollectionName, options.VectorSize);
+        _embeddingProvider = new OpenAIEmbeddingProvider(_ragOptions.CurrentValue.APIKey);
+        _vectorDatabase = new QdrantVectorDatabase(_ragOptions.CurrentValue.QdrantUrl, 
+            _ragOptions.CurrentValue.CollectionName, 
+            _ragOptions.CurrentValue.VectorSize);
         _logger = logger;
     }
 
     public async Task StoreTextAsync(string text)
     {
         _logger.LogInformation("store text {text}", text);
-        var chunks = await _chunker.Chunk(text, 4000);
+        var chunkSize = _ragOptions.CurrentValue.ChunkSize;
+        var chunks = await _chunker.Chunk(text, chunkSize);
         foreach (var chunk in chunks)
         {
             var embedding = await _embeddingProvider.GetEmbeddingAsync(chunk);

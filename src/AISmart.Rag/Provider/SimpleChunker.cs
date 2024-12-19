@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Volo.Abp.DependencyInjection;
 
 namespace AISmart.Provider;
 
-public class SimpleChunker : IChunker
+public class SimpleChunker : IChunker, ISingletonDependency
 {
     public async Task<List<string>> Chunk(string text, int maxChunkSize)
     {
