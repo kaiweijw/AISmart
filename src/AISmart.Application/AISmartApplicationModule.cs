@@ -20,7 +20,7 @@ namespace AISmart;
     typeof(AbpDaprModule),
     typeof(AbpAspNetCoreMvcDaprModule),
     typeof(AIApplicationGrainsModule),
-    typeof(AISmartRagModule),
+    typeof(AISmartSimpleRagModule),
     typeof(AIApplicationGrainsModule),
     typeof(AISmartGAgentAElfModule),
     typeof(AISmartGAgentTelegramModule),
