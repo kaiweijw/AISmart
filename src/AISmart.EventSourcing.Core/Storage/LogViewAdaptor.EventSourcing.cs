@@ -19,7 +19,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
     private readonly IGrainStorage _grainStorage;
     private readonly string _grainTypeName;
     private readonly ILogConsistentStorage _logConsistentStorage;
-    private readonly DeepCopier _deepCopier;
+    private readonly DeepCopier? _deepCopier;
 
     private TLogView _confirmedView;
     private int _confirmedVersion;
@@ -28,7 +28,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
 
     public LogViewAdaptor(ILogViewAdaptorHost<TLogView, TLogEntry> host, TLogView initialState,
         IGrainStorage grainStorage, string grainTypeName, ILogConsistencyProtocolServices services,
-        ILogConsistentStorage logConsistentStorage, DeepCopier deepCopier)
+        ILogConsistentStorage logConsistentStorage, DeepCopier? deepCopier)
         : base(host, initialState, services)
     {
         _host = host;
@@ -76,7 +76,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
                 if (_confirmedVersion < _globalSnapshot.State.SnapshotVersion)
                 {
                     _confirmedVersion = _globalSnapshot.State.SnapshotVersion;
-                    _confirmedView = _deepCopier.Copy(_globalSnapshot.State.Snapshot);
+                    _confirmedView = MaybeDeepCopy(_globalSnapshot.State.Snapshot);
                 }
 
                 try
@@ -131,7 +131,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
         {
             try
             {
-                _globalSnapshot.State.Snapshot = _deepCopier.Copy(_confirmedView);
+                _globalSnapshot.State.Snapshot = MaybeDeepCopy(_confirmedView);
                 _globalSnapshot.State.SnapshotVersion = _confirmedVersion;
                 await _grainStorage.WriteStateAsync(_grainTypeName, Services.GrainId, _globalSnapshot);
                 batchSuccessfullyWritten = true;
@@ -159,7 +159,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
                     if (_confirmedVersion < _globalSnapshot.State.SnapshotVersion)
                     {
                         _confirmedVersion = _globalSnapshot.State.SnapshotVersion;
-                        _confirmedView = _deepCopier.Copy(_globalSnapshot.State.Snapshot);
+                        _confirmedView = MaybeDeepCopy(_globalSnapshot.State.Snapshot);
                     }
 
                     try
@@ -230,6 +230,11 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
         }
 
         return Task.FromResult<ILogConsistencyProtocolMessage>(response);
+    }
+
+    private TLogView MaybeDeepCopy(TLogView state)
+    {
+        return _deepCopier == null ? state : _deepCopier.Copy(state);
     }
 }
 

@@ -61,9 +61,7 @@ public sealed class TestKitSilo
         var mockOptionsManager = new Mock<IOptions<TypeManifestOptions>>();
         mockOptionsManager.Setup(m => m.Value).Returns(new TypeManifestOptions());
         var codecProvider = new CodecProvider(ServiceProvider, mockOptionsManager.Object);
-        // LogConsistencyProvider = new LogConsistencyProvider(new InMemoryLogConsistentStorage(),
-        // new DeepCopier(codecProvider, new CopyContextPool(codecProvider)), ServiceProvider);
-        LogConsistencyProvider = new TestLogConsistencyProvider(ServiceProvider);
+        LogConsistencyProvider = new TestLogConsistencyProvider(ServiceProvider, TestLogConsistentStorage);
         ServiceProvider.AddKeyedService<ILogViewAdaptorFactory>("LogStorage", LogConsistencyProvider);
         ProtocolServices = new DefaultProtocolServices(new Mock<IGrainContext>().Object, NullLoggerFactory.Instance,
             new DeepCopier(codecProvider, new CopyContextPool(codecProvider)), null!);
@@ -122,6 +120,7 @@ public sealed class TestKitSilo
 
     public TestLogConsistencyProvider LogConsistencyProvider { get; set; }
     public DefaultProtocolServices ProtocolServices { get; set; }
+    public InMemoryLogConsistentStorage TestLogConsistentStorage { get; set; } = new();
 
     public Task<T> CreateGrainAsync<T>(long id) where T : IGrainBase, IGrainWithIntegerKey =>
         CreateGrainAsync<T>(GrainIdKeyExtensions.CreateIntegerKey(id));

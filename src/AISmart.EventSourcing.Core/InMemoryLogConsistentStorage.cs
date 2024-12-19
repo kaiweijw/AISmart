@@ -1,11 +1,6 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text.Json;
 using AISmart.EventSourcing.Core.Storage;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Orleans;
-using Orleans.Configuration;
 using Orleans.Runtime;
 using Orleans.Storage;
 
@@ -17,24 +12,26 @@ public class LogEntry
     public string Data { get; set; } // Adjust the type as needed
 }
 
-public class InMemoryLogConsistentStorage : ILogConsistentStorage, ILifecycleParticipant<ISiloLifecycle>
+public class InMemoryLogConsistentStorage : ILogConsistentStorage
 {
-    private readonly string _name = "AISmart";
+    private readonly string _name = "EventSourcingTest";
     private readonly string _serviceId = "AISmart";
-    private readonly ConcurrentDictionary<string, List<LogEntry>> _storage = new();
-
-    private bool _initialized;
+    
+    /// <summary>
+    /// collectionName -> List of log entries
+    /// </summary>
+    public static readonly Dictionary<string, List<LogEntry>> Storage = new();
 
     public Task<IReadOnlyList<TLogEntry>> ReadAsync<TLogEntry>(string grainTypeName, GrainId grainId,
         int fromVersion, int maxCount)
     {
-        if (!_initialized || maxCount <= 0)
+        if (maxCount <= 0)
         {
             return Task.FromResult<IReadOnlyList<TLogEntry>>(new List<TLogEntry>());
         }
 
         var collectionName = GetStreamName(grainId);
-        if (!_storage.TryGetValue(collectionName, out var entries))
+        if (!Storage.TryGetValue(collectionName, out var entries))
         {
             return Task.FromResult<IReadOnlyList<TLogEntry>>(new List<TLogEntry>());
         }
@@ -51,13 +48,8 @@ public class InMemoryLogConsistentStorage : ILogConsistentStorage, ILifecyclePar
 
     public Task<int> GetLastVersionAsync(string grainTypeName, GrainId grainId)
     {
-        if (!_initialized)
-        {
-            return Task.FromResult(-1);
-        }
-
         var collectionName = GetStreamName(grainId);
-        if (!_storage.TryGetValue(collectionName, out var entries) || !entries.Any())
+        if (!Storage.TryGetValue(collectionName, out var entries) || !entries.Any())
         {
             return Task.FromResult(-1);
         }
@@ -69,21 +61,16 @@ public class InMemoryLogConsistentStorage : ILogConsistentStorage, ILifecyclePar
     public async Task<int> AppendAsync<TLogEntry>(string grainTypeName, GrainId grainId, IList<TLogEntry> entries,
         int expectedVersion)
     {
-        if (!_initialized)
-        {
-            return -1;
-        }
-
         var collectionName = GetStreamName(grainId);
         if (entries.Count == 0)
         {
             return await GetLastVersionAsync(grainTypeName, grainId);
         }
 
-        if (!_storage.TryGetValue(collectionName, out var logEntries))
+        if (!Storage.TryGetValue(collectionName, out var logEntries))
         {
             logEntries = new List<LogEntry>();
-            _storage[collectionName] = logEntries;
+            Storage[collectionName] = logEntries;
         }
 
         var currentVersion = await GetLastVersionAsync(grainTypeName, grainId);
@@ -104,37 +91,6 @@ public class InMemoryLogConsistentStorage : ILogConsistentStorage, ILifecyclePar
         }
 
         return currentVersion;
-    }
-
-    public void Participate(ISiloLifecycle observer)
-    {
-        var name = OptionFormattingUtilities.Name<InMemoryLogConsistentStorage>(_name);
-        observer.Subscribe(name, ServiceLifecycleStage.ApplicationServices, Init, Close);
-    }
-
-    private Task Init(CancellationToken cancellationToken)
-    {
-        _initialized = true;
-        return Task.CompletedTask;
-    }
-
-    private Task Close(CancellationToken cancellationToken)
-    {
-        if (!_initialized)
-        {
-            return Task.CompletedTask;
-        }
-
-        try
-        {
-            _storage.Clear();
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(FormattableString.Invariant($"{ex.GetType()}: {ex.Message}"));
-        }
-
-        return Task.CompletedTask;
     }
 
     private string GetStreamName(GrainId grainId)

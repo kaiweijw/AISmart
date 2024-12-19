@@ -32,6 +32,12 @@ public class LogViewAdaptorTestGAgent
         });
         await ConfirmEvents();
     }
+
+    public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
+    {
+        State.Content.Clear();
+        return base.OnDeactivateAsync(reason, cancellationToken);
+    }
 }
 
 [GenerateSerializer]

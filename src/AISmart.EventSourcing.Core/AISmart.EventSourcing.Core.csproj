@@ -13,10 +13,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.Orleans.Core.Abstractions" />
       <PackageReference Include="Microsoft.Orleans.EventSourcing" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Messages\" />
+      <PackageReference Include="Microsoft.Extensions.Logging" />
     </ItemGroup>
 
 </Project>
