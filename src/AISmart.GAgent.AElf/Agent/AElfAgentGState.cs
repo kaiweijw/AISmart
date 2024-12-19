@@ -15,6 +15,10 @@ public class AElfAgentGState : StateBase
     
     public void Apply(CreateTransactionGEvent createTransactionGEvent)
     {
+        if (Id == Guid.Empty)
+        {
+            Id = Guid.NewGuid();
+        }
         PendingTransactions[createTransactionGEvent.Id] = createTransactionGEvent;
     }
     

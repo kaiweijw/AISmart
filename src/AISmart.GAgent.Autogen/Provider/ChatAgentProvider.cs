@@ -24,17 +24,18 @@ public class ChatAgentProvider : IChatAgentProvider, ITransientDependency
     }
 
     
-    public async Task<IMessage> SendAsync(string agentName, string message, IEnumerable<IMessage>? chatHistory)
+    public async Task<IMessage?> SendAsync(string agentName, string message, IEnumerable<IMessage>? chatHistory)
     {
         if (_agents.TryGetValue(agentName, out var middlewareAgent) == true)
         {
             return await middlewareAgent.SendAsync(message, chatHistory);   
         }
+        
         _logger.LogWarning($"[ChatAgentProvider] {agentName} not exist");
         return null;
     }
 
-    public MiddlewareAgent<MiddlewareStreamingAgent<OpenAIChatAgent>> GetAgent(string agentName)
+    public MiddlewareAgent<MiddlewareStreamingAgent<OpenAIChatAgent>>? GetAgent(string agentName)
     {
         _agents.TryGetValue(agentName, out var agent);
         return agent;

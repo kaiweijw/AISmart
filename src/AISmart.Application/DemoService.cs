@@ -2,14 +2,19 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AISmart.Agents;
+using AISmart.Agents.AutoGen;
 using AISmart.Agents.Developer;
 using AISmart.Agents.Group;
 using AISmart.Agents.Investment;
 using AISmart.Agents.MarketLeader;
 using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
+using AISmart.Application.Grains.Agents.Draw;
+using AISmart.Application.Grains.Agents.Math;
+using AISmart.GAgent.Autogen;
 using AISmart.Sender;
 using Orleans;
+using Orleans.Runtime;
 using Volo.Abp.Application.Services;
 
 namespace AISmart.Application;
@@ -55,5 +60,32 @@ public class DemoAppService : ApplicationService, IDemoAppService
 
         var investmentAgentState = await investmentAgent.GetStateAsync();
         return investmentAgentState.Content.First();
+    }
+    
+    public async Task<string> AutogenGAgentTest()
+    {
+        var groupGAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
+        var autogenGAgent = _clusterClient.GetGrain<IAutogenGAgent>(Guid.NewGuid());
+        var publishingGAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
+        var drawGAgent = _clusterClient.GetGrain<IStateGAgent<DrawOperationState>>(Guid.NewGuid());
+        var mathGAgent = _clusterClient.GetGrain<IStateGAgent<MathOperationState>>(Guid.NewGuid());
+
+        autogenGAgent.RegisterAgentEvent(typeof(DrawOperationGAgent), [typeof(DrawTriangleEvent)]);
+        autogenGAgent.RegisterAgentEvent(typeof(MathOperationGAgent), [typeof(AddNumberEvent), typeof(SubNumberEvent)]);
+
+        await groupGAgent.Register(autogenGAgent);
+        await groupGAgent.Register(drawGAgent);
+        await groupGAgent.Register(mathGAgent);
+        await groupGAgent.Register(publishingGAgent);
+        // await groupGAgent.Register(groupGAgent);
+
+        await publishingGAgent.PublishEventAsync(new AutoGenCreatedEvent
+        {
+            Content = "What is 4+3, and then generate the corresponding polygon?"
+        });
+
+        await Task.Delay(10000 * 1000);
+
+        return "aa";
     }
 }

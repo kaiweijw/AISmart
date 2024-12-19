@@ -1,15 +1,13 @@
-using AISmart.Agents;
+using System.ComponentModel;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.MarketLeader;
 using AISmart.Agents.MarketLeader.Events;
-using AISmart.Application.Grains.Agents.X;
-using AISmart.Dapr;
+using AISmart.Events;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
-using Orleans.Streams;
 
 namespace AISmart.Application.Grains.Agents.MarketLeader;
-
+[Description("Marketing department，I can handle tasks related to the marketing department.")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeaderGEvent>
@@ -23,14 +21,17 @@ public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeade
         return Task.FromResult("An agent to inform other agents when a social event is published.");
     }
 
-    public async Task HandleEventAsync(SocialEvent eventData)
+    public async Task<ImplementationEvent> HandleEventAsync(SocialEvent eventData)
     {
         Logger.LogInformation($"{this.GetType().ToString()} ExecuteAsync: Market Leader analyses content:{eventData.Content}");
-        
-        await PublishAsync(new ImplementationEvent
+        await PublishAsync(new SendMessageEvent
         {
-            Content = eventData.Content
+            Message = "MarketLeaderGAgent Completed."
         });
+        return new ImplementationEvent
+        {
+            Content = "Done"
+        };
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)

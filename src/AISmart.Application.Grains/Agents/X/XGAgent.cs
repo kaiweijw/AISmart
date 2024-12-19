@@ -44,6 +44,13 @@ public class XGAgent : GAgentBase<XAgentState, XGEvent>
             Content = $"X Thread {eventData.Content} has been published."
         };
         await PublishAsync(publishEvent);
+        await PublishAsync(new RequestAllSubscriptionsEvent());
+    }
+
+    [EventHandler]
+    public async Task SaveSubscribedEventsAsync(SubscribedEventListEvent subscribedEventListEvent)
+    {
+        var eventList = subscribedEventListEvent.Value;
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)

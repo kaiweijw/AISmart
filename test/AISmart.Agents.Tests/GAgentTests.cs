@@ -1,9 +1,6 @@
 using AISmart.Agent;
-using AISmart.Agent.Event;
 using AISmart.Agent.Events;
-using AISmart.Agent.GEvents;
 using AISmart.Agent.Grains;
-using AISmart.Agents;
 using AISmart.Agents.X.Events;
 using AISmart.Application.Grains.Agents.Developer;
 using AISmart.Application.Grains.Agents.Group;
@@ -11,7 +8,6 @@ using AISmart.Application.Grains.Agents.Investment;
 using AISmart.Application.Grains.Agents.MarketLeader;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Application.Grains.Agents.X;
-using AISmart.Dapr;
 using AISmart.Events;
 using AISmart.Sender;
 using Orleans.TestKit;
@@ -19,24 +15,19 @@ using Shouldly;
 
 namespace AISmart.Grains.Tests;
 
-public class AgentsTests : TestKitBase
+public class GAgentTests : GAgentTestKitBase
 {
     [Fact]
     public async Task GroupTest()
     {
-        var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
-        var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(Guid.NewGuid());
-        var xAgent = await Silo.CreateGrainAsync<XGAgent>(Guid.NewGuid());
-        var marketLeaderAgent = await Silo.CreateGrainAsync<MarketLeaderGAgent>(Guid.NewGuid());
-        var developerAgent = await Silo.CreateGrainAsync<DeveloperGAgent>(Guid.NewGuid());
-        var investmentAgent = await Silo.CreateGrainAsync<InvestmentGAgent>(Guid.NewGuid());
+        var xGAgent = await Silo.CreateGrainAsync<XGAgent>(Guid.NewGuid());
+        var marketLeaderGAgent = await Silo.CreateGrainAsync<MarketLeaderGAgent>(Guid.NewGuid());
+        var developerGAgent = await Silo.CreateGrainAsync<DeveloperGAgent>(Guid.NewGuid());
+        var investmentGAgent = await Silo.CreateGrainAsync<InvestmentGAgent>(Guid.NewGuid());
 
-        await groupAgent.Register(xAgent);
-        await groupAgent.Register(marketLeaderAgent);
-        await groupAgent.Register(developerAgent);
-        await groupAgent.Register(investmentAgent);
+        var groupGAgent = await CreateGroupGAgentAsync(xGAgent, marketLeaderGAgent, developerGAgent, investmentGAgent);
 
-        await publishingAgent.PublishTo(groupAgent);
+        var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
 
         var xThreadCreatedEvent = new XThreadCreatedEvent
         {
@@ -44,15 +35,17 @@ public class AgentsTests : TestKitBase
             Content = "BTC REACHED 100k WOOHOOOO!"
         };
 
-        await publishingAgent.PublishEventAsync(xThreadCreatedEvent);
+        AddProbesByGrainId(xGAgent, groupGAgent, marketLeaderGAgent, developerGAgent, investmentGAgent);
 
-        var xAgentState = await xAgent.GetStateAsync();
+        await publishingGAgent.PublishEventAsync(xThreadCreatedEvent);
+
+        var xAgentState = await xGAgent.GetStateAsync();
         xAgentState.ThreadIds.Count.ShouldBe(1);
-        
-        var investmentAgentState = await investmentAgent.GetStateAsync();
+
+        var investmentAgentState = await investmentGAgent.GetStateAsync();
         investmentAgentState.Content.Count.ShouldBe(1);
-        
-        var developerAgentState = await developerAgent.GetStateAsync();
+
+        var developerAgentState = await developerGAgent.GetStateAsync();
         developerAgentState.Content.Count.ShouldBe(1);
     }
 
@@ -99,14 +92,13 @@ public class AgentsTests : TestKitBase
             MessageId = "11",
             ChatId = "12",
             Message = "Test",
-            NeedReplyBotName = "Test"
+            BotName = "Test"
         });
     }
     
     [Fact]
     public async Task SendMessageTest()
     {
-       
         var guid = Guid.NewGuid();
         var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
         var telegramGAgent = await Silo.CreateGrainAsync<TelegramGAgent>(guid);
@@ -120,9 +112,8 @@ public class AgentsTests : TestKitBase
         {
             ChatId = "12",
             Message = "bot message",
-            SenderBotName ="Test",
+            BotName ="Test",
             ReplyMessageId = "11"
         });
-        await Task.Delay(10000);
     }
 }

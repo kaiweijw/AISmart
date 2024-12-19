@@ -1,18 +1,19 @@
+using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using AISmart.Agents;
 using AISmart.Application.Grains;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
-namespace AISmart.Grains.Tests.AutoGenTest;
+namespace AISmart.Application.Grains.Agents.Draw;
 
 [Description("I can draw a polygon")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DrawOperationGAgent : GAgentBase<DrawOperationState, DrawOperateEvent>
 {
-    public DrawOperationGAgent(ILogger logger) : base(logger)
+    public DrawOperationGAgent(ILogger<DrawOperationGAgent> logger) : base(logger)
     {
     }
 
@@ -22,35 +23,36 @@ public class DrawOperationGAgent : GAgentBase<DrawOperationState, DrawOperateEve
     }
 
     [EventHandler]
-    public async Task ExecuteAsync(DrawTriangleEvent drawTriangleEvent)
+    public async Task<DrawTriangleResultEvent> ExecuteAsync(DrawTriangleEvent drawTriangleEvent)
     {
-        await PublishAsync(new DrawTriangleResultEvent()
+        return new DrawTriangleResultEvent()
         {
             DrawTriangleContent = $"I Have draw a {drawTriangleEvent.PolygonSides} Triangle"
-        });
+        };
     }
 }
 
-[Serializable]
+[GenerateSerializer]
 public class DrawOperationState
 {
 }
 
-[Serializable]
+[GenerateSerializer]
+[Description("Draw Triangle")]
 public class DrawOperateEvent : GEventBase
 {
 }
 
-[Serializable]
+[GenerateSerializer]
 [Description("Draw Triangle")]
-public class DrawTriangleEvent : EventBase
+public class DrawTriangleEvent : EventWithResponseBase<DrawTriangleResultEvent>
 {
     [Description("Sides of a polygon")]
-    public int PolygonSides { get; set; }
+    [Id(0)] public int PolygonSides { get; set; }
 }
 
-[Serializable]
+[GenerateSerializer]
 public class DrawTriangleResultEvent : EventBase
 {
-    public string DrawTriangleContent { get; set; }
+    [Id(0)] public string DrawTriangleContent { get; set; }
 }
