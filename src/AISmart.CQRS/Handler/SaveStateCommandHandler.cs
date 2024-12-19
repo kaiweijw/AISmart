@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace AISmart.CQRS.Handler;
 
-public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
+public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand>
 {
     private readonly IIndexingService  _indexingService ;
 
@@ -18,11 +18,11 @@ public class SaveStateCommandHandler : IRequestHandler<SaveStateCommand, int>
         _indexingService = indexingService;
     }
 
-    public async Task<int> Handle(SaveStateCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(SaveStateCommand request, CancellationToken cancellationToken)
     {
         _indexingService.CheckExistOrCreateIndex(request.State.GetType().Name);
         await SaveIndexAsync(request);
-        return await Task.FromResult(1); 
+        return Unit.Value;
     }
 
     private async Task SaveIndexAsync(SaveStateCommand request)

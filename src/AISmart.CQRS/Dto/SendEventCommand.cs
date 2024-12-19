@@ -3,7 +3,7 @@ using MediatR;
 
 namespace AISmart.CQRS.Dto;
 
-public class SendEventCommand : IRequest<int>
+public class SendEventCommand : IRequest
 {
     public EventBase Event { get; set; }
 }
