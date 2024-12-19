@@ -1,10 +1,12 @@
+using System.ComponentModel;
 using AISmart.Agents.Developer;
 using AISmart.Agents.ImplementationAgent.Events;
+using AISmart.Events;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
 namespace AISmart.Application.Grains.Agents.Developer;
-
+[Description("R&D department, and I can handle development-related tasks.")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
@@ -26,9 +28,13 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
             State.Content = [];
         }
         State.Content.Add(eventData.Content);
+        await PublishAsync(new SendMessageEvent
+        {
+            Message = "DeveloperGAgent Completed."
+        });
         return new WorkCompleteEvent
         {
-            Content = eventData.Content
+            Content = "Done"
         };
     }
 
