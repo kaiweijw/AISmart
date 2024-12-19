@@ -19,19 +19,22 @@ namespace AISmart.Controllers;
 [RemoteService]
 [Area("app")]
 [ControllerName("OpenId")]
-[Authorize(CommonConstants.OpenID)]
+[Route("api/")]
+
+// [Authorize(CommonConstants.OpenID)]
 public class OpenIdController: AISmartController
 {
     private readonly ILogger<OpenIdController> _logger;
     
-    public OpenIdController(ILogger<OpenIdController> logger, 
-        ITelegramService telegramService)
+    public OpenIdController(ILogger<OpenIdController> logger)
     {
         _logger = logger;
     }
-    [HttpGet("get-one-message")]
+    [Route("get-one-message")]
+    [Authorize]
     public Task<string> GetOneMessage()
     {
+        _logger.LogInformation(User.Identity.Name);
         return Task.FromResult("this openId result");
     }
 }

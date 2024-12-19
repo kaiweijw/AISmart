@@ -10,13 +10,13 @@ public class AISmartMongoDbContext : AbpMongoDbContext
      * public IMongoCollection<Question> Questions => Collection<Question>();
      */
 
-    protected override void CreateModel(IMongoModelBuilder modelBuilder)
-    {
-        base.CreateModel(modelBuilder);
-
-        //modelBuilder.Entity<YourEntity>(b =>
-        //{
-        //    //...
-        //});
-    }
+    // protected override void CreateModel(IMongoModelBuilder modelBuilder)
+    // {
+    //     base.CreateModel(modelBuilder);
+    //
+    //     //modelBuilder.Entity<YourEntity>(b =>
+    //     //{
+    //     //    //...
+    //     //});
+    // }
 }
