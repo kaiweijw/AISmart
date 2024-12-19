@@ -70,7 +70,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             Messages = history,
             CreateTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()
         });
-        
+
         await base.ConfirmEvents();
     }
 
@@ -98,9 +98,10 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
 
             var agentName = eventInfo.AgentName;
             var eventName = eventInfo.EventName;
-            var content = JsonConvert.SerializeObject(new AgentResponse<EventBase>()
-                { AgentName = agentName, EventName = eventName, Response = eventWrapper.Event });
-           
+            var content = JsonConvert.SerializeObject(eventWrapper.Event);
+            var reply =
+                $"The {eventName} of {agentName} has been processed, the response of {eventName} is: {content}. The input for the next request may depend on the JSON data in the response.";
+
             var taskInfo = State.GetStateInfoByEventId(eventId);
             if (taskInfo == null)
             {
@@ -108,20 +109,20 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                     $"[AutogenGAgent] receive reply but not found taskInfo, eventId:{eventId}, taskId{taskInfo.TaskId}, receive message is{eventWrapper.Event}");
                 return;
             }
-            
+
             base.RaiseEvent(new CallAgentReply()
             {
                 EventId = eventId,
-                Reply = new AutogenMessage(Role.Assistant.ToString(), content)
+                Reply = new AutogenMessage(Role.Assistant.ToString(), reply)
             });
-            
+
             await base.ConfirmEvents();
-            
+
             if (State.CheckIsRunning(taskInfo.TaskId))
             {
                 return;
-            } 
-            
+            }
+
             await PublishEventToExecutor(taskInfo.TaskId, taskInfo.ChatHistory);
         }
     }
@@ -208,7 +209,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                     AgentName = @event2.AgentName,
                     EventName = @event2.EventName
                 });
-                
+
                 await base.ConfirmEvents();
             }
         });
