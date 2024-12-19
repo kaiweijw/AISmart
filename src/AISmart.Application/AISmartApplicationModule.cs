@@ -20,7 +20,8 @@ namespace AISmart;
     typeof(AIApplicationGrainsModule),
     typeof(AISmartGAgentAElfModule),
     typeof(AISmartGAgentTelegramModule),
-    typeof(AISmartGAgentTwitterModule)
+    typeof(AISmartGAgentTwitterModule),
+    typeof(AISmartGAgentMicroAIModule)
 )]
 public class AISmartApplicationModule : AbpModule
 {
