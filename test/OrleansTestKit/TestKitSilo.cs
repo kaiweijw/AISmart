@@ -204,9 +204,8 @@ public sealed class TestKitSilo
     {
         var grainType = _grainTypeResolver.GetGrainType(typeof(T));
         var grainId = GrainId.Create(grainType, identity);
-        var context = ServiceProvider.GetService<IGrainContext>() as TestGrainActivationContext;
 
-        if (context is null || context.GrainId != grainId || context.GrainType != typeof(T))
+        if (ServiceProvider.GetService<IGrainContext>() is not TestGrainActivationContext context || context.GrainId != grainId || context.GrainType != typeof(T))
         {
             // we have not registered a context yet OR we have registered a context but it is for a different grain and we need to re-create
             context = new TestGrainActivationContext

@@ -13,12 +13,12 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
     where TLogEntry : class
 {
     private readonly ILogViewAdaptorHost<TLogView, TLogEntry> _host;
-    private readonly TLogView _initialState;
+    private readonly TLogView? _initialState;
 
     private IMongoCollection<MongoDbViewStateWrapper<TLogView>> _viewStateCollection;
     private IMongoCollection<MongoDbEventLogWrapper<TLogEntry>> _eventLogCollection;
 
-    private TLogView? _cachedView;
+    private TLogView _cachedView;
     private int _version;
 
     public MongoDbStorageAdaptor(ILogViewAdaptorHost<TLogView, TLogEntry> host, TLogView initialState,
@@ -54,13 +54,13 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
 
     protected override void InitializeConfirmedView(TLogView initialstate)
     {
-        _cachedView = _initialState;
+        _cachedView = _initialState ?? new TLogView();
         _version = 0;
     }
 
     protected override TLogView LastConfirmedView()
     {
-        return _cachedView ?? new TLogView();
+        return _cachedView;
     }
 
     protected override int GetConfirmedVersion() => _version;
@@ -105,11 +105,11 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
 
     protected override async Task<int> WriteAsync()
     {
-        var latestView = await GetLatestViewAsync();
-        if (latestView == null)
+        var latestView = await GetLatestViewAsync() ?? new MongoDbViewStateWrapper<TLogView>
         {
-            return 0;
-        }
+            Version = _version,
+            State = _cachedView
+        };
 
         var latestVersion = latestView.Version;
         if (latestVersion != _version)
@@ -167,13 +167,6 @@ public class MongoDbStorageAdaptor<TLogView, TLogEntry>
         return await _viewStateCollection
             .Find(FilterDefinition<MongoDbViewStateWrapper<TLogView>>.Empty)
             .SortByDescending(v => v.Version)
-            .FirstOrDefaultAsync();
-    }
-
-    public async Task<MongoDbViewStateWrapper<TLogView>> GetViewAsync(int version)
-    {
-        return await _viewStateCollection
-            .Find(v => v.Version == version)
             .FirstOrDefaultAsync();
     }
 

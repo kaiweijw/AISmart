@@ -85,4 +85,49 @@ public class GAgentBaseTests : GAgentTestKitBase
         state.SubscriptionInfo[typeof(EventHandlerWithResponseTestGAgent)].Count.ShouldBe(1);
         state.SubscriptionInfo[typeof(SubscribeTestGAgent)].Count.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task LogViewAdaptorTest()
+    {
+        var logViewGAgent = await Silo.CreateGrainAsync<LogViewAdaptorTestGAgent>(Guid.NewGuid());
+        var groupGAgent = await CreateGroupGAgentAsync(logViewGAgent);
+        var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
+
+        await publishingGAgent.PublishEventAsync(new NaiveTestEvent
+        {
+            Greeting = "First event"
+        });
+
+        var viewStateCollection = TestLogViewAdaptor<LogViewAdaptorTestGState, LogViewAdaptorTestGEvent>.ViewStateCollection;
+        var eventLogCollection = TestLogViewAdaptor<LogViewAdaptorTestGState, LogViewAdaptorTestGEvent>.EventLogCollection;
+
+        await TestHelper.WaitUntilAsync(_ => CheckCount(eventLogCollection, 1));
+        viewStateCollection.Count.ShouldBe(1);
+        eventLogCollection.Count.ShouldBe(1);
+        // Check view & event.
+        viewStateCollection.Last().Version.ShouldBe(1);
+        viewStateCollection.Last().State.Content.First().Value.Greeting.ShouldBe("First event");
+        eventLogCollection.Last().Version.ShouldBe(1);
+        eventLogCollection.Last().Event.Greeting.ShouldBe("First event");
+        
+        await publishingGAgent.PublishEventAsync(new NaiveTestEvent
+        {
+            Greeting = "Second event"
+        });
+        
+        await TestHelper.WaitUntilAsync(_ => CheckCount(eventLogCollection, 2));
+        viewStateCollection.Count.ShouldBe(2);
+        eventLogCollection.Count.ShouldBe(2);
+        // Check views and events.
+        viewStateCollection.Last().Version.ShouldBe(2);
+        viewStateCollection.Last().State.Content.First().Value.Greeting.ShouldBe("First event");
+        viewStateCollection.Last().State.Content.Last().Value.Greeting.ShouldBe("Second event");
+        eventLogCollection.Last().Version.ShouldBe(2);
+        eventLogCollection.Last().Event.Greeting.ShouldBe("Second event");
+    }
+
+    private async Task<bool> CheckCount<T>(ICollection<T> collection, int expetedCount)
+    {
+        return collection.Count == expetedCount;
+    }
 }

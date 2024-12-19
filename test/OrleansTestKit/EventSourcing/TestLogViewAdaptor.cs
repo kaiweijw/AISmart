@@ -1,123 +1,206 @@
+using Orleans;
 using Orleans.EventSourcing;
-using Orleans.Storage;
+using Orleans.EventSourcing.Common;
 
-public class TestLogViewAdaptor<TView, TEntry> : ILogViewAdaptor<TView, TEntry>
-    where TView : class, new()
-    where TEntry : class
+public class TestLogViewAdaptor<TLogView, TLogEntry> : 
+    PrimaryBasedLogViewAdaptor<TLogView, TLogEntry, SubmissionEntry<TLogEntry>>
+    where TLogView : class, new()
+    where TLogEntry : class
 {
-    private readonly ILogViewAdaptorHost<TView, TEntry> _hostGrain;
-    private readonly TView _initialState;
-    private readonly IGrainStorage _grainStorage;
-    private readonly string _grainTypeName;
-    private readonly ILogConsistencyProtocolServices _services;
-    private readonly List<TEntry> _logEntries = new List<TEntry>();
-    private TView _tentativeView;
-    private TView _confirmedView;
-    private int _confirmedVersion;
+    private readonly ILogViewAdaptorHost<TLogView, TLogEntry> _host;
+    private readonly TLogView _initialState;
 
-    public TestLogViewAdaptor(ILogViewAdaptorHost<TView, TEntry> hostGrain, TView initialState,
-        IGrainStorage grainStorage, string grainTypeName, ILogConsistencyProtocolServices services)
+    public static readonly ICollection<ViewStateWrapper<TLogView>> ViewStateCollection =
+        new List<ViewStateWrapper<TLogView>>();
+    public static readonly ICollection<MongoDbEventLogWrapper<TLogEntry>> EventLogCollection =
+        new List<MongoDbEventLogWrapper<TLogEntry>>();
+
+    private TLogView _cachedView;
+    private int _version;
+
+    public TestLogViewAdaptor(ILogViewAdaptorHost<TLogView, TLogEntry> host, TLogView initialState,
+        ILogConsistencyProtocolServices services)
+        : base(host, initialState, services)
     {
-        _hostGrain = hostGrain;
+        _host = host;
         _initialState = initialState;
-        _grainStorage = grainStorage;
-        _grainTypeName = grainTypeName;
-        _services = services;
-        _tentativeView = initialState;
-        _confirmedView = initialState;
-        _confirmedVersion = 0;
     }
 
-    public TView TentativeView => _tentativeView;
-    public TView ConfirmedView => _confirmedView;
-    public int ConfirmedVersion => _confirmedVersion;
-    public IEnumerable<TEntry> UnconfirmedSuffix => _logEntries.Skip(_confirmedVersion);
-
-    public void Submit(TEntry entry)
+    protected override void InitializeConfirmedView(TLogView initialstate)
     {
-        _logEntries.Add(entry);
+        _cachedView = _initialState ?? new TLogView();
+        _version = 0;
     }
 
-    public void SubmitRange(IEnumerable<TEntry> entries)
+    protected override TLogView LastConfirmedView()
     {
-        _logEntries.AddRange(entries);
+        return _cachedView!;
     }
 
-    public Task<bool> TryAppend(TEntry entry)
+    protected override int GetConfirmedVersion() => _version;
+
+    protected override bool SupportSubmissions => true;
+
+    protected override async Task ReadAsync()
     {
-        Submit(entry);
-        return Task.FromResult(true);
-    }
-
-    public Task<bool> TryAppendRange(IEnumerable<TEntry> entries)
-    {
-        SubmitRange(entries);
-        return Task.FromResult(true);
-    }
-
-    public Task ConfirmSubmittedEntries()
-    {
-        _confirmedVersion = _logEntries.Count;
-        _confirmedView = _tentativeView;
-        foreach (var logEntry in _logEntries)
-        {
-            PerformSubmit(DateTime.UtcNow, logEntry);
-            //_hostGrain.UpdateView(_confirmedView, logEntry);
-        }
-        return Task.CompletedTask;
-    }
-
-    private const int Unconditional = -1;
-
-    private void PerformSubmit(DateTime time, TEntry logEntry, int conditionalPosition = Unconditional, TaskCompletionSource<bool> resultPromise = null)
-    {
-        // var entry = new SubmissionEntry<TEntry>
-        // {
-        //     Entry = logEntry,
-        //     SubmissionTime = time,
-        //     ResultPromise = resultPromise,
-        //     ConditionalPosition = conditionalPosition
-        // };
-
-        if (_tentativeView != null)
+        while (true)
         {
             try
             {
-                _hostGrain.UpdateView(_tentativeView, logEntry);
+                var result = await GetLatestViewAsync();
+
+                if (result != null)
+                {
+                    _version = result.Version;
+                    _cachedView = result.State;
+                }
+
+                LastPrimaryIssue.Resolve(_host, Services);
+
+                break;
             }
             catch (Exception e)
             {
-                _services.CaughtUserCodeException("UpdateView", nameof(PerformSubmit), e);
+                // unwrap inner exception that was forwarded - helpful for debugging
+                if ((e as ProtocolTransportException)?.InnerException != null)
+                {
+                    e = ((ProtocolTransportException)e).InnerException!;
+                }
+                LastPrimaryIssue.Record(new ReadFromPrimaryFailed { Exception = e }, Host, Services);
             }
-        }
-
-        try
-        {
-            _hostGrain.OnViewChanged(true, false);
-        }
-        catch (Exception e)
-        {
-            _services.CaughtUserCodeException("OnViewChanged", nameof(PerformSubmit), e);
+            
+            await LastPrimaryIssue.DelayBeforeRetry();
         }
     }
 
-    public Task Synchronize()
+    protected override async Task<int> WriteAsync()
     {
-        _tentativeView = _confirmedView;
+        var latestView = await GetLatestViewAsync() ?? new ViewStateWrapper<TLogView>
+        {
+            Version = _version,
+            State = _cachedView
+        };
+
+        var latestVersion = latestView.Version;
+        if (latestVersion != _version)
+        {
+            // Return if version not match.
+            return 0;
+        }
+
+        var updates = GetCurrentBatchOfUpdates();
+        var logsToUpdate = updates
+            .Select(e => e.Entry)
+            .Select(e => new MongoDbEventLogWrapper<TLogEntry>
+            {
+                Version = latestVersion + 1,
+                Event = e
+            }).ToList();
+        
+        // Save logs to database.
+        await SaveEventsAsync(logsToUpdate);
+
+        // Update grain's view.
+        foreach (var eventLog in logsToUpdate)
+        {
+            _version++;
+            _host.UpdateView(_cachedView!, eventLog.Event);
+        }
+
+        // Update the view to database.
+        await SaveViewAsync(new ViewStateWrapper<TLogView>
+        {
+            Version = _version,
+            State = _cachedView!
+        });
+
+        return updates.Length;
+    }
+
+    private Task SaveViewAsync(ViewStateWrapper<TLogView> viewState)
+    {
+        ViewStateCollection.Add(viewState);
         return Task.CompletedTask;
     }
 
-    public void EnableStatsCollection() { }
-    public void DisableStatsCollection() { }
-    public LogConsistencyStatistics GetStats() => new LogConsistencyStatistics();
-
-    public Task PreOnActivate() => Task.CompletedTask;
-    public Task PostOnActivate() => Task.CompletedTask;
-    public Task PostOnDeactivate() => Task.CompletedTask;
-
-    public Task<IReadOnlyList<TEntry>> RetrieveLogSegment(int fromVersion, int toVersion)
+    private Task SaveEventsAsync(IEnumerable<MongoDbEventLogWrapper<TLogEntry>> eventLogs)
     {
-        var segment = _logEntries.Skip(fromVersion).Take(toVersion - fromVersion).ToList();
-        return Task.FromResult<IReadOnlyList<TEntry>>(segment);
+        foreach (var eventLog in eventLogs)
+        {
+            eventLog.Timestamp = DateTime.UtcNow;
+            EventLogCollection.Add(eventLog);
+        }
+        return Task.CompletedTask;
+    }
+    
+    private Task<ViewStateWrapper<TLogView>?> GetLatestViewAsync()
+    {
+        return Task.FromResult(ViewStateCollection
+            .ToList()
+            .OrderByDescending(v => v.Version)
+            .FirstOrDefault());
+    }
+
+    protected override SubmissionEntry<TLogEntry> MakeSubmissionEntry(TLogEntry entry)
+    {
+        return new SubmissionEntry<TLogEntry> { Entry = entry };
+    }
+
+    protected override Task<ILogConsistencyProtocolMessage> OnMessageReceived(ILogConsistencyProtocolMessage payload)
+    {
+        var request = (ReadRequest)payload;
+
+        var response = new ReadResponse<TLogView>() { Version = _version };
+
+        if (_version > request.KnownVersion)
+        {
+            response.Value = _cachedView;
+        }
+
+        return Task.FromResult<ILogConsistencyProtocolMessage>(response);
+    }
+}
+
+[Serializable]
+[GenerateSerializer]
+internal sealed class ReadRequest : ILogConsistencyProtocolMessage
+{
+    [Id(0)] public int KnownVersion { get; set; }
+}
+
+[Serializable]
+[GenerateSerializer]
+internal sealed class ReadResponse<TViewType> : ILogConsistencyProtocolMessage
+{
+    [Id(0)] public int Version { get; set; }
+
+    [Id(1)] public TViewType Value { get; set; }
+}
+
+public class ViewStateWrapper<T>
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    public int Version { get; set; }
+    public T State { get; set; }
+}
+
+public class MongoDbEventLogWrapper<T>
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    public int Version { get; set; }
+    public T Event { get; set; }
+    public DateTime Timestamp { get; set; }
+}
+
+[Serializable]
+[GenerateSerializer]
+public sealed class ReadFromPrimaryFailed : PrimaryOperationFailed
+{
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return $"read from primary failed: caught {Exception.GetType().Name}: {Exception.Message}";
     }
 }
