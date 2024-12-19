@@ -1,6 +1,4 @@
 ﻿using AISmart.Application.Grains;
-using AISmart.Options;
-using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Account;
 using Volo.Abp.AspNetCore.Mvc.Dapr;
 using Volo.Abp.AutoMapper;
@@ -20,7 +18,11 @@ namespace AISmart;
     typeof(AbpDaprModule),
     typeof(AbpAspNetCoreMvcDaprModule),
     typeof(AIApplicationGrainsModule),
-    typeof(AISmartRagModule)
+    typeof(AISmartRagModule),
+    typeof(AIApplicationGrainsModule),
+    typeof(AISmartGAgentAElfModule),
+    typeof(AISmartGAgentTelegramModule),
+    typeof(AISmartGAgentTwitterModule)
 )]
 public class AISmartApplicationModule : AbpModule
 {
