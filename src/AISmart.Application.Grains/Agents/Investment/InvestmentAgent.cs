@@ -7,7 +7,7 @@ namespace AISmart.Application.Grains.Agents.Investment;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>, IInvestmentAgent<InvestmentAgentState>
+public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>, IInvestmentStateAgent<InvestmentAgentState>
 {
     public InvestmentAgent(ILogger<InvestmentAgent> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
@@ -40,9 +40,10 @@ public class InvestmentAgent : GAgent<InvestmentAgentState, ImplementationEvent>
         return Task.CompletedTask;
     }
 
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         GrainTracker.InvestmentAgents.Enqueue(this);
-        return base.OnActivateAsync(cancellationToken);
+        await base.OnActivateAsync(cancellationToken);
+        await SubscribeAsync<ImplementationEvent>(ExecuteAsync);
     }
 }

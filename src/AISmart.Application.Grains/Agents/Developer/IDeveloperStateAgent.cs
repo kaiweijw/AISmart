@@ -5,7 +5,7 @@ using AISmart.Agents.ImplementationAgent.Events;
 
 namespace AISmart.Application.Grains.Agents.Developer;
 
-public interface IDeveloperAgent<TState>: IAgent<TState>
+public interface IDeveloperStateAgent<TState>: IStateAgent<TState>
 {
     
 }

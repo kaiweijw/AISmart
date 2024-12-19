@@ -34,9 +34,10 @@ public class MarketLeaderAgent : GAgent<MarketLeaderAgentState, SocialEvent>
         return Task.CompletedTask;
     }
 
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         GrainTracker.MarketLeaderAgents.Enqueue(this);
-        return base.OnActivateAsync(cancellationToken);
+        await base.OnActivateAsync(cancellationToken);
+        await SubscribeAsync<SocialEvent>(ExecuteAsync);
     }
 }
