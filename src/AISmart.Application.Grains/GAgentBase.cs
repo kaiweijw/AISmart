@@ -16,17 +16,17 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     where TState : class, new()
     where TEvent : GEventBase
 {
-    public IPersistentState<Dictionary<Guid, string>>? Subscribers { get; }
-    private IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
+    public IPersistentState<List<GrainId>>? Subscribers { get; }
+    protected IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
 
     protected readonly ILogger Logger;
 
     // need to use persistent storage to store this
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
-    private readonly List<EventWrapperBaseAsyncObserver> _observers = new();
+    protected readonly List<EventWrapperBaseAsyncObserver> Observers = new();
 
-    protected GAgentBase(ILogger logger, [PersistentState("subscribers")] IPersistentState<Dictionary<Guid, string>>? subscribers = null)
+    protected GAgentBase(ILogger logger, [PersistentState("subscribers")] IPersistentState<List<GrainId>>? subscribers = null)
     {
         Subscribers = subscribers;
         Logger = logger;
@@ -70,7 +70,12 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        return Task.FromResult(_publishers.TryAdd(agentGuid, stream));
+        return Task.FromResult(TryAddPublisher(agentGuid, stream));
+    }
+
+    protected bool TryAddPublisher(Guid agentGuid, IAsyncStream<EventWrapperBase> stream)
+    {
+        return _publishers.TryAdd(agentGuid, stream);
     }
 
     public Task<bool> UnpublishFrom(IGAgent agent)
@@ -98,7 +103,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
         if (Subscribers != null)
         {
-            Subscribers?.State.Add(guid, agent.GetType().Namespace!);
+            Subscribers?.State.Add(agent.GetGrainId());
             await Subscribers?.WriteStateAsync()!;
         }
 
@@ -138,7 +143,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 GAgentType = GetType()
             };
         }
-        var gAgentList = Subscribers.State.Select(keyPair => GrainFactory.GetGrain<IGAgent>(keyPair.Key, keyPair.Value)).ToList();
+        var gAgentList = Subscribers.State.Select(grainId => GrainFactory.GetGrain<IGAgent>(grainId)).ToList();
 
         if (gAgentList.Any(grain => grain == null))
         {
@@ -279,7 +284,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     private async Task SubscribeAsync(IAsyncStream<EventWrapperBase> stream)
     {
-        foreach (var observer in _observers)
+        foreach (var observer in Observers)
         {
             await stream.SubscribeAsync(observer);
         }
@@ -334,7 +339,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
                 }
             });
 
-            _observers.Add(observer);
+            Observers.Add(observer);
         }
 
         return Task.CompletedTask;

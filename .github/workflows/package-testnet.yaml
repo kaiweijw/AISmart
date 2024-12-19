@@ -1,12 +1,18 @@
-name: Package Dev
+name: Package Testnet
 
 on:
   push:
     branches:
       - "release/*"
 
+run-name: Deploy AiSmart on ${{ github.ref }} to Testnet from ${{ github.sha }})
+
 env:
   DOTNET_INSTALL_DIR: "./.dotnet"
+
+concurrency:
+  group: workflow-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   publish:
@@ -23,6 +29,19 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0"
+      - name: Cache NuGet Packages
+        id: nuget-packages
+        uses: actions/cache@v4
+        env:
+          cache-name: nuget-package-cache
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-${{ env.cache-name }}
+
+      - name: List NuGet Packages
+        if: ${{ steps.nuget-packages.outputs.cache-hit == 'true' }}
+        continue-on-error: true
+        run: ls -lh ~/.nuget/packages
       - run: dotnet publish src/${{ matrix.servicename }}/${{ matrix.servicename }}.csproj -o out/${{ matrix.servicename }}
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
