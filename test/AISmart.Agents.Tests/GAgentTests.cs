@@ -92,7 +92,7 @@ public class GAgentTests : GAgentTestKitBase
             MessageId = "11",
             ChatId = "12",
             Message = "Test",
-            NeedReplyBotName = "Test"
+            BotName = "Test"
         });
     }
     
@@ -112,7 +112,7 @@ public class GAgentTests : GAgentTestKitBase
         {
             ChatId = "12",
             Message = "bot message",
-            SenderBotName ="Test",
+            BotName ="Test",
             ReplyMessageId = "11"
         });
     }
