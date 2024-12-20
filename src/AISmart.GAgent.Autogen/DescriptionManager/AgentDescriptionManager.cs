@@ -2,34 +2,25 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text;
-using AISmart.Agents;
-using Volo.Abp.DependencyInjection;
 using AISmart.GAgent.Autogen.Exceptions;
 using AutoGen.Core;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using ILogger = Castle.Core.Logging.ILogger;
 
-namespace AISmart.GAgent.Autogen.Common;
+namespace AISmart.GAgent.Autogen.DescriptionManager;
 
-public class AgentDescriptionManager : ISingletonDependency
+public class AgentDescriptionManager : Grain<AgentDescriptionManagerState>, IAgentDescriptionManager
 {
-    private readonly Dictionary<string, AgentDescriptionInfo> _agentDescription =
-        new Dictionary<string, AgentDescriptionInfo>();
-
-    private string _autoGenAgentEventDescription = string.Empty;
     private readonly ILogger<AgentDescriptionManager> _logger;
 
     public AgentDescriptionManager(ILogger<AgentDescriptionManager> logger)
     {
         _logger = logger;
-        // _agentDescription = GetAllAgentDescription();
-        // _autoGenAgentEventDescription = AssembleAllAgentDescription();
     }
 
-    public void AddAgentEvents(Type agentType, List<Type> eventTypes)
+    public async Task AddAgentEventsAsync(Type agentType, List<Type> eventTypes)
     {
-        if (_agentDescription.TryGetValue(agentType.Name, out var agentDescription) == false)
+        if (State.AgentDescription.TryGetValue(agentType.Name, out var agentDescription) == false)
         {
             agentDescription = new AgentDescriptionInfo();
             agentDescription.AgentName = agentType.Name;
@@ -42,7 +33,7 @@ public class AgentDescriptionManager : ISingletonDependency
 
             agentDescription.AgentDescription = description.Description;
 
-            _agentDescription.Add(agentType.Name, agentDescription);
+            State.AgentDescription.Add(agentType.Name, agentDescription);
         }
 
         foreach (var eventType in eventTypes)
@@ -52,20 +43,23 @@ public class AgentDescriptionManager : ISingletonDependency
             {
                 continue;
             }
+
             agentDescription.EventList.Add(eventDescription);
         }
 
-        _autoGenAgentEventDescription = AssembleAllAgentDescription();
+        State.AutoGenAgentEventDescription = AssembleAllAgentDescription();
+
+        await WriteStateAsync();
     }
 
-    public ReadOnlyDictionary<string, AgentDescriptionInfo> GetAgentDescription()
+    public async Task<ReadOnlyDictionary<string, AgentDescriptionInfo>> GetAgentDescription()
     {
-        return new ReadOnlyDictionary<string, AgentDescriptionInfo>(_agentDescription);
+        return new ReadOnlyDictionary<string, AgentDescriptionInfo>(State.AgentDescription);
     }
 
-    public string GetAutoGenEventDescription()
+    public Task<string> GetAutoGenEventDescriptionAsync()
     {
-        return _autoGenAgentEventDescription;
+        return Task.FromResult(State.AutoGenAgentEventDescription);
     }
 
     private AgentEventDescription? GetEventDescription(string agentName, Type eventType)
@@ -228,7 +222,7 @@ public class AgentDescriptionManager : ISingletonDependency
 
     private string AssembleAllAgentDescription()
     {
-        var availableAgent = _agentDescription.Values.Where(s => s.EventList.Count > 0).ToList();
+        var availableAgent = State.AgentDescription.Values.Where(s => s.EventList.Count > 0).ToList();
         if (availableAgent.Count > 0)
         {
             var agentsDescription = JsonConvert.SerializeObject(availableAgent);

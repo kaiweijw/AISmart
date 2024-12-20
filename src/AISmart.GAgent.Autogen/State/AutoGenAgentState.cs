@@ -45,6 +45,16 @@ public class AutoGenAgentState
         return null;
     }
 
+    public AutoGenAgentStateInfo? GetStateInfoByTaskId(Guid taskId)
+    {
+        if (AutoGenStateDic.TryGetValue(taskId, out var stateInfo))
+        {
+            return stateInfo;
+        }
+
+        return null;
+    }
+
     public bool CheckIsRunning(Guid taskId)
     {
         if (TaskToEventDic.TryGetValue(taskId, out var taskInfo))
