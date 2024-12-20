@@ -56,7 +56,7 @@ public class MicroAIGAgent : GAgentBase<MicroAIGAgentState, AIMessageGEvent>, IM
             aiResponseEvent.Content = message.Content;
             await PublishAsync(new SendMessageEvent
             {
-                Message = message.Content
+                Message = State.AgentName + ": " +message.Content
             });
         }
         RaiseEvents(list);
