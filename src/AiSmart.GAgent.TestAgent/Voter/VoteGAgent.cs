@@ -40,6 +40,7 @@ public class VoteGAgent : MicroAIGAgent<VoterGEvent, VoteGEventResponse>, IVoter
                 Message = message
             });
 
+            aiResponseEvent.Content = message.Content;
             await PublishAsync(new ConclusionGEvent
             {
                 Message = State.AgentName + ": " + message.Content

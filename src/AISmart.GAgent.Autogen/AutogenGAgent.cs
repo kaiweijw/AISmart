@@ -104,8 +104,9 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
             var agentName = eventInfo.AgentName;
             var eventName = eventInfo.EventName;
             var content = JsonConvert.SerializeObject(eventWrapper.Event);
+            
             var reply =
-                $"The {eventName} of {agentName} has been processed, the response of {eventName} is: {content}. The input for the next request may depend on the JSON data in the response.";
+                $"The {eventName} of {agentName} has been processed, the response of {eventName} is: {content}. You must understand the content of the response in JSON format。The input for the next request may depend on the JSON data in the response.";
 
             var taskInfo = State.GetStateInfoByEventId(eventId);
             if (taskInfo == null)
