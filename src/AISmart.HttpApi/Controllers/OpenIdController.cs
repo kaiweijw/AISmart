@@ -1,17 +1,9 @@
-using System.IO;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using AISmart.Authors;
-using AISmart.Dapr;
-using AISmart.Dto;
-using AISmart.Provider;
-using AISmart.Service;
-using AISmart.Telegram;
 using Asp.Versioning;
-using Dapr;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Volo.Abp;
 
 namespace AISmart.Controllers;
@@ -19,8 +11,7 @@ namespace AISmart.Controllers;
 [RemoteService]
 [Area("app")]
 [ControllerName("OpenId")]
-[Route("api/")]
-
+[Route("api")]
 // [Authorize(CommonConstants.OpenID)]
 public class OpenIdController: AISmartController
 {
@@ -30,11 +21,13 @@ public class OpenIdController: AISmartController
     {
         _logger = logger;
     }
+    [HttpGet]
     [Route("get-one-message")]
     [Authorize]
     public Task<string> GetOneMessage()
     {
-        _logger.LogInformation(User.Identity.Name);
+        Debug.Assert(User != null, nameof(User) + " != null");
+        _logger.LogInformation("{userIdentityName} is calling GetOneMessage method ",User.Identity?.Name);
         return Task.FromResult("this openId result");
     }
 }

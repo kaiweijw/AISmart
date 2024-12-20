@@ -1,8 +1,8 @@
 ﻿using AISmart;
 
-namespace Volo.Abp.OpenIddict;
+namespace AISmart.Domain.OpenIddict.Test;
 
-public abstract class OpenIddictDomainTestBase : AISmartTestBase<OpenIddictDomainTestModule>
+public abstract class OpenIddictDomainTestBase : AISmartTestBase<OpenIddictTestBaseModule>
 {
 
 }

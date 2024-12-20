@@ -55,7 +55,7 @@ public class AISmartHttpApiHostModule : AIApplicationGrainsModule, IDomainGrains
         {
             builder.AddValidation(options =>
             {
-                options.AddAudiences("AISmart");
+                options.AddAudiences("AISmartAuthServer");
                 options.UseLocalServer();
                 options.UseAspNetCore();
             });
@@ -226,6 +226,7 @@ public class AISmartHttpApiHostModule : AIApplicationGrainsModule, IDomainGrains
         app.UseRouting();
         app.UseCors();
         app.UseAuthentication();
+        app.UseAuthorization();
         app.UseAbpOpenIddictValidation();
 
         app.UseUnitOfWork();

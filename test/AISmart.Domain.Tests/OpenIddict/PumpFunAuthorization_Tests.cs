@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using AISmart.Domain.OpenIddict.Test;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -132,10 +133,6 @@ public class PumpFunAuthorization_Tests : OpenIddictDomainTestBase
         var applicationId = await _authorizationManager.GetApplicationIdAsync(authorizationCreated);
         applicationId.ShouldBe(_testData.PumpFunId.ToString());
         
-        // authorization.Status.ShouldBe(OpenIddictConstants.Statuses.Valid);
-        // authorization.subject.ShouldBe("Pump.Fun.");
-        // authorization.ApplicationId.ShouldBe(_testData.App1Id);
-        // authorization.Type.ShouldBe(OpenIddictConstants.AuthorizationTypes.Permanent);
     }
 
     private async Task<OpenIddictApplicationModel> GetOpenIddictApplicationModelAsync(Guid id,

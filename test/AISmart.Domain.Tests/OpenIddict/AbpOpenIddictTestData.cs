@@ -1,7 +1,7 @@
 ﻿using System;
 using Volo.Abp.DependencyInjection;
 
-namespace Volo.Abp.OpenIddict;
+namespace AISmart.Domain.OpenIddict.Test;
 
 public class AbpOpenIddictTestData : ISingletonDependency
 {

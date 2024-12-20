@@ -7,13 +7,14 @@ using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
+using Volo.Abp.OpenIddict;
 using Volo.Abp.OpenIddict.Applications;
 using Volo.Abp.OpenIddict.Authorizations;
 using Volo.Abp.OpenIddict.Scopes;
 using Volo.Abp.OpenIddict.Tokens;
 using Volo.Abp.Timing;
 
-namespace Volo.Abp.OpenIddict;
+namespace AISmart.Domain.OpenIddict.Test;
 
 public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDependency
 {

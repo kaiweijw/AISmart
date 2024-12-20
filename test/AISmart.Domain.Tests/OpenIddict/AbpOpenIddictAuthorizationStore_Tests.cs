@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
 using Shouldly;
+using Volo.Abp.OpenIddict.Authorizations;
 using Xunit;
 
-namespace Volo.Abp.OpenIddict.Authorizations;
+namespace AISmart.Domain.OpenIddict.Test;
+
 
 public class AbpOpenIddictAuthorizationStore_Tests : OpenIddictDomainTestBase
 {

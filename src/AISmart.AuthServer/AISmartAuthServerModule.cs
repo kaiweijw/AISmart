@@ -27,7 +27,6 @@ using Volo.Abp.OpenIddict.ExtensionGrantTypes;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.UI.Navigation.Urls;
-using Volo.Abp.VirtualFileSystem;
 
 namespace AISmart.AuthServer;
 
@@ -38,22 +37,14 @@ namespace AISmart.AuthServer;
     typeof(AbpAccountHttpApiModule),
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
     typeof(AbpAspNetCoreSerilogModule),
-    // typeof(AOPExceptionModule),
     typeof(AbpIdentityApplicationModule),
     typeof(AbpPermissionManagementApplicationModule),
     typeof(AbpOpenIddictEntityFrameworkCoreModule),
     typeof(AbpIdentityEntityFrameworkCoreModule),
-    // typeof(AbpIdentityEntityFrameworkCoreModulereModuleSqliteModule),
     typeof(AbpPermissionManagementEntityFrameworkCoreModule),
     typeof(AbpAuthorizationModule),
     typeof(AbpOpenIddictDomainModule),
-    // typeof(AISmartDomainSharedModule),
     typeof(AISmartMongoDbModule)
-
-    // typeof(AbpTenantManagementApplicationModule),
-    // typeof(AbpFeatureManagementApplicationModule),
-    // typeof(AbpSettingManagementApplicationModule),
-    // typeof(NFTMarketServerGrainsModule),
     )]
 public class AISmartAuthServerModule : AbpModule
 {
@@ -65,7 +56,7 @@ public class AISmartAuthServerModule : AbpModule
             builder.AddServer(options =>
             {
                 options.UseAspNetCore().DisableTransportSecurityRequirement();
-                options.SetIssuer(new Uri(configuration["AuthServer:IssuerUri"]));
+                options.SetIssuer(new Uri(configuration["AuthServer:IssuerUri"]!));
                 // options.IgnoreGrantTypePermissions();
                 int.TryParse(configuration["ExpirationHour"], out int expirationHour);
                 if (expirationHour > 0)
@@ -90,18 +81,12 @@ public class AISmartAuthServerModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
         
-        // context.Services.Configure<GraphQLOption>(configuration.GetSection("GraphQL"));
-        // context.Services.Configure<ChainOptions>(configuration.GetSection("Chains"));
         context.Services.Configure<TimeRangeOption>(option =>
         {
             option.TimeRange = Convert.ToInt32(configuration["TimeRange"]);
         });
-        
-        // ConfigureOrleans(context, configuration);
-        // context.Services.AddSingleton<IUserInformationProvider, UserInformationProvider>();
 
         Configure<AbpOpenIddictExtensionGrantsOptions>(options =>
         {
@@ -155,15 +140,6 @@ public class AISmartAuthServerModule : AbpModule
                 options.IsEnabled = false;//Disables the auditing system
         });
 
-        if (hostingEnvironment.IsDevelopment())
-        {
-            Configure<AbpVirtualFileSystemOptions>(options =>
-            {
-                // options.FileSets.ReplaceEmbeddedByPhysical<AISmartAuthServerDomainSharedModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}AISmartAuthServer.Domain.Shared"));
-                // options.FileSets.ReplaceEmbeddedByPhysical<AISmartAuthServerDomainModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}AISmartAuthServer.Domain"));
-            });
-        }
-
         Configure<AppUrlOptions>(options =>
         {
             options.Applications["MVC"].RootUrl = configuration["App:SelfUrl"];
@@ -184,18 +160,6 @@ public class AISmartAuthServerModule : AbpModule
         });
 
         var dataProtectionBuilder = context.Services.AddDataProtection().SetApplicationName("AISmartAuthServer");
-        if (!hostingEnvironment.IsDevelopment())
-        {
-            // var redis = ConnectionMultiplexer.Connect(configuration["Redis:Configuration"]);
-            // dataProtectionBuilder.PersistKeysToStackExchangeRedis(redis, "AISmartAuthServer-Protection-Keys");
-        }
-        
-        // context.Services.AddSingleton<IDistributedLockProvider>(sp =>
-        // {
-        //     var connection = ConnectionMultiplexer
-        //         .Connect(configuration["Redis:Configuration"]);
-        //     return new RedisDistributedSynchronizationProvider(connection.GetDatabase());
-        // });
 
         context.Services.AddCors(options =>
         {
@@ -216,36 +180,6 @@ public class AISmartAuthServerModule : AbpModule
             });
         });
     }
-    
-    private static void ConfigureOrleans(ServiceConfigurationContext context, IConfiguration configuration)
-    {
-        // context.Services.AddSingleton<IClusterClient>(o =>
-        // {
-        //     return new ClientBuilder()
-        //         .ConfigureDefaults()
-        //         .UseMongoDBClient(configuration["Orleans:MongoDBClient"])
-        //         .UseMongoDBClustering(options =>
-        //         {
-        //             options.DatabaseName = configuration["Orleans:DataBase"];;
-        //             options.Strategy = MongoDBMembershipStrategy.SingleDocument;
-        //         })
-        //         .Configure<ClusterOptions>(options =>
-        //         {
-        //             options.ClusterId = configuration["Orleans:ClusterId"];
-        //             options.ServiceId = configuration["Orleans:ServiceId"];
-        //         })
-        //         .ConfigureApplicationParts(parts =>
-        //             parts.AddApplicationPart(typeof(AISmartAuthServerGrainsModule).Assembly).WithReferences())
-        //         .ConfigureLogging(builder => builder.AddProvider(o.GetService<ILoggerProvider>()))
-        //         .Build();
-        // });
-    }
-    
-    /*public override void OnPreApplicationInitialization(ApplicationInitializationContext context)
-    {
-        var client = context.ServiceProvider.GetRequiredService<IClusterClient>();
-        AsyncHelper.RunSync(async ()=> await client.Connect());
-    }*/
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
@@ -273,18 +207,11 @@ public class AISmartAuthServerModule : AbpModule
         app.UseAbpOpenIddictValidation();
 
         app.UseMultiTenancy();
-
-
+        
         app.UseUnitOfWork();
         app.UseAuthorization();
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();
     }
-    
-    /*public override void OnApplicationShutdown(ApplicationShutdownContext context)
-    {
-        var client = context.ServiceProvider.GetRequiredService<IClusterClient>();
-        AsyncHelper.RunSync(client.Close);
-    }*/
 }

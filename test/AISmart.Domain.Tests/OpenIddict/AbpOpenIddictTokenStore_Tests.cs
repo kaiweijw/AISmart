@@ -2,12 +2,15 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AISmart.Domain.OpenIddict.Test;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
 using Shouldly;
+using Volo.Abp.OpenIddict;
+using Volo.Abp.OpenIddict.Tokens;
 using Xunit;
 
-namespace Volo.Abp.OpenIddict.Tokens;
+namespace AISmart.Domain.OpenIddict.Test;
 
 public class AbpOpenIddictTokenStore_Tests : OpenIddictDomainTestBase
 {
