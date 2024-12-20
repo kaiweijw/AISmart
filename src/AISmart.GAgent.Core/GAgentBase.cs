@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using AISmart.Agents;
 using AISmart.Dapr;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
 using Orleans.Providers;
@@ -26,10 +27,10 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     protected readonly List<EventWrapperBaseAsyncObserver> Observers = new();
 
-    protected GAgentBase(ILogger logger, IGrainStorage grainStorage = null)
+    protected GAgentBase(ILogger logger)
     {
         Logger = logger;
-        GrainStorage = grainStorage;
+        GrainStorage = ServiceProvider.GetRequiredService<IGrainStorage>();
     }
 
     public Task ActivateAsync()

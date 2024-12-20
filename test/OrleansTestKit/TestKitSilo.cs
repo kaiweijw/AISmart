@@ -18,6 +18,7 @@ using Orleans.Serialization;
 using Orleans.Serialization.Cloning;
 using Orleans.Serialization.Configuration;
 using Orleans.Serialization.Serializers;
+using Orleans.Storage;
 using Orleans.TestKit.Reminders;
 using Orleans.TestKit.Services;
 using Orleans.TestKit.Storage;
@@ -81,7 +82,7 @@ public sealed class TestKitSilo
         var manager = new AgentDescriptionManager();
         ServiceProvider.AddService(manager);
         ServiceProvider.AddService(new AutoGenExecutor(NullLogger<AutoGenExecutor>.Instance, GrainFactory, manager, new TestChatAgentProvider()));
-
+        ServiceProvider.AddService<IGrainStorage>(TestGrainStorage);
         var provider = new ServiceCollection()
             .AddSingleton<GrainTypeResolver>()
             .AddSingleton<IGrainTypeProvider, AttributeGrainTypeProvider>()

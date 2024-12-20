@@ -12,7 +12,7 @@ namespace AISmart.Application.Grains.Agents.Group;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
 {
-    public GroupGAgent(ILogger<GroupGAgent> logger, IGrainStorage grainStorage) : base(logger, grainStorage)
+    public GroupGAgent(ILogger<GroupGAgent> logger) : base(logger)
     {
     }
 

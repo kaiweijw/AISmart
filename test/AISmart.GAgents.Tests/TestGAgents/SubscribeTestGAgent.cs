@@ -16,7 +16,7 @@ public class SubscribeTestGEvent : GEventBase;
 [GAgent]
 public class SubscribeTestGAgent : GAgentBase<SubscribeTestGAgentState, SubscribeTestGEvent>
 {
-    public SubscribeTestGAgent(ILogger logger, IGrainStorage grainStorage) : base(logger, grainStorage)
+    public SubscribeTestGAgent(ILogger logger) : base(logger)
     {
     }
 

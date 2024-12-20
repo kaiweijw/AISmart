@@ -17,7 +17,7 @@ public class BadEventHandlerTestGEvent : GEventBase;
 [GAgent]
 public class BadEventHandlerTestGAgent : GAgentBase<EventHandlerTestGAgentState, EventHandlerTestGEvent>
 {
-    public BadEventHandlerTestGAgent(ILogger logger, IGrainStorage grainStorage) : base(logger, grainStorage)
+    public BadEventHandlerTestGAgent(ILogger logger) : base(logger)
     {
     }
 

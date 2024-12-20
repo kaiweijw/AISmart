@@ -1,6 +1,7 @@
 using AISmart.Agents;
 using AISmart.GAgent.Core;
 using AISmart.GAgents.Tests.TestEvents;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AISmart.GAgents.Tests.TestGAgents;
@@ -9,9 +10,8 @@ namespace AISmart.GAgents.Tests.TestGAgents;
 public class LogViewAdaptorTestGAgent
     : GAgentBase<LogViewAdaptorTestGState, LogViewAdaptorTestGEvent>
 {
-    public LogViewAdaptorTestGAgent() : base(NullLogger.Instance, null)
+    public LogViewAdaptorTestGAgent(ILogger logger) : base(logger)
     {
-        
     }
 
     public override Task<string> GetDescriptionAsync()

@@ -19,7 +19,7 @@ public class
     EventHandlerWithResponseTestGAgent : GAgentBase<EventHandlerWithResponseTestGAgentState,
     EventHandlerWithResponseTestGEvent>
 {
-    public EventHandlerWithResponseTestGAgent(ILogger logger, IGrainStorage grainStorage) : base(logger, grainStorage)
+    public EventHandlerWithResponseTestGAgent(ILogger logger) : base(logger)
     {
     }
 
