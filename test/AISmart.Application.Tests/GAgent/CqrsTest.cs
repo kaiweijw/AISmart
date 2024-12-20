@@ -61,7 +61,7 @@ public class CqrsTests : AISmartApplicationTestBase
         services.AddMediatR(typeof(SendEventCommandHandler).Assembly);
        // services.AddSingleton<IGrainFactory>();
         services.AddSingleton<ICQRSProvider,CQRSProvider>();
-
+        services.AddSingleton<IGrainFactory>(_clusterClient);
         var serviceProvider = services.BuildServiceProvider();
         _cqrsProvider = serviceProvider.GetRequiredService<ICQRSProvider>();
        // _handler = new SendEventCommandHandler(_clusterClientMock.Object);
