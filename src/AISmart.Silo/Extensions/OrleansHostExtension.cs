@@ -79,7 +79,12 @@ public static class OrleansHostExtension
                             configSection.GetValue<int>("DashboardCounterUpdateIntervalMs");
                     })
                     .AddLogStorageBasedLogConsistencyProvider()
-                    .AddMemoryGrainStorage("PubSubStore")
+                    .AddMongoDBGrainStorage("PubSubStore", options =>
+                    {
+                        // Config PubSubStore Storage for Persistent Stream 
+                        options.CollectionPrefix = "StreamStorage";
+                        options.DatabaseName = configSection.GetValue<string>("DataBase");
+                    })
                     .ConfigureLogging(logging => { logging.SetMinimumLevel(LogLevel.Debug).AddConsole(); });
                 var useKafka = configuration.GetSection("Kafka:IsOpen").Get<bool>();
                 if (useKafka)
