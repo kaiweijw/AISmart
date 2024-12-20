@@ -103,7 +103,7 @@ public class GAgentBaseTests : GAgentTestKitBase
         InMemoryLogConsistentStorage.Storage.First().Value.Count.ShouldBe(1);
 
         await Silo.DeactivateAsync(logViewGAgent);
-        //logViewGAgent = await Silo.CreateGrainAsync<LogViewAdaptorTestGAgent>(Guid.NewGuid());
+        logViewGAgent = await Silo.CreateGrainAsync<LogViewAdaptorTestGAgent>(Guid.NewGuid());
 
         await publishingGAgent.PublishEventAsync(new NaiveTestEvent
         {
@@ -116,7 +116,7 @@ public class GAgentBaseTests : GAgentTestKitBase
         InMemoryLogConsistentStorage.Storage.First().Value.Count.ShouldBe(2);
 
         var logViewGAgentState = await logViewGAgent.GetStateAsync();
-        //logViewGAgentState.Content.Count.ShouldBe(2);
+        logViewGAgentState.Content.Count.ShouldBe(2);
     }
 
     private async Task<bool> CheckCount(int expectedCount)

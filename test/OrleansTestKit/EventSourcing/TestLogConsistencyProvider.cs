@@ -20,7 +20,7 @@ public class TestLogConsistencyProvider : ILogViewAdaptorFactory
         string grainTypeName, IGrainStorage grainStorage, ILogConsistencyProtocolServices services)
         where TLogView : class, new() where TLogEntry : class
     {
-        return new LogViewAdaptor<TLogView, TLogEntry>(hostGrain, initialState, grainStorage, grainTypeName,
+        return new LogViewAdaptor<TLogView, TLogEntry>(hostGrain, initialState, null, grainTypeName,
             new TestLogConsistencyProtocolServices(), _logConsistentStorage, null);
     }
 

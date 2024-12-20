@@ -1,8 +1,8 @@
 ﻿using System.Collections.Immutable;
+using AISmart.Agents;
 using AISmart.EventSourcing.Core.Exceptions;
 using AISmart.EventSourcing.Core.Snapshot;
 using Microsoft.Extensions.Logging;
-using Orleans;
 using Orleans.EventSourcing;
 using Orleans.EventSourcing.Common;
 using Orleans.Serialization;
@@ -16,7 +16,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
     where TLogEntry : class
 {
     private readonly ILogViewAdaptorHost<TLogView, TLogEntry> _host;
-    private readonly IGrainStorage _grainStorage;
+    private readonly IGrainStorage? _grainStorage;
     private readonly string _grainTypeName;
     private readonly ILogConsistentStorage _logConsistentStorage;
     private readonly DeepCopier? _deepCopier;
@@ -27,7 +27,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
     private ViewStateSnapshot<TLogView> _globalSnapshot;
 
     public LogViewAdaptor(ILogViewAdaptorHost<TLogView, TLogEntry> host, TLogView initialState,
-        IGrainStorage grainStorage, string grainTypeName, ILogConsistencyProtocolServices services,
+        IGrainStorage? grainStorage, string grainTypeName, ILogConsistencyProtocolServices services,
         ILogConsistentStorage logConsistentStorage, DeepCopier? deepCopier)
         : base(host, initialState, services)
     {
@@ -70,7 +70,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
             try
             {
                 var snapshot = new ViewStateSnapshot<TLogView>();
-                await _grainStorage.ReadStateAsync(_grainTypeName, Services.GrainId, snapshot);
+                await ReadStateAsync(snapshot);
                 _globalSnapshot = snapshot;
                 Services.Log(LogLevel.Debug, "read success {0}", _globalSnapshot);
                 if (_confirmedVersion < _globalSnapshot.State.SnapshotVersion)
@@ -133,7 +133,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
             {
                 _globalSnapshot.State.Snapshot = MaybeDeepCopy(_confirmedView);
                 _globalSnapshot.State.SnapshotVersion = _confirmedVersion;
-                await _grainStorage.WriteStateAsync(_grainTypeName, Services.GrainId, _globalSnapshot);
+                await WriteStateAsync();
                 batchSuccessfullyWritten = true;
                 Services.Log(LogLevel.Debug, "write ({0} updates) success {1}", updates.Length, _globalSnapshot);
                 LastPrimaryIssue.Resolve(Host, Services);
@@ -153,7 +153,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
                 try
                 {
                     var snapshot = new ViewStateSnapshot<TLogView>();
-                    await _grainStorage.ReadStateAsync(_grainTypeName, Services.GrainId, snapshot);
+                    await ReadStateAsync(snapshot);
                     _globalSnapshot = snapshot;
                     Services.Log(LogLevel.Debug, "read success {0}", _globalSnapshot);
                     if (_confirmedVersion < _globalSnapshot.State.SnapshotVersion)
@@ -222,7 +222,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
     {
         var request = (ReadRequest)payload;
 
-        var response = new ReadResponse<TLogView>() { Version = _confirmedVersion };
+        var response = new ReadResponse<TLogView> { Version = _confirmedVersion };
 
         if (_confirmedVersion > request.KnownVersion)
         {
@@ -235,6 +235,35 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
     private TLogView MaybeDeepCopy(TLogView state)
     {
         return _deepCopier == null ? state : _deepCopier.Copy(state);
+    }
+
+    private async Task ReadStateAsync(ViewStateSnapshot<TLogView> snapshot)
+    {
+        if (_grainStorage != null)
+        {
+            await _grainStorage.ReadStateAsync(_grainTypeName, Services.GrainId, snapshot);
+        }
+        else
+        {
+            var grainState = await ((IStateGAgent<TLogView>)_host).GetStateAsync();
+            snapshot.State = new ViewStateSnapshotWithMetadata<TLogView>
+            {
+                Snapshot = grainState
+            };
+        }
+    }
+
+    private async Task WriteStateAsync()
+    {
+        if (_grainStorage != null)
+        {
+            await _grainStorage.WriteStateAsync(_grainTypeName, Services.GrainId, _globalSnapshot);
+        }
+        else
+        {
+            var entries = await RetrieveLogSegment(0, _confirmedVersion);
+            UpdateConfirmedView(entries);
+        }
     }
 }
 

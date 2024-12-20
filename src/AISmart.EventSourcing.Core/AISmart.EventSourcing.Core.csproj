@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AISmart.Application.Contracts\AISmart.Application.Contracts.csproj" />
       <ProjectReference Include="..\AISmart.Core\AISmart.Core.csproj" />
     </ItemGroup>
 

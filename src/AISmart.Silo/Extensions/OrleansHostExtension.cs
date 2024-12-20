@@ -1,5 +1,6 @@
 using System.Net;
 using AISmart.EventSourcing.MongoDB;
+using AISmart.EventSourcing.MongoDB.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

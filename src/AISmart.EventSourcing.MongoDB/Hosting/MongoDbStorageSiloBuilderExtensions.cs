@@ -8,7 +8,7 @@ using MongoDB.Driver;
 using Orleans.Configuration;
 using Orleans.EventSourcing;
 
-namespace AISmart.EventSourcing.MongoDB;
+namespace AISmart.EventSourcing.MongoDB.Hosting;
 
 public static class MongoDbStorageSiloBuilderExtensions
 {
@@ -22,7 +22,7 @@ public static class MongoDbStorageSiloBuilderExtensions
         return builder;
     }
     
-    internal static void AddMongoDbStorageBasedLogConsistencyProvider(this IServiceCollection services, string name)
+    public static void AddMongoDbStorageBasedLogConsistencyProvider(this IServiceCollection services, string name)
     {
         services.AddSingleton<ILogConsistencyProtocolServices, DefaultProtocolServices>();
         services.AddSingleton<MongoDbStorageOptions>();
