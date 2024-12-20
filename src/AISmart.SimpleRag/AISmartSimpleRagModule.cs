@@ -1,12 +1,10 @@
-using AISmart.Options;
-using Microsoft.Extensions.DependencyInjection;
-using Volo.Abp.AutoMapper;
+using AISmart.Rag.Contracts;
 using Volo.Abp.Modularity;
 
 namespace AISmart;
 
 [DependsOn(
-    typeof(AISmartApplicationContractsModule)
+    typeof(AISmartRagContractsModule)
 )]
 public class AISmartSimpleRagModule : AbpModule
 {
