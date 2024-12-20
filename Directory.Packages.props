@@ -121,5 +121,6 @@
     <PackageVersion Include="OrleansDashboard" Version="$(OrleansVerion)" />
     <PackageVersion Include="AutoResponseWrapper" Version="1.1.3" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3"/>
+    <PackageVersion Include="Orleans.Streams.Kafka" Version="8.0.2" />
   </ItemGroup>
 </Project>
