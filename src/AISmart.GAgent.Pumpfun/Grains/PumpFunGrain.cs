@@ -12,17 +12,18 @@ namespace AISmart.Agent.Grains;
 [StorageProvider(ProviderName = "PubSubStore")]
 public class PumpFunGrain : Grain<PumpFunState>, IPumFunGrain
 {
-    public readonly IPumpFunProvider _pumpFunProvider;
+    public readonly IPumpFunProvider PumpFunProvider;
+    
     public PumpFunGrain(IPumpFunProvider pumpFunProvider) 
     {
-        _pumpFunProvider = pumpFunProvider;
+        PumpFunProvider = pumpFunProvider;
     }
 
     public async Task SendMessageAsync(string replyId, string? replyMessage)
     {
         if (replyMessage != null)
         {
-            await _pumpFunProvider.SendMessageAsync(replyId, replyMessage);
+            await PumpFunProvider.SendMessageAsync(replyId, replyMessage);
         }
     }
 }

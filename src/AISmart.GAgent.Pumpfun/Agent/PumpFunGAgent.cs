@@ -47,11 +47,11 @@ public class PumpFunGAgent : GAgentBase<PumpFunGAgentState, PumpFunMessageGEvent
            EventId = Guid.NewGuid(),
            // TODO:jim ReplyId&&Jeffery
            Content = $"""
-             Received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}, The fields will be used in the final response expect "ReuestMessage".
+             Received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}, The fields will be used in the final response except "RequestMessage".
              Please follow the process below.
-             1. parse the message content,the fields in the JSON may be used in the final response..
-             2. Please understand the content of the "Message" in the JSON format, process the response accordingly.
-             3. Must pass the final result to the PumpFunSendMessageEvent method of the PumpFunGAgent.
+             1. parse the message content, the fields in the JSON may be used in the final response..
+             2. Please understand the content of the "RequestMessage" in the JSON format, process the response accordingly.
+             3. Must pass the final result to the PumpFunSendMessageEvent of the PumpFunGAgent.
              """
        });
     }
@@ -69,7 +69,6 @@ public class PumpFunGAgent : GAgentBase<PumpFunGAgentState, PumpFunMessageGEvent
             });
             await ConfirmEvents();
 
-            // TODO:jim Guid.Parse(@event.ReplyId)
             await GrainFactory.GetGrain<IPumFunGrain>(Guid.NewGuid())
                 .SendMessageAsync(@event.ReplyId, @event.ReplyMessage);
         }

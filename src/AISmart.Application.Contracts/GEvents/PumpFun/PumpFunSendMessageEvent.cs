@@ -8,11 +8,7 @@ namespace AISmart.Events;
 [GenerateSerializer]
 public class PumpFunSendMessageEvent : EventBase
 {
-    [Description("Unique identifier for the target chat where the ReplyMessage will be sent.")]
-    [Id(0)]  
-    public string? ChatId { get; set; }
-    
-    [Description("Optional ID of the ReplyMessage to which this message is a reply.")]
+    [Description("ReplyId is from PumpFunReceiveMessageGEvent")]
     [Id(1)]
     public string? ReplyId { get; set; }
 

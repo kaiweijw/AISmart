@@ -38,14 +38,12 @@ public class PumpFunProvider : IPumpFunProvider,ISingletonDependency
     
     public async Task SendMessageAsync(string replyId, string replyMessage)
     {
-        // TODO:callback full url
         const string url = $"https://jump-fun-testnet.aelf.dev/api/app/chat/agent-callback";
         
         // TODO:can use this model? chatId?requestMessageId?
         var sendMessageRequest = new PumFunResponseDto()
         {
             // TODO:
-            ChatId = 
             ReplyId = replyId,
             ReplyMessage = replyMessage
         };
