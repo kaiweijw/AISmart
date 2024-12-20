@@ -27,7 +27,6 @@ public class AISmartApplicationTestModule : AbpModule
         base.ConfigureServices(context);
         Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
         var configuration = context.Services.GetConfiguration();
-        context.Services.AddSingleton<IAgentNetworkManager>();
         Configure<ChatConfigOptions>(configuration.GetSection("Chat"));   
         Configure<AgentNetworkConfigOptions>(configuration.GetSection("NetWork")); 
         Configure<RagOptions>(configuration.GetSection("Rag"));   

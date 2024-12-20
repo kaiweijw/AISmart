@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using AISmart.Agents;
+using AISmart.AgentsNetwork;
+using AISmart.Application.Grains.Agents.Group;
 using AISmart.Options;
-using Orleans;
 using Volo.Abp.DependencyInjection;
 
-namespace AISmart.AgentsNetwork;
+namespace AISmart.GAgent.Config.GAgentsNetwork;
 
 
 public interface IAgentNetworkManager:ISingletonDependency
@@ -49,9 +46,15 @@ public class AgentNetworkManager:IAgentNetworkManager
 
         await InitGroupAsync(config);
     }
+    
+
 
     private async Task InitGroupAsync(AgentNetworkConfigOptions config)
     {
+        if (config is { Groups: null } || config.Groups.Count == 0)
+        {
+            return;
+        }
         foreach (var group in config.Groups)
         {
             // Register Agents in their respective groups
@@ -59,10 +62,12 @@ public class AgentNetworkManager:IAgentNetworkManager
             Debug.Assert(groupGAgentName != null, "groupGAgentName should not be null.");
             Debug.Assert(_agentInstances.ContainsKey(groupGAgentName), "Group leader agent not found.");
 
-            var groupGAgent = _agentInstances[groupGAgentName];
-            foreach (var relation in group.RelationList)
+            
+            var groupGAgent =  _grainFactory.GetGrain<IGAgent>(Guid.NewGuid(),typeof(GroupGAgent).Namespace);
+            
+            foreach (var name in group.AgentsList)
             {
-                if (_agentInstances.TryGetValue(relation.To, out var agent))
+                if (_agentInstances.TryGetValue(name, out var agent))
                 {
                     Debug.Assert(agent != null , "agent should not be null.");
                     await groupGAgent?.Register(agent)!;
@@ -78,10 +83,29 @@ public class AgentNetworkManager:IAgentNetworkManager
         // Create Agents
         foreach (var contract in config.ContractsList)
         {
-            var agentType = Type.GetType(contract.AgentState);
-            Debug.Assert(agentType != null, "agentType should not be null.");
-            var instance = _grainFactory.GetGrain(typeof(IStateGAgent<>), Guid.NewGuid(), agentType.Namespace);
-            _agentInstances[contract.Name] = instance as IGAgent;
+            switch (contract.Type)
+            {
+                case GAgentConsent.User:
+                    var instance = _grainFactory.GetGrain<IGAgent>(Guid.NewGuid(), RemoveLastDotSegment(contract.GrainType));
+                    _agentInstances[contract.Name] = instance as IGAgent;
+                    break;
+
+                default:
+                    // For all other types, continue without doing anything
+                    continue;
+            }
+
         }
+    }
+
+    private static string RemoveLastDotSegment(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return input;
+        }
+
+        var lastDotIndex = input.LastIndexOf('.');
+        return lastDotIndex >= 0 ? input[..lastDotIndex] : input;
     }
 }
