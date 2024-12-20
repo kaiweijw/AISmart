@@ -13,10 +13,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AElf.Sdk.CSharp" />
         <PackageReference Include="NEST" />
         <PackageReference Include="Volo.Abp.AutoMapper" />
-        <PackageReference Include="AElf.Indexing.ElasticSearch" />
         <PackageReference Include="MediatR" />
         <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" />
     </ItemGroup>

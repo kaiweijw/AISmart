@@ -34,6 +34,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
         Subscribers = subscribers;
         Logger = logger;
+        CqrsProvider = this.ServiceProvider.GetRequiredService<ICQRSProvider>();
     }
 
     public Task ActivateAsync()
@@ -428,13 +429,18 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         else
         {
             throw new InvalidOperationException(
-                $"The event handler of {eventType.GetType()} needs to have a return value.");
+                $"The Cqevent handler of {eventType.GetType()} needs to have a return value.");
         }
-        CqrsProvider = this.ServiceProvider.GetRequiredService<ICQRSProvider>();
 
     }
-    protected override async void OnStateChanged()
+
+    protected virtual async void OnExtendedStateChangedAsync()
     {
+    }
+
+    protected sealed override async void OnStateChanged()
+    {
+        OnExtendedStateChangedAsync();
         if (State is StateBase stateBase)
         {
             await CqrsProvider.PublishAsync(stateBase, this.GetGrainId().ToString());

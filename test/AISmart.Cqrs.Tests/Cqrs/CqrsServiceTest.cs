@@ -1,24 +1,22 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agent.Events;
-using AISmart.Agents.X.Events;
 using AISmart.CQRS;
 using AISmart.CQRS.Dto;
 using AISmart.CQRS.Handler;
 using AISmart.CQRS.Provider;
+using AISmart.Service;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Orleans;
+using Moq;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
-using Moq;
+
 namespace AISmart.GAgent;
 
-public class CqrsTests : AISmartApplicationTestBase
+public class CqrsServiceTest : AISmartApplicationTestBase
 {
+    private readonly ICqrsService _cqrsService;
     private readonly IClusterClient _clusterClient;
     private readonly ITestOutputHelper _output;
     private readonly ICQRSProvider _cqrsProvider;
@@ -28,8 +26,7 @@ public class CqrsTests : AISmartApplicationTestBase
     private const string Address = "JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE";
     private const string IndexName = "aelfagentgstateindex";
     private const string IndexId = "1";
-
-    public CqrsTests(ITestOutputHelper output)
+    public CqrsServiceTest(ITestOutputHelper output)
     {
         _output = output;
 
@@ -46,13 +43,17 @@ public class CqrsTests : AISmartApplicationTestBase
         services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
         services.AddMediatR(typeof(SendEventCommandHandler).Assembly);
         services.AddSingleton<ICQRSProvider,CQRSProvider>();
+        services.AddSingleton<ICqrsService,CqrsService>();
+
         services.AddSingleton<IGrainFactory>(_clusterClient);
         var serviceProvider = services.BuildServiceProvider();
         _cqrsProvider = serviceProvider.GetRequiredService<ICQRSProvider>();
-    }
+        _cqrsService = serviceProvider.GetRequiredService<ICqrsService>();
 
+    }
+    
     [Fact]
-    public async Task SendTransactionTest()
+    public async Task QueryAsyncTest()
     {
         var createTransactionEvent = new CreateTransactionEvent()
         {
@@ -72,11 +73,11 @@ public class CqrsTests : AISmartApplicationTestBase
         
         //get cqrs
         var grainId =  _clusterClient.GetGrain<IAElfAgent>(guid).GetGrainId();
-        var esResult = await _cqrsProvider.QueryAsync(IndexName, grainId.ToString());
+        var esResult = await _cqrsService.QueryAsync(IndexName, grainId.ToString());
+        
         esResult.State.ShouldContain(Address);
         esResult.Id.ShouldBe(IndexId);
     }
-
     [Fact]
     public async Task SendEventCommandTest()
     {
@@ -87,10 +88,7 @@ public class CqrsTests : AISmartApplicationTestBase
             ContractAddress = Address,
             MethodName = "Transfer",
         };
-        await _cqrsProvider.SendEventCommandAsync(createTransactionEvent);
-        var command = new SendEventCommand()
-        {
-            Event = createTransactionEvent
-        };
+        await _cqrsService.SendEventCommandAsync(createTransactionEvent);
     }
+    
 }
