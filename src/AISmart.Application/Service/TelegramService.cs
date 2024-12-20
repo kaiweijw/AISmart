@@ -75,5 +75,7 @@ public class TelegramService :  ApplicationService,ITelegramService
         
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(PublishId);
         await publishingAgent.PublishTo(groupAgent);
+
+        await publishingAgent.PublishEventAsync(new RequestAllSubscriptionsEvent());
     }
 }

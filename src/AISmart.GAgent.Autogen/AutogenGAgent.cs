@@ -130,7 +130,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
     [EventHandler]
     public async Task HandleEventAsync(SubscribedEventListEvent subscribedEventListEvent)
     {
-        if (subscribedEventListEvent == null || subscribedEventListEvent.Value == null)
+        if (subscribedEventListEvent.Value.IsNullOrEmpty())
         {
             return;
         }

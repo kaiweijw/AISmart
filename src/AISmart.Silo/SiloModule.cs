@@ -17,7 +17,8 @@ namespace AISmart.Silo;
     typeof(AISmartGAgentAElfModule),
     typeof(AISmartGAgentTelegramModule),
     typeof(AISmartGAgentTwitterModule),
-    typeof(AISmartGAgentAutogenModule)
+    typeof(AISmartGAgentAutogenModule),
+    typeof(AISmartGAgentMicroAIModule)
 )]
 public class SiloModule : AIApplicationGrainsModule, IDomainGrainsModule
 {
