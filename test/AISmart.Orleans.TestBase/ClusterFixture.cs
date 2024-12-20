@@ -8,6 +8,7 @@ using AISmart.CQRS.Handler;
 using AISmart.CQRS.Provider;
 using AISmart.Mock;
 using AISmart.Provider;
+using AISmart.Service;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Configuration;
@@ -96,6 +97,7 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddSingleton<IElasticClient>(mockElasticClient.Object);
                 var _mockIndexingService = new Mock<IIndexingService>();
                 services.AddSingleton<IIndexingService>(_mockIndexingService.Object); 
+                services.AddSingleton(typeof(ICqrsService), typeof(CqrsService));
 
             })
             .AddMemoryStreams("AISmart")

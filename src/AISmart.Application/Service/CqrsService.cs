@@ -15,11 +15,6 @@ public class CqrsService : ApplicationService,ICqrsService
         _cqrsProvider = cqrsProvider;
     }
     
-    public async Task PublishAsync(StateBase state, string id)
-    {
-        await _cqrsProvider.PublishAsync(state, id);
-    }
-
     public async Task<BaseStateIndex> QueryAsync(string index, string id)
     {
         return await _cqrsProvider.QueryAsync(index, id);

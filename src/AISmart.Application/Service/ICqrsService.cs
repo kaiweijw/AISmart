@@ -6,8 +6,6 @@ namespace AISmart.Service;
 
 public interface ICqrsService
 {
-    Task PublishAsync(StateBase state, string id);
-    
     Task<BaseStateIndex> QueryAsync(string index, string id);
     
     Task SendEventCommandAsync(EventBase eventBase);
