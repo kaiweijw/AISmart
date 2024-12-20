@@ -17,11 +17,11 @@ namespace AISmart.Agent;
 [Description("micro AI")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class MicroAIGAgent : GAgentBase<MicroAIGAgentState, AIMessageGEvent>, IMicroAIGAgent
+public abstract class MicroAIGAgent<GEvent,GEventResponse> : GAgentBase<MicroAIGAgentState, AIMessageGEvent>, IMicroAIGAgent
 {
-    private readonly ILogger<MicroAIGAgent> _logger;
+    protected readonly ILogger<MicroAIGAgent<GEvent,GEventResponse>> _logger;
 
-    public MicroAIGAgent(ILogger<MicroAIGAgent> logger) : base(logger)
+    public MicroAIGAgent(ILogger<MicroAIGAgent<GEvent,GEventResponse>> logger) : base(logger)
     {
         _logger = logger;
     }
@@ -34,39 +34,10 @@ public class MicroAIGAgent : GAgentBase<MicroAIGAgentState, AIMessageGEvent>, IM
 
 
     [EventHandler]
-    public async Task<AIResponseEvent> HandleEventAsync(AIReceiveMessageEvent @event)
-    {
-        _logger.LogInformation("micro AI ReceiveMessageEvent " + @event.MessageId);
-        List<AIMessageGEvent> list = new List<AIMessageGEvent>();
-        list.Add( new AIReceiveMessageGEvent
-        {
-            Message = new MicroAIMessage("user",@event.Message)
-        });
-
-        AIResponseEvent aiResponseEvent = new AIResponseEvent();
-       
-        var message =  await GrainFactory.GetGrain<IChatAgentGrain>(State.AgentName).SendAsync( @event.Message, State.RecentMessages.ToList());
-        if (message!= null && !message.Content.IsNullOrEmpty())
-        {
-            _logger.LogInformation("micro AI replyMessage:" + message.Content);
-            list.Add(new AIReplyMessageGEvent()
-            {
-                Message = message
-            });
-            aiResponseEvent.Content = message.Content;
-            await PublishAsync(new SendMessageEvent
-            {
-                Message = State.AgentName + ": " +message.Content
-            });
-        }
-        RaiseEvents(list);
-        await ConfirmEvents();
-        return aiResponseEvent;
-    }
+    public abstract Task<GEventResponse> HandleEventAsync(GEvent @event);
 
     public async Task SetAgent(string agentName, string agentResponsibility)
     {
-        
         RaiseEvent(new AISetAgentMessageGEvent
         {
             AgentName = agentName,

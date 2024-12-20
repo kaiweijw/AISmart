@@ -27,8 +27,13 @@ public class MicroAIGAgentState
     public void Apply(AIReplyMessageGEvent aiReplyMessageGEvent)
     {
         AddMessage(aiReplyMessageGEvent.Message);
-
     }
+
+    public void Apply(AIClearMessageGEvent clearMessageGEvent)
+    {
+        RecentMessages = new Queue<MicroAIMessage>();
+    }
+    
     void AddMessage(MicroAIMessage message)
     {
         if (RecentMessages.Count == 10)

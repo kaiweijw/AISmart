@@ -205,6 +205,10 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
 
                  The workflow is as follows:
                  - You take the problem from user.
+                 - If an agent can handle the message, please do not modify the data.
+                    For Example:
+                        If the voting agent can handle tasks related to voting. If the input is "Do you prefer swimming or working out?", the data should be passed to the voting agent in its entirety.the voting agent should not receive "I prefer swimming.".
+                        
                  - Split the task into different events, and use the output of the previous event combined with the user's request to determine the execution of the next event.
                  - Based on the event's response, reorganize the next request in line with the user's intent until the user's issue is resolved.
                  - If the above events cannot meet the user's task execution needs, you can generate results based on the events to drive the continuation of the process.
