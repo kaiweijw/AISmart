@@ -2,8 +2,10 @@ using System.ComponentModel;
 using AISmart.Agents.Developer;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Events;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
+using Orleans.Storage;
 
 namespace AISmart.Application.Grains.Agents.Developer;
 [Description("R&D department, and I can handle development-related tasks.")]
@@ -11,7 +13,7 @@ namespace AISmart.Application.Grains.Agents.Developer;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
 {
-    public DeveloperGAgent(ILogger<DeveloperGAgent> logger) : base(logger)
+    public DeveloperGAgent(ILogger<DeveloperGAgent> logger, IGrainStorage grainStorage) : base(logger, grainStorage)
     {
     }
 
@@ -36,11 +38,5 @@ public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
         {
             Content = "Done"
         };
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        GrainTracker.DeveloperAgents.Enqueue(this);
-        await base.OnActivateAsync(cancellationToken);
     }
 }

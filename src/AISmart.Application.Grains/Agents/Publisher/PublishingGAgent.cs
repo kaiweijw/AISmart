@@ -1,6 +1,7 @@
 using AISmart.Agents;
 using AISmart.Agents.Publisher;
 using AISmart.Dapr;
+using AISmart.GAgent.Core;
 using AISmart.Sender;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
@@ -34,11 +35,5 @@ public class PublishingGAgent : GAgentBase<PublishingAgentState, PublishingGEven
 
         Logger.LogInformation($"PublishingAgent publish {@event}");
         await PublishAsync(@event);
-    }
-
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        GrainTracker.PublishingGAgents.Enqueue(this);
-        return base.OnActivateAsync(cancellationToken);
     }
 }

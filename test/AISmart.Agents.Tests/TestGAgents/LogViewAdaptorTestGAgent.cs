@@ -1,7 +1,6 @@
 using AISmart.Agents;
-using AISmart.Application.Grains;
+using AISmart.GAgent.Core;
 using AISmart.Grains.Tests.TestEvents;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AISmart.Grains.Tests.TestGAgents;
@@ -10,7 +9,7 @@ namespace AISmart.Grains.Tests.TestGAgents;
 public class LogViewAdaptorTestGAgent
     : GAgentBase<LogViewAdaptorTestGState, LogViewAdaptorTestGEvent>
 {
-    public LogViewAdaptorTestGAgent() : base(NullLogger.Instance)
+    public LogViewAdaptorTestGAgent() : base(NullLogger.Instance, null)
     {
         
     }

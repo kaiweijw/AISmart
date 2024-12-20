@@ -3,8 +3,10 @@ using AISmart.Agents;
 using AISmart.Agents.MarketLeader.Events;
 using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
+using Orleans.Storage;
 
 namespace AISmart.Application.Grains.Agents.X;
 
@@ -13,7 +15,7 @@ namespace AISmart.Application.Grains.Agents.X;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class XGAgent : GAgentBase<XAgentState, XGEvent>
 {
-    public XGAgent(ILogger<XGAgent> logger) : base(logger)
+    public XGAgent(ILogger<XGAgent> logger, IGrainStorage grainStorage) : base(logger, grainStorage)
     {
     }
 
@@ -51,11 +53,5 @@ public class XGAgent : GAgentBase<XAgentState, XGEvent>
     public async Task SaveSubscribedEventsAsync(SubscribedEventListEvent subscribedEventListEvent)
     {
         var eventList = subscribedEventListEvent.Value;
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        GrainTracker.XAgents.Enqueue(this);
-        await base.OnActivateAsync(cancellationToken);
     }
 }

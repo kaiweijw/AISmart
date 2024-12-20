@@ -1,4 +1,5 @@
 using AISmart.GAgent.Autogen.Options;
+using AISmart.GAgent.Core;
 using AISmart.Options;
 using AISmart.Provider;
 using AISmart.Rag;

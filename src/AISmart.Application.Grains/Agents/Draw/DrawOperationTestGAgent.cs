@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using AISmart.Agents;
 using AISmart.Application.Grains;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 

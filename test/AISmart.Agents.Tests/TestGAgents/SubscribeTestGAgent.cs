@@ -1,6 +1,7 @@
 using AISmart.Agents;
-using AISmart.Application.Grains;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
+using Orleans.Storage;
 
 namespace AISmart.Grains.Tests.TestGAgents;
 
@@ -15,7 +16,7 @@ public class SubscribeTestGEvent : GEventBase;
 [GAgent]
 public class SubscribeTestGAgent : GAgentBase<SubscribeTestGAgentState, SubscribeTestGEvent>
 {
-    public SubscribeTestGAgent(ILogger logger) : base(logger)
+    public SubscribeTestGAgent(ILogger logger, IGrainStorage grainStorage) : base(logger, grainStorage)
     {
     }
 

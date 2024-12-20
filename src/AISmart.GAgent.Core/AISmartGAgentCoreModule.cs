@@ -1,9 +1,10 @@
-﻿using Volo.Abp.Modularity;
+﻿using AISmart.Core;
+using Volo.Abp.Modularity;
 
 namespace AISmart.GAgent.Core;
 
 [DependsOn(
-    typeof(AISmartApplicationContractsModule)
+    typeof(AISmartCoreModule)
 )]
 public class AISmartGAgentCoreModule : AbpModule
 {

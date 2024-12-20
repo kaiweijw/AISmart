@@ -1,8 +1,8 @@
 using AISmart.Agents;
-using AISmart.Application.Grains;
+using AISmart.GAgent.Core;
 using AISmart.Grains.Tests.TestEvents;
 using Microsoft.Extensions.Logging;
-using Orleans.Providers;
+using Orleans.Storage;
 
 namespace AISmart.Grains.Tests.TestGAgents;
 
@@ -19,7 +19,7 @@ public class
     EventHandlerWithResponseTestGAgent : GAgentBase<EventHandlerWithResponseTestGAgentState,
     EventHandlerWithResponseTestGEvent>
 {
-    public EventHandlerWithResponseTestGAgent(ILogger logger) : base(logger)
+    public EventHandlerWithResponseTestGAgent(ILogger logger, IGrainStorage grainStorage) : base(logger, grainStorage)
     {
     }
 

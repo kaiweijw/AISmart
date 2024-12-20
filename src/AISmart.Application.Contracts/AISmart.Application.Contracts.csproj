@@ -11,10 +11,10 @@
     <ItemGroup>
         <ProjectReference Include="..\AISmart.Domain.Grains\AISmart.Domain.Grains.csproj" />
         <ProjectReference Include="..\AISmart.Domain.Shared\AISmart.Domain.Shared.csproj" />
+        <ProjectReference Include="..\AISmart.Core\AISmart.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Orleans.Core.Abstractions" />
         <PackageReference Include="Microsoft.Orleans.Streaming" />
         <PackageReference Include="Volo.Abp.Dapr" />
         <PackageReference Include="Volo.Abp.AspNetCore.Mvc.Dapr.EventBus" />

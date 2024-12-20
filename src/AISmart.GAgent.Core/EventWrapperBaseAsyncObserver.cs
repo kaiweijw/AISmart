@@ -1,7 +1,7 @@
 using AISmart.Agents;
 using Orleans.Streams;
 
-namespace AISmart.Application.Grains;
+namespace AISmart.GAgent.Core;
 
 public class EventWrapperBaseAsyncObserver : IAsyncObserver<EventWrapperBase>
 {

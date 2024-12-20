@@ -6,6 +6,7 @@ using AISmart.Agents;
 using AISmart.Agents.AutoGen;
 using AISmart.Application.Grains;
 using AISmart.Events;
+using AISmart.GAgent.Core;
 using AISmart.Grains;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

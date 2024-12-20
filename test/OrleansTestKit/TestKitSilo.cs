@@ -52,6 +52,7 @@ public sealed class TestKitSilo
         GrainFactory = new TestGrainFactory(Options);
         ServiceProvider = new TestServiceProvider(Options);
         StorageManager = new StorageManager(Options);
+        TestGrainStorage = new TestGrainStorage(StorageManager);
         TimerRegistry = new TestTimerRegistry();
         ReminderRegistry = new TestReminderRegistry();
         StreamProviderManager = new TestStreamProviderManager(ServiceProvider, Options);
@@ -72,7 +73,7 @@ public sealed class TestKitSilo
         GrainRuntime =
             new TestGrainRuntime(GrainFactory, TimerRegistry, ReminderRegistry, ServiceProvider, StorageManager);
         ServiceProvider.AddService<IGrainRuntime>(GrainRuntime);
-        _grainCreator = new TestGrainCreator(GrainRuntime, ReminderRegistry, ServiceProvider);
+        _grainCreator = new TestGrainCreator(GrainRuntime, ReminderRegistry, TestGrainStorage, ServiceProvider);
 
         ServiceProvider.AddService<IAElfNodeProvider>(new MockAElfNodeProvider());
         
@@ -111,6 +112,8 @@ public sealed class TestKitSilo
 
     /// <summary>Gets the manager of all test silo storage.</summary>
     public StorageManager StorageManager { get; }
+
+    public TestGrainStorage TestGrainStorage { get; set; }
 
     /// <summary>Gets the manager of all test silo streams.</summary>
     public TestStreamProviderManager StreamProviderManager { get; }
