@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using AISmart.Agent;
+using AISmart.Agent.GEvents;
 using AISmart.Agents;
 using AISmart.Agents.Group;
 using AISmart.CQRS.Provider;
@@ -9,6 +10,8 @@ using AISmart.Events;
 using AISmart.GAgent.Autogen;
 using AISmart.PumpFun;
 using AISmart.Sender;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Orleans;
 using Volo.Abp.Application.Services;
 
@@ -18,21 +21,22 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
 {
     private readonly IClusterClient _clusterClient;
     private readonly ICQRSProvider _cqrsProvider;
-
-    private static readonly Guid _publishId = Guid.NewGuid();
+    private readonly ILogger<PumpFunChatService> _logger;
 
     // TODO:how to initiate
-    public PumpFunChatService(IClusterClient clusterClient, ICQRSProvider cqrsProvider)
+    public PumpFunChatService(IClusterClient clusterClient, ICQRSProvider cqrsProvider, ILogger<PumpFunChatService> logger)
     {
         _clusterClient = clusterClient;
         _cqrsProvider = cqrsProvider;
+        _logger = logger;
     }
     
     public async Task ReceiveMessagesAsync(PumpFunInputDto inputDto)
     {
-        if (inputDto.RequestMessage != null)
+        _logger.LogInformation("ReceiveMessagesAsync agentId:" + inputDto.AgentId);
+        if (inputDto is { RequestMessage: not null, AgentId: not null })
         {
-            var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(_publishId);
+            var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.Parse(inputDto.AgentId));
 
             await  publishingAgent.PublishEventAsync(new PumpFunReceiveMessageEvent
             {
@@ -42,38 +46,39 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
         }
     }
 
-    public async Task SetGroupsAsync(string chatId, string botName)
+    public async Task<string> SetGroupsAsync(string chatId)
     {
-        var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(GuidHelper.UniqGuid());
+        _logger.LogInformation("SetGroupsAsync, chatId:{chatId}", chatId);
+        Guid groupAgentId = Guid.NewGuid();
+        var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(groupAgentId);
         var pumpFunGAgent = _clusterClient.GetGrain<IPumpFunGAgent>(Guid.NewGuid());
-        // TODO: the second param need?
-        await pumpFunGAgent.SetPumpFunConfig(chatId, botName);
+        await pumpFunGAgent.SetPumpFunConfig(chatId);
         var autogenAgent=  _clusterClient.GetGrain<IAutogenGAgent>(Guid.NewGuid());
         
+        _logger.LogInformation("SetGroupsAsync, chatId:{chatId}", chatId);
         autogenAgent.RegisterAgentEvent(typeof(PumpFunGAgent), [typeof(PumpFunReceiveMessageEvent), typeof(PumpFunSendMessageEvent)]);
         
         await groupAgent.Register(autogenAgent);
         await groupAgent.Register(pumpFunGAgent);
         
-        var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(_publishId);
+        var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(groupAgentId);
         await publishingAgent.PublishTo(groupAgent);
+
+        return groupAgentId.ToString();
     }
     
     public async Task<PumFunResponseDto> SearchAnswerAsync(string replyId)
     {
-        // TODO:get replyMessage by replyId, depends on CQRS
-        // 获取PumpFunGAgentState
-        var pumpFunGAgent = _clusterClient.GetGrain<IPumpFunGAgent>(Guid.NewGuid());
-        var grainId =  _clusterClient.GetGrain<IPumpFunGAgent>(guid).GetGrainId();
-        
-        var stateResult = await _cqrsProvider.QueryAsync("test", grainId.ToString());
-        var state = await pumpFunGAgent.GetStateAsync();
-        
-        // TODO: store ReplyId-requestMessageId mapping in db, depends on CQRS integration
+        _logger.LogInformation("SearchAnswerAsync, replyId:{replyId}", replyId);
+        var grainId =  _clusterClient.GetGrain<IPumpFunGAgent>(Guid.Parse(replyId)).GetGrainId();
+        // get PumpFunGAgentState
+        var stateResult = await _cqrsProvider.QueryAsync("pumpfungagentstateindex", grainId.ToString());
+        var state = stateResult.State;
+        PumpFunGAgentState? pumpFunGAgentState = JsonConvert.DeserializeObject<PumpFunGAgentState>(state);
         PumFunResponseDto answer = new PumFunResponseDto
         {
-            ReplyId = replyId,
-            ReplyMessage = state.PendingMessages[replyId];
+            ReplyId = pumpFunGAgentState.responseMessage[replyId].ReplyId,
+            ReplyMessage = pumpFunGAgentState.responseMessage[replyId].ReplyMessage;
         };
 
         return await Task.FromResult(answer);

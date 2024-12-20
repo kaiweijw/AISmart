@@ -5,7 +5,6 @@ namespace AISmart.Grains;
 [GenerateSerializer]
 public class PumpFunState
 {
-    // TODO:jim
     [Id(0)] public  Guid Id { get; set; }
     [Id(1)] public string chatId { get; set; }
     [Id(2)] public string replyId { get; set; }

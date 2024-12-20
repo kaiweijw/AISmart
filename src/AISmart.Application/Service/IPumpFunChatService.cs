@@ -9,7 +9,7 @@ public interface IPumpFunChatService
 {
     public Task ReceiveMessagesAsync(PumpFunInputDto inputDto);
     
-    public Task SetGroupsAsync(string chatId, string botName);
+    public Task<string> SetGroupsAsync(string chatId);
 
     public Task<PumFunResponseDto> SearchAnswerAsync(string replyId);
 }
