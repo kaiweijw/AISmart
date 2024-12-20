@@ -18,6 +18,7 @@
         <ProjectReference Include="..\AiSmart.GAgent.TestAgent\AiSmart.GAgent.TestAgent.csproj" />
         <ProjectReference Include="..\AISmart.GAgent.Twitter\AISmart.GAgent.Twitter.csproj" />
         <ProjectReference Include="..\AISmart.GAgent.MicroAI\AISmart.GAgent.MicroAI.csproj" />
+        <ProjectReference Include="..\AISmart.SimpleRag\AISmart.SimpleRag.csproj" />
     </ItemGroup>
 
     <ItemGroup>
