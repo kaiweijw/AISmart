@@ -1,6 +1,6 @@
 using AISmart.Agents;
 
-namespace AISmart.Grains.Tests.TestEvents;
+namespace AISmart.GAgents.Tests.TestEvents;
 
 [GenerateSerializer]
 public class ResponseTestEvent : EventWithResponseBase<NaiveTestEvent>

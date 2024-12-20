@@ -1,9 +1,9 @@
 using AISmart.Agents;
 using AISmart.GAgent.Core;
-using AISmart.Grains.Tests.TestEvents;
+using AISmart.GAgents.Tests.TestEvents;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace AISmart.Grains.Tests.TestGAgents;
+namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GAgent]
 public class LogViewAdaptorTestGAgent
@@ -30,12 +30,6 @@ public class LogViewAdaptorTestGAgent
             Greeting = eventData.Greeting
         });
         await ConfirmEvents();
-    }
-
-    public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
-    {
-        State.Content.Clear();
-        return base.OnDeactivateAsync(reason, cancellationToken);
     }
 }
 

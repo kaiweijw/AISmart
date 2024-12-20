@@ -5,7 +5,7 @@ using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Sender;
 using Orleans.TestKit;
 
-namespace AISmart.Grains.Tests;
+namespace AISmart.GGrains.Tests;
 
 public abstract class GAgentTestKitBase : TestKitBase
 {

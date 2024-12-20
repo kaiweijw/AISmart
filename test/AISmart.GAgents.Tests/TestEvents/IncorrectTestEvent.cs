@@ -1,4 +1,4 @@
-namespace AISmart.Grains.Tests.TestEvents;
+namespace AISmart.GAgents.Tests.TestEvents;
 
 [GenerateSerializer]
 public class IncorrectTestEvent

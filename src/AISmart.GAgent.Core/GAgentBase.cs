@@ -101,7 +101,6 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
 
         var guid = agent.GetPrimaryKey();
 
-        await LoadSubscribersAsync();
         await AddSubscriberAsync(agent.GetGrainId());
 
         await OnRegisterAgentAsync(guid);

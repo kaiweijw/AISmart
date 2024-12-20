@@ -63,7 +63,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTestKit", "test\Orle
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTestKit.Tests", "test\OrleansTestKit.Tests\OrleansTestKit.Tests.csproj", "{C09D0934-CD67-47A0-9179-806C05ABFB26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.Agents.Tests", "test\AISmart.Agents.Tests\AISmart.Agents.Tests.csproj", "{BC0E7140-4A81-46BF-9A35-250996F3DC53}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.GAgents.Tests", "test\AISmart.GAgents.Tests\AISmart.GAgents.Tests.csproj", "{BC0E7140-4A81-46BF-9A35-250996F3DC53}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AISmart.GAgent.Core", "src\AISmart.GAgent.Core\AISmart.GAgent.Core.csproj", "{CFFF8DF8-25AC-48E7-9799-BBFC5C0EA594}"
 EndProject

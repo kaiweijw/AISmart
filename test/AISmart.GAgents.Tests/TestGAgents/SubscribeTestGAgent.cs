@@ -3,7 +3,7 @@ using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Storage;
 
-namespace AISmart.Grains.Tests.TestGAgents;
+namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GenerateSerializer]
 public class SubscribeTestGAgentState

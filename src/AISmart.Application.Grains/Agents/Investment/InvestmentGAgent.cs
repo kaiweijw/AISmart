@@ -6,6 +6,7 @@ using AISmart.Events;
 using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
+using Orleans.Storage;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
@@ -14,7 +15,7 @@ namespace AISmart.Application.Grains.Agents.Investment;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEvent>, IInvestmentStateGAgent<InvestmentAgentState>
 {
-    public InvestmentGAgent(ILogger<InvestmentGAgent> logger) : base(logger)
+    public InvestmentGAgent(ILogger logger, IGrainStorage grainStorage) : base(logger, grainStorage)
     {
     }
 

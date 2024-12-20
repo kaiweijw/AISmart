@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Text.Json;
 using AISmart.Agents;
 using AISmart.EventSourcing.Core.Exceptions;
 using AISmart.EventSourcing.Core.Snapshot;
@@ -76,7 +77,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
                 if (_confirmedVersion < _globalSnapshot.State.SnapshotVersion)
                 {
                     _confirmedVersion = _globalSnapshot.State.SnapshotVersion;
-                    _confirmedView = MaybeDeepCopy(_globalSnapshot.State.Snapshot);
+                    _confirmedView = DeepCopy(_globalSnapshot.State.Snapshot);
                 }
 
                 try
@@ -131,7 +132,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
         {
             try
             {
-                _globalSnapshot.State.Snapshot = MaybeDeepCopy(_confirmedView);
+                _globalSnapshot.State.Snapshot = DeepCopy(_confirmedView);
                 _globalSnapshot.State.SnapshotVersion = _confirmedVersion;
                 await WriteStateAsync();
                 batchSuccessfullyWritten = true;
@@ -159,7 +160,7 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
                     if (_confirmedVersion < _globalSnapshot.State.SnapshotVersion)
                     {
                         _confirmedVersion = _globalSnapshot.State.SnapshotVersion;
-                        _confirmedView = MaybeDeepCopy(_globalSnapshot.State.Snapshot);
+                        _confirmedView = DeepCopy(_globalSnapshot.State.Snapshot);
                     }
 
                     try
@@ -232,9 +233,16 @@ public partial class LogViewAdaptor<TLogView, TLogEntry>
         return Task.FromResult<ILogConsistencyProtocolMessage>(response);
     }
 
-    private TLogView MaybeDeepCopy(TLogView state)
+    private TLogView DeepCopy(TLogView state)
     {
-        return _deepCopier == null ? state : _deepCopier.Copy(state);
+        if (_deepCopier == null)
+        {
+            var json = JsonSerializer.Serialize(state);
+            var view = JsonSerializer.Deserialize<TLogView>(json)!;
+            return view;
+        }
+
+        return _deepCopier.Copy(state);
     }
 
     private async Task ReadStateAsync(ViewStateSnapshot<TLogView> snapshot)

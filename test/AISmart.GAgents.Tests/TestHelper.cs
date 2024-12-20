@@ -1,4 +1,4 @@
-namespace AISmart.Grains.Tests;
+namespace AISmart.GAgents.Tests;
 
 public static class TestHelper
 {

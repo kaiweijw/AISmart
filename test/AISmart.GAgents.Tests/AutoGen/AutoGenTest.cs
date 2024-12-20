@@ -1,4 +1,3 @@
-using AISmart.Agents;
 using AISmart.Agents.AutoGen;
 using AISmart.Application.Grains.Agents.Draw;
 using AISmart.Application.Grains.Agents.Group;
@@ -6,11 +5,11 @@ using AISmart.Application.Grains.Agents.Math;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.GAgent.Autogen;
 using AISmart.GAgent.Autogen.Events;
-using AISmart.Grains.Tests.TestGAgents;
+using AISmart.GGrains.Tests;
 using AISmart.Sender;
 using Orleans.TestKit;
 
-namespace AISmart.Grains.Tests.AutoGenTest;
+namespace AISmart.GAgents.Tests.AutoGenTest;
 
 public class AutoGenTest : GAgentTestKitBase
 {

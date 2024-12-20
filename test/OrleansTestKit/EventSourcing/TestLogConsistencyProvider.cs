@@ -8,11 +8,13 @@ public class TestLogConsistencyProvider : ILogViewAdaptorFactory
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogConsistentStorage _logConsistentStorage;
+    private readonly IGrainStorage _grainStorage;
 
-    public TestLogConsistencyProvider(IServiceProvider serviceProvider, ILogConsistentStorage logConsistentStorage)
+    public TestLogConsistencyProvider(IServiceProvider serviceProvider, ILogConsistentStorage logConsistentStorage, IGrainStorage grainStorage)
     {
         _serviceProvider = serviceProvider;
         _logConsistentStorage = logConsistentStorage;
+        _grainStorage = grainStorage;
     }
 
     public ILogViewAdaptor<TLogView, TLogEntry> MakeLogViewAdaptor<TLogView, TLogEntry>(
@@ -20,7 +22,7 @@ public class TestLogConsistencyProvider : ILogViewAdaptorFactory
         string grainTypeName, IGrainStorage grainStorage, ILogConsistencyProtocolServices services)
         where TLogView : class, new() where TLogEntry : class
     {
-        return new LogViewAdaptor<TLogView, TLogEntry>(hostGrain, initialState, null, grainTypeName,
+        return new LogViewAdaptor<TLogView, TLogEntry>(hostGrain, initialState, _grainStorage, grainTypeName,
             new TestLogConsistencyProtocolServices(), _logConsistentStorage, null);
     }
 

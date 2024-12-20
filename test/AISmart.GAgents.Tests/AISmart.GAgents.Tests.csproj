@@ -7,7 +7,7 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <RootNamespace>AISmart.Grains.Tests</RootNamespace>
+        <RootNamespace>AISmart.GAgents.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

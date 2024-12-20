@@ -1,10 +1,10 @@
 using AISmart.Agents;
 using AISmart.GAgent.Core;
-using AISmart.Grains.Tests.TestEvents;
+using AISmart.GAgents.Tests.TestEvents;
 using Microsoft.Extensions.Logging;
 using Orleans.Storage;
 
-namespace AISmart.Grains.Tests.TestGAgents;
+namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GenerateSerializer]
 public class BadEventHandlerTestGAgentState

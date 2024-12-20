@@ -23,11 +23,14 @@ public class TestGrainStorage : IGrainStorage
     {
         var storage = _storageManager.GetStorage<T>(stateName);
         storage.State = grainState.State;
+        _storageManager.AddStorage(storage, stateName);
         return Task.CompletedTask;
     }
 
     public Task ClearStateAsync<T>(string stateName, GrainId grainId, IGrainState<T> grainState)
     {
+        var storage = _storageManager.GetStorage<T>(stateName);
+        storage.State = default!;
         return Task.CompletedTask;
     }
 }

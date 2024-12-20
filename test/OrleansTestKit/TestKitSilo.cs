@@ -62,7 +62,8 @@ public sealed class TestKitSilo
         var mockOptionsManager = new Mock<IOptions<TypeManifestOptions>>();
         mockOptionsManager.Setup(m => m.Value).Returns(new TypeManifestOptions());
         var codecProvider = new CodecProvider(ServiceProvider, mockOptionsManager.Object);
-        LogConsistencyProvider = new TestLogConsistencyProvider(ServiceProvider, TestLogConsistentStorage);
+        LogConsistencyProvider =
+            new TestLogConsistencyProvider(ServiceProvider, TestLogConsistentStorage, TestGrainStorage);
         ServiceProvider.AddKeyedService<ILogViewAdaptorFactory>("LogStorage", LogConsistencyProvider);
         ProtocolServices = new DefaultProtocolServices(new Mock<IGrainContext>().Object, NullLoggerFactory.Instance,
             new DeepCopier(codecProvider, new CopyContextPool(codecProvider)), null!);
@@ -159,7 +160,7 @@ public sealed class TestKitSilo
         await _grainLifecycle.TriggerStopAsync().ConfigureAwait(false);
 
         deactivationReason ??= new DeactivationReason(DeactivationReasonCode.ShuttingDown,
-            $"TestKit {nameof(TestKitSilo.DeactivateAsync)} called");
+            $"TestKit {nameof(DeactivateAsync)} called");
         await grain.OnDeactivateAsync(deactivationReason.Value, cancellationToken).ConfigureAwait(false);
     }
 
