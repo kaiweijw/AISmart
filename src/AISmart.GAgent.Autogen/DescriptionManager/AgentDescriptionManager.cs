@@ -2,70 +2,102 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text;
-using AISmart.Agents;
-using Volo.Abp.DependencyInjection;
 using AISmart.GAgent.Autogen.Exceptions;
 using AutoGen.Core;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace AISmart.GAgent.Autogen.Common;
+namespace AISmart.GAgent.Autogen.DescriptionManager;
 
-public class AgentDescriptionManager : ISingletonDependency
+public class AgentDescriptionManager : Grain<AgentDescriptionManagerState>, IAgentDescriptionManager
 {
-    private readonly Dictionary<string, AgentDescriptionInfo> _agentDescription =
-        new Dictionary<string, AgentDescriptionInfo>();
+    private readonly ILogger<AgentDescriptionManager> _logger;
 
-    private string _autoGenAgentEventDescription = string.Empty;
-
-    public AgentDescriptionManager()
+    public AgentDescriptionManager(ILogger<AgentDescriptionManager> logger)
     {
-        // _agentDescription = GetAllAgentDescription();
-        // _autoGenAgentEventDescription = AssembleAllAgentDescription();
+        _logger = logger;
     }
 
-    public void AddAgentEvents(Type agentType, List<Type> eventTypes)
+    public async Task AddAgentEventsAsync(Type agentType, List<Type> eventTypes)
     {
-        if (_agentDescription.TryGetValue(agentType.Name, out var agentDescription) == false)
+        if (State.AgentDescription.TryGetValue(agentType.Name, out var agentDescription) == false)
         {
             agentDescription = new AgentDescriptionInfo();
             agentDescription.AgentName = agentType.Name;
             var description = agentType.GetCustomAttribute<DescriptionAttribute>();
             if (description == null)
             {
-                throw new AutogenException($"agent:{agentType.Name} does not contain DescriptionAttribute");
+                _logger.LogError($"[AgentDescriptionManager] agent:{agentType.Name}  description does not exist");
+                return;
             }
 
             agentDescription.AgentDescription = description.Description;
 
-            _agentDescription.Add(agentType.Name, agentDescription);
+            State.AgentDescription.Add(agentType.Name, agentDescription);
         }
 
         foreach (var eventType in eventTypes)
         {
-            agentDescription.EventList.Add(GetEventDescription(agentType.Name, eventType));
+            var eventDescription = GetEventDescription(agentType.Name, eventType);
+            if (eventDescription == null)
+            {
+                continue;
+            }
+
+            agentDescription.EventList.Add(eventDescription);
         }
 
-        _autoGenAgentEventDescription = AssembleAllAgentDescription();
+        State.AutoGenAgentEventDescription = AssembleAllAgentDescription();
+
+        await WriteStateAsync();
     }
 
-    public ReadOnlyDictionary<string, AgentDescriptionInfo> GetAgentDescription()
+    public async Task AddAgentEventsAsync(string agentName, string agentDescriptionStr, List<Type> eventTypes)
     {
-        return new ReadOnlyDictionary<string, AgentDescriptionInfo>(_agentDescription);
+        if (State.AgentDescription.TryGetValue(agentName, out var agentDescription) == false)
+        {
+            agentDescription = new AgentDescriptionInfo();
+            agentDescription.AgentName = agentName;
+            agentDescription.AgentDescription = agentDescriptionStr;
+
+            State.AgentDescription.Add(agentName, agentDescription);
+        }
+
+        foreach (var eventType in eventTypes)
+        {
+            var eventDescription = GetEventDescription(agentName, eventType);
+            if (eventDescription == null)
+            {
+                continue;
+            }
+
+            agentDescription.EventList.Add(eventDescription);
+        }
+
+        State.AutoGenAgentEventDescription = AssembleAllAgentDescription();
+
+        await WriteStateAsync();
     }
 
-    public string GetAutoGenEventDescription()
+    public async Task<ReadOnlyDictionary<string, AgentDescriptionInfo>> GetAgentDescription()
     {
-        return _autoGenAgentEventDescription;
+        return new ReadOnlyDictionary<string, AgentDescriptionInfo>(State.AgentDescription);
     }
 
-    private AgentEventDescription GetEventDescription(string agentName, Type eventType)
+    public Task<string> GetAutoGenEventDescriptionAsync()
+    {
+        return Task.FromResult(State.AutoGenAgentEventDescription);
+    }
+
+    private AgentEventDescription? GetEventDescription(string agentName, Type eventType)
     {
         var result = new AgentEventDescription();
         result.EventName = eventType.Name;
         var description = eventType.GetCustomAttribute<DescriptionAttribute>();
         if (description == null)
         {
-            throw new AutogenException($"agentName:{agentName} event:{eventType.Name} does not contain DescriptionAttribute");
+            _logger.LogError($"agentName:{agentName} event:{eventType.Name} does not contain DescriptionAttribute");
+            return null;
         }
 
         result.EventDescription = description.Description;
@@ -73,33 +105,44 @@ public class AgentDescriptionManager : ISingletonDependency
         var fields = eventType.GetProperties();
         foreach (var field in fields)
         {
-            result.EventParameters.Add(GetEventTypeDescription(agentName, eventType.Name, field));
+            var eventDescription = GetEventTypeDescription(agentName, eventType.Name, field);
+            if (eventDescription == null)
+            {
+                return null;
+            }
+
+            result.EventParameters.Add(eventDescription);
         }
 
         return result;
     }
 
-    private AgentEventTypeFieldDescription GetEventTypeDescription(string agentName, string eventName,
+    private AgentEventTypeFieldDescription? GetEventTypeDescription(string agentName, string eventName,
         PropertyInfo fieldType)
     {
         var descriptionAttributes = fieldType.GetCustomAttributes(typeof(DescriptionAttribute), false);
-        if (descriptionAttributes == null)
+        if (descriptionAttributes.Length == 0)
         {
-            throw new AutogenException(
+            _logger.LogError(
                 $"agentName:{agentName} eventName:{eventName} field:{fieldType.Name} description not exist");
+            return null;
         }
 
         foreach (var description in descriptionAttributes)
         {
-            if (description is DescriptionAttribute)
+            if (description is not DescriptionAttribute descriptionAttribute)
             {
-                var fieldDescription = new AgentEventTypeFieldDescription();
-                fieldDescription.FieldName = fieldType.Name;
-                fieldDescription.FieldDescription = (description as DescriptionAttribute).Description;
-                fieldDescription.FieldType = fieldType.PropertyType.Name;
-
-                return fieldDescription;
+                continue;
             }
+
+            var fieldDescription = new AgentEventTypeFieldDescription
+            {
+                FieldName = fieldType.Name,
+                FieldDescription = descriptionAttribute.Description,
+                FieldType = fieldType.PropertyType.Name
+            };
+
+            return fieldDescription;
         }
 
         return null;
@@ -206,7 +249,7 @@ public class AgentDescriptionManager : ISingletonDependency
 
     private string AssembleAllAgentDescription()
     {
-        var availableAgent = _agentDescription.Values.Where(s => s.EventList.Count > 0).ToList();
+        var availableAgent = State.AgentDescription.Values.Where(s => s.EventList.Count > 0).ToList();
         if (availableAgent.Count > 0)
         {
             var agentsDescription = JsonConvert.SerializeObject(availableAgent);

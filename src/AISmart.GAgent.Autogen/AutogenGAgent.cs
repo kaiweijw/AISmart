@@ -7,14 +7,13 @@ using Orleans.Providers;
 using AISmart.Application.Grains;
 using AISmart.Dapr;
 using AISmart.GAgent.Autogen.Common;
+using AISmart.GAgent.Autogen.DescriptionManager;
 using AISmart.GAgent.Autogen.Event;
 using AISmart.GAgent.Autogen.Events;
 using AISmart.GAgent.Autogen.EventSourcingEvent;
 using AISmart.GEvents.Autogen;
 using AISmart.Provider;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
-using Orleans.Runtime;
 using Orleans.Streams;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -25,21 +24,25 @@ namespace AISmart.GAgent.Autogen;
 public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IAutogenGAgent
 {
     private IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
-
     private readonly IRagProvider _ragProvider;
-
-    private readonly AgentDescriptionManager _agentDescriptionManager;
+    private readonly int _maxRaiseEventCount = 50;
 
     public AutogenGAgent(ILogger<AutogenGAgent> logger,
-        IRagProvider ragProvider, AgentDescriptionManager agentDescriptionManager) : base(logger)
+        IRagProvider ragProvider) : base(logger)
     {
         _ragProvider = ragProvider;
-        _agentDescriptionManager = agentDescriptionManager;
     }
 
-    public void RegisterAgentEvent(Type agent, List<Type> eventTypes)
+    public async Task RegisterAgentEvent(Type agent, List<Type> eventTypes)
     {
-        _agentDescriptionManager.AddAgentEvents(agent, eventTypes);
+        var grainManager = GrainFactory.GetGrain<IAgentDescriptionManager>(GetAgentDescriptionManagerId());
+        await grainManager.AddAgentEventsAsync(agent, eventTypes);
+    }
+
+    public async Task RegisterAgentEvent(string agentName, string description, List<Type> eventTypes)
+    {
+        var grainManager = GrainFactory.GetGrain<IAgentDescriptionManager>(GetAgentDescriptionManagerId());
+        await grainManager.AddAgentEventsAsync(agentName, description, eventTypes);
     }
 
     public override Task<string> GetDescriptionAsync()
@@ -130,14 +133,14 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
     [EventHandler]
     public async Task HandleEventAsync(SubscribedEventListEvent subscribedEventListEvent)
     {
-        if (subscribedEventListEvent == null || subscribedEventListEvent.Value == null)
+        if (subscribedEventListEvent.Value.IsNullOrEmpty())
         {
             return;
         }
 
         foreach (var (agentType, eventTypeList) in subscribedEventListEvent.Value)
         {
-            _agentDescriptionManager.AddAgentEvents(agentType, eventTypeList);
+            await RegisterAgentEvent(agentType, eventTypeList);
         }
     }
 
@@ -154,7 +157,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 });
                 break;
             case TaskExecuteStatus.Break:
-                Logger.LogInformation(
+                Logger.LogDebug(
                     $"[AutogenGAgent] Task Break,TaskId:{eventData.TaskId}, finish content:{eventData.EndContent}");
                 base.RaiseEvent(new Break()
                 {
@@ -163,7 +166,7 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 });
                 break;
             case TaskExecuteStatus.Finish:
-                Logger.LogInformation(
+                Logger.LogDebug(
                     $"[AutogenGAgent] Task Finished,TaskId:{eventData.TaskId}, finish content:{eventData.EndContent}");
                 base.RaiseEvent(new Complete()
                 {
@@ -180,7 +183,8 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
     {
         var grain = GrainFactory.GetGrain<IAutoGenExecutor>(Guid.NewGuid());
         await SubscribeStream(grain);
-        _ = grain.ExecuteTaskAsync(new ExecutorTaskInfo() { TaskId = taskId, History = history });
+        _ = grain.ExecuteTaskAsync(new ExecutorTaskInfo()
+            { TaskId = taskId, History = history, AgentDescriptionManagerId = GetAgentDescriptionManagerId() });
     }
 
     private async Task SubscribeStream(IGrainWithGuidKey grain)
@@ -197,8 +201,21 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
 
             if (message is PassThroughExecutorEvent @event2)
             {
-                var eventId = await PublishAsync(@event2.PassThroughData as EventBase);
+                var taskInfo = State.GetStateInfoByTaskId(@event2.TaskId);
+                if (taskInfo == null)
+                {
+                    return;
+                }
 
+                if (taskInfo.RaiseEventCount >= _maxRaiseEventCount)
+                {
+                    var userInput = taskInfo.ChatHistory.First(f => f.Role == Role.User.ToString());
+                    Logger.LogWarning(
+                        $"[AutogenGAgent] Raise event Limit, TaskId:{event2.TaskId},input message is :{userInput.Content}");
+                    return;
+                }
+
+                var eventId = await PublishAsync(@event2.PassThroughData as EventBase);
                 Logger.LogInformation(
                     $"[AutogenGAgent] Publish Event, EventId{@event2.TaskId.ToString()}, eventId:{eventId.ToString()}, publish content: {JsonSerializer.Serialize(@event2.PassThroughData)}");
 
@@ -213,5 +230,10 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
                 await base.ConfirmEvents();
             }
         });
+    }
+
+    private string GetAgentDescriptionManagerId()
+    {
+        return "AgentDescription" + this.GetPrimaryKey().ToString();
     }
 }

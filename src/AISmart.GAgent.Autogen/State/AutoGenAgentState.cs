@@ -45,6 +45,16 @@ public class AutoGenAgentState
         return null;
     }
 
+    public AutoGenAgentStateInfo? GetStateInfoByTaskId(Guid taskId)
+    {
+        if (AutoGenStateDic.TryGetValue(taskId, out var stateInfo))
+        {
+            return stateInfo;
+        }
+
+        return null;
+    }
+
     public bool CheckIsRunning(Guid taskId)
     {
         if (TaskToEventDic.TryGetValue(taskId, out var taskInfo))
@@ -115,6 +125,13 @@ public class AutoGenAgentState
 
     public void Apply(PublishEvent @event)
     {
+        var state = GetStateInfo(@event.TaskId);
+        if (state == null)
+        {
+            return;
+        }
+
+        state.RaiseEventCount += 1;
         StartEvent(@event.TaskId, @event.AgentName, @event.EventName, @event.EventId);
     }
 
@@ -192,6 +209,7 @@ public class AutoGenAgentStateInfo
     [Id(4)] public string CurrentCallInfo { get; set; }
     [Id(5)] public string Summary { get; set; }
     [Id(6)] public string BreakReason { get; set; }
+    [Id(7)] public int RaiseEventCount { get; set; }
 }
 
 [GenerateSerializer]

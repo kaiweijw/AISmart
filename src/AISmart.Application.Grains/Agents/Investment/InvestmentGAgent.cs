@@ -3,6 +3,7 @@ using AISmart.Agents;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.Investment;
 using AISmart.Dapr;
+using AISmart.Events;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 using Orleans.Streams;
@@ -37,6 +38,10 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
         }
 
         State.Content.Add(eventData.Content);
+        await PublishAsync(new SendMessageEvent
+        {
+            Message = "InvestmentGAgent Completed."
+        });
         Logger.LogInformation($"{GetType()} ExecuteAsync: InvestmentAgent analyses content:{eventData.Content}");
 
         return new WorkCompleteEvent

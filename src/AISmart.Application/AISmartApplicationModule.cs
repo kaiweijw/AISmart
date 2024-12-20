@@ -1,4 +1,5 @@
 ﻿using AISmart.Application.Grains;
+using AiSmart.GAgent.TestAgent;
 using Volo.Abp.Account;
 using Volo.Abp.AspNetCore.Mvc.Dapr;
 using Volo.Abp.AutoMapper;
@@ -20,16 +21,14 @@ namespace AISmart;
     typeof(AIApplicationGrainsModule),
     typeof(AISmartGAgentAElfModule),
     typeof(AISmartGAgentTelegramModule),
-    typeof(AISmartGAgentTwitterModule)
+    typeof(AISmartGAgentTwitterModule),
+    typeof(AISmartGAgentMicroAIModule),
+    typeof(AISmartGAgentTestAgentModule)
 )]
 public class AISmartApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        Configure<AbpAutoMapperOptions>(options =>
-        {
-            options.AddMaps<AISmartApplicationModule>();
-        });
-
+        Configure<AbpAutoMapperOptions>(options => { options.AddMaps<AISmartApplicationModule>(); });
     }
 }

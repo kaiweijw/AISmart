@@ -31,6 +31,16 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
             "Represents an agent responsible for informing other agents when a Telegram thread is published.");
     }
 
+    public async Task SetTelegramConfig(string chatId, string botName)
+    {
+        RaiseEvent(new SetTelegramConfigEvent()
+        {
+            ChatId = chatId,
+            BotName = botName
+        });
+        await ConfirmEvents();
+    }
+
 
     [EventHandler]
     public async Task HandleEventAsync(ReceiveMessageEvent @event)
@@ -45,9 +55,9 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
         RaiseEvent(new ReceiveMessageGEvent
         {
             MessageId = @event.MessageId,
-            ChatId = @event.ChatId,
+            ChatId = State.ChatId,
             Message = @event.Message,
-            NeedReplyBotName = @event.BotName
+            NeedReplyBotName = State.BotName
         });
         await ConfirmEvents();
         await PublishAsync(new AutoGenCreatedEvent
@@ -69,28 +79,23 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
     public async Task HandleEventAsync(SendMessageEvent @event)
     {
         _logger.LogDebug("Publish SendMessageEvent for Telegram Message: " + @event.Message);
-        var senderBotName = @event.BotName;
         if (@event.ReplyMessageId != null)
         {
-            if (State.PendingMessages.TryGetValue(@event.ReplyMessageId, out var receiveMessageEvent))
-            {
-                senderBotName = receiveMessageEvent.NeedReplyBotName;
-            }
-
             RaiseEvent(new SendMessageGEvent()
             {
                 ReplyMessageId = @event.ReplyMessageId,
-                ChatId = @event.ChatId,
+                ChatId = State.ChatId,
                 Message = @event.Message.IsNullOrEmpty() ? @event.Photo : @event.Message
             });
             await ConfirmEvents();
         }
 
         await GrainFactory.GetGrain<ITelegramGrain>(Guid.NewGuid()).SendMessageAsync(
-            senderBotName, @event.ChatId, @event.Message, @event.ReplyMessageId);
+            State.BotName, State.ChatId, @event.Message, @event.ReplyMessageId);
     }
 }
 
-public interface ITelegramGAgent
+public interface ITelegramGAgent : IStateGAgent<TelegramGAgentState>
 {
+   Task SetTelegramConfig(string chatId,string botName);
 }

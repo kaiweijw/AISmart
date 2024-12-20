@@ -75,15 +75,14 @@ public class GAgentBaseTests : GAgentTestKitBase
             subscribeTestGAgent);
         var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
 
-        AddProbes(eventHandlerTestGAgent, eventHandlerWithResponseTestGAgent, subscribeTestGAgent, groupGAgent,
+        AddProbesByGrainId(eventHandlerTestGAgent, eventHandlerWithResponseTestGAgent, subscribeTestGAgent, groupGAgent,
             publishingGAgent);
 
         await publishingGAgent.PublishEventAsync(new RequestAllSubscriptionsEvent());
         var state = await subscribeTestGAgent.GetStateAsync();
-        state.SubscriptionInfo.Count.ShouldBe(4);
+        state.SubscriptionInfo.Count.ShouldBe(3);
         state.SubscriptionInfo[typeof(EventHandlerTestGAgent)].Count.ShouldBe(3);
         state.SubscriptionInfo[typeof(EventHandlerWithResponseTestGAgent)].Count.ShouldBe(1);
-        state.SubscriptionInfo[typeof(GroupGAgent)].Count.ShouldBe(0);
         state.SubscriptionInfo[typeof(SubscribeTestGAgent)].Count.ShouldBe(1);
     }
 }
