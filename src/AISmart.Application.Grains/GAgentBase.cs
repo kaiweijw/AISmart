@@ -33,6 +33,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
         Subscribers = subscribers;
         Logger = logger;
+        CqrsProvider = this.ServiceProvider.GetRequiredService<ICQRSProvider>();
     }
 
     public Task ActivateAsync()
@@ -301,7 +302,6 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         await UpdateObserverList();
-        CqrsProvider = this.ServiceProvider.GetRequiredService<ICQRSProvider>();
     }
 
     private Task UpdateObserverList()
@@ -432,8 +432,14 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         }
 
     }
-    protected override async void OnStateChanged()
+
+    protected virtual async void OnExtendedStateChangedAsync()
     {
+    }
+
+    protected sealed override async void OnStateChanged()
+    {
+        OnExtendedStateChangedAsync();
         if (State is StateBase stateBase)
         {
             await CqrsProvider.PublishAsync(stateBase, this.GetGrainId().ToString());
