@@ -35,7 +35,7 @@ public class GAgentTests : GAgentTestKitBase
             Content = "BTC REACHED 100k WOOHOOOO!"
         };
 
-        AddProbes(xGAgent, groupGAgent, marketLeaderGAgent, developerGAgent, investmentGAgent);
+        AddProbesByGrainId(xGAgent, groupGAgent, marketLeaderGAgent, developerGAgent, investmentGAgent);
 
         await publishingGAgent.PublishEventAsync(xThreadCreatedEvent);
 
@@ -92,7 +92,7 @@ public class GAgentTests : GAgentTestKitBase
             MessageId = "11",
             ChatId = "12",
             Message = "Test",
-            NeedReplyBotName = "Test"
+            BotName = "Test"
         });
     }
     
@@ -112,9 +112,8 @@ public class GAgentTests : GAgentTestKitBase
         {
             ChatId = "12",
             Message = "bot message",
-            SenderBotName ="Test",
+            BotName ="Test",
             ReplyMessageId = "11"
         });
-        await Task.Delay(10000);
     }
 }

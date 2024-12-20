@@ -27,6 +27,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
     private const string AgentName = "admin";
     private const string FinishFlag = "complete";
     private const string BreakFlag = "break";
+    private Guid _taskId;
 
     public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IGrainFactory clusterClient,
         AgentDescriptionManager agentDescriptionManager, IChatAgentProvider chatAgentProvider)
@@ -39,15 +40,42 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
 
     public async Task ExecuteTaskAsync(ExecutorTaskInfo taskInfo)
     {
+        try
+        {
+            await CallAutogen(taskInfo);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[AutogenExecutor] ExecuteTaskAsync error, TaskInfo:{@TaskInfo}", taskInfo);
+            await PublishInternalEvent(new AutoGenExecutorEvent()
+            {
+                TaskId = _taskId,
+                ExecuteStatus = TaskExecuteStatus.Break,
+                EndContent = "Internal error",
+            });
+        }
+    }
+
+    public async Task CallAutogen(ExecutorTaskInfo taskInfo)
+    {
+        _logger.LogDebug(
+            $"[AutoGenExecutor] receive task:{taskInfo.TaskId.ToString()}");
+        _taskId = taskInfo.TaskId;
         var history = ConvertMessage(taskInfo.History);
-        var taskId = taskInfo.TaskId;
         _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
         var response = await _chatAgentProvider.SendAsync(AgentName, "What should be done next?", history);
+        if (response == null)
+        {
+            _logger.LogDebug(
+                $"[AutoGenExecutor] autoGen response is null, History:{JsonSerializer.Serialize(history)}");
+            return;
+        }
+
         var responseStr = response.GetContent();
         if (responseStr.IsNullOrEmpty())
         {
             _logger.LogDebug(
-                $"[AutoGenExecutor] autoGen response is null, History:{JsonSerializer.Serialize(history)}");
+                $"[AutoGenExecutor] autoGen responseStr is null, History:{JsonSerializer.Serialize(history)}");
             return;
         }
 
@@ -59,7 +87,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                 // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
                 await PublishInternalEvent(new AutoGenExecutorEvent()
                 {
-                    TaskId = taskId,
+                    TaskId = _taskId,
                     ExecuteStatus = TaskExecuteStatus.Finish,
                     EndContent = completeEvent.Complete,
                 });
@@ -77,7 +105,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                 // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
                 await PublishInternalEvent(new AutoGenExecutorEvent()
                 {
-                    TaskId = taskId,
+                    TaskId = _taskId,
                     ExecuteStatus = TaskExecuteStatus.Break,
                     EndContent = breakInfo.Break,
                 });
@@ -88,16 +116,20 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                 $"[AutoGenExecutor] response is break,but Deserialize error, History:{JsonSerializer.Serialize(history)} response:{responseStr}");
         }
 
-        var handleEventSchema = JsonSerializer.Deserialize<HandleEventAsyncSchema>(responseStr);
-        if (handleEventSchema != null)
+        var responseEvents = responseStr.SplitToLines();
+        foreach (var responseEvent in responseEvents)
         {
-            // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-            await PublishInternalEvent(new AutoGenExecutorEvent()
+            var handleEventSchema = JsonSerializer.Deserialize<HandleEventAsyncSchema>(responseEvent);
+            if (handleEventSchema != null)
             {
-                TaskId = taskId,
-                ExecuteStatus = TaskExecuteStatus.Progressing,
-                CurrentCallInfo = responseStr
-            });
+                // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+                await PublishInternalEvent(new AutoGenExecutorEvent()
+                {
+                    TaskId = _taskId,
+                    ExecuteStatus = TaskExecuteStatus.Progressing,
+                    CurrentCallInfo = responseEvent
+                });
+            }
         }
     }
 
@@ -150,46 +182,55 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                  You are a manager who solves user problems by organizing agents,
                  - The following is a JSON-formatted description of all proxies, including the events each proxy can handle and the parameters for each event:
                  {{_agentDescriptionManager.GetAutoGenEventDescription()}}
+                 JSON explanation:
+                 "AgentName":Agent's name
+                 "AgentDescription":Agent's responsibilities
+                    "EventName":Event's name
+                    "EventDescription":Things the event can handle
+                        "EventParameters":
+                            "FieldName":Parameter's name
+                            "FieldDescription":Parameter's description
+                            "FieldType":Parameter's type
 
                  - You can understand what the event can do through the event description, and know the type, name, and description of each parameter through the event parameters. 
                  If the event description can handle the user's request, you need to assemble the request into the following JSON format:
-                 {
+                 [{
                      AgentName:"",
                      EventName:"",
                      Parameters:""
-                 }
+                 }]
                  JSON explanation:
                  "AgentName" is the name of the proxy to be called. 
                  "EventName" is the name of the event to be invoked on the proxy, 
                  "Parameters" are the parameters for the event. The parameter types and names must match the defined ones.
+                 - If there are multiple events returned, please assemble them into a JSON array.
 
                  The workflow is as follows:
                  - You take the problem from user.
                  - Split the task into different events, and use the output of the previous event combined with the user's request to determine the execution of the next event.
                  - Based on the event's response, reorganize the next request in line with the user's intent until the user's issue is resolved.
                  - If the above events cannot meet the user's task execution needs, you can generate results based on the events to drive the continuation of the process.
-                 - The response for each event will be added to the conversation in JSON format. 
+                 - The response for each event will be added to the conversation in JSON format.
                    You need to analyze the response information to decide whether to proceed to the next round. 
                    The response information will be used during the final summary. The JSON format is as follows:
                    {
-                    "EventName":"", 
-                    "Reply":"",
+                    "AgentName":"", 
+                    "EventName":"",
+                    "Response":{}
                    }
-                   JSON explanation:EventName is the name of the event,and Reply is the response from the event corresponding to EventName.
-                   
+                   JSON explanation:
+                   AgentName is the caller of Agent.
+                   EventName is the name of the agent's event.
+                   Response is the response from the event corresponding to agent's EventName,It could be in JSON format,You need to understand the meaning of each field and potentially use the values as parameters for the next event.
                  - If the user's request is completed, please output the Json format:
-                    ```
                     {
                         "complete":"{reply summary}"
                     }
-                    ```
                     
                  - If the user's request cannot continue, please output the Json format:
-                    ```
                     {
                         "break": "{question}"
                     }
-                    ```
                  """;
     }
 
@@ -199,7 +240,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         var stream = StreamProvider.GetStream<AutoGenInternalEventBase>(streamId);
         await stream.OnNextAsync(publishData);
     }
-    
+
     #region Event hook
 
     /// <summary>
@@ -232,11 +273,14 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
                 $"Event name:{agentName} Deserialize object is null, the parameters is{parameters}");
         }
 
-        // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
-        await PublishInternalEvent(new PassThroughExecutorEvent() { PassThroughData = eventData });
-
-        return JsonSerializer.Serialize(new HandleEventAsyncSchema()
+        var callEventOrignalData = JsonSerializer.Serialize(new HandleEventAsyncSchema()
             { AgentName = agentName, EventName = eventName, Parameters = parameters });
+
+        // var publishGrain = _clusterClient.GetGrain<IPublishingGAgent>(_publishGrainId);
+        await PublishInternalEvent(new PassThroughExecutorEvent()
+            { AgentName = agentName, EventName = eventName, PassThroughData = eventData, TaskId = _taskId });
+
+        return callEventOrignalData;
     }
 
     public FunctionContract HandleEventAsyncContract
@@ -287,6 +331,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         string result;
         try
         {
+            _logger.LogInformation($"[AutogenExecutor] received autogen dispatch, parameter:{arguments}");
             result = await HandleEventAsync(schema.AgentName, schema.EventName, schema.Parameters);
         }
         catch (AutogenException e)
@@ -297,13 +342,6 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         return result;
     }
 
-    public class HandleEventAsyncSchema
-    {
-        [JsonPropertyName(@"agentName")] public string AgentName { get; set; }
-        [JsonPropertyName(@"eventName")] public string EventName { get; set; }
-        [JsonPropertyName(@"parameters")] public string Parameters { get; set; }
-    }
-
     public class EventBreak
     {
         [JsonPropertyName(@"break")] public string Break { get; set; }
@@ -311,7 +349,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
 
     public class EventComplete
     {
-        [JsonPropertyName(@"compete")] public string Complete { get; set; }
+        [JsonPropertyName(@"complete")] public string Complete { get; set; }
     }
 
     #endregion

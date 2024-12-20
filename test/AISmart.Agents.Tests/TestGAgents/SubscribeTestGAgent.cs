@@ -26,6 +26,9 @@ public class SubscribeTestGAgent : GAgentBase<SubscribeTestGAgentState, Subscrib
     
     public async Task HandleEventAsync(SubscribedEventListEvent eventData)
     {
-        State.SubscriptionInfo = eventData.Value;
+        if (State.SubscriptionInfo.IsNullOrEmpty())
+        {
+            State.SubscriptionInfo = eventData.Value;
+        }
     }
 }

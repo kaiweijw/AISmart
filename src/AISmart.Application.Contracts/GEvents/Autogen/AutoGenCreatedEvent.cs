@@ -6,7 +6,7 @@ namespace AISmart.Agents.AutoGen;
 [GenerateSerializer]
 public class AutoGenCreatedEvent: EventBase
 {
-    [Id(0)]public Guid EventId { get; set; }
+    [Id(0)] public Guid EventId { get; set; } = Guid.NewGuid();
     
     /// <summary>
     /// user input

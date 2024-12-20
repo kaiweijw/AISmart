@@ -22,7 +22,7 @@ public class Program
             Log.Information("Starting HttpApi.Host.");
             var builder = WebApplication.CreateBuilder(args);
             builder.Host
-                .UseOrleansClientConfiguration()
+                // .UseOrleansClientConfiguration()
                 .ConfigureDefaults(args)
                 .UseAutofac()
                 .UseSerilog();
