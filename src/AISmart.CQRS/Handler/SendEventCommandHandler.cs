@@ -11,9 +11,10 @@ namespace AISmart.CQRS.Handler;
 
 public class SendEventCommandHandler : IRequestHandler<SendEventCommand>
 {
-    private readonly IClusterClient _clusterClient;
+    private readonly IGrainFactory _clusterClient;
 
-    public SendEventCommandHandler(IClusterClient clusterClient)
+    public SendEventCommandHandler(IGrainFactory clusterClient
+    )
     {
         _clusterClient = clusterClient;
     }

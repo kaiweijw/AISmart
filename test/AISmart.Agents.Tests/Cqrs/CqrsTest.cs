@@ -1,71 +1,52 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agent.Events;
-using AISmart.Agents;
-using AISmart.Agents.Group;
 using AISmart.Agents.X.Events;
 using AISmart.CQRS;
 using AISmart.CQRS.Dto;
 using AISmart.CQRS.Handler;
 using AISmart.CQRS.Provider;
-using AISmart.Sender;
+using AISmart.Grains.Tests;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Orleans;
 using Shouldly;
-using Xunit;
 using Xunit.Abstractions;
 using Moq;
+using Orleans.TestKit;
+
 namespace AISmart.GAgent;
 
-public class CqrsTests : AISmartApplicationTestBase
+public class CqrsTests : GAgentTestKitBase
 {
-    private readonly IClusterClient _clusterClient;
     private readonly ITestOutputHelper _output;
     private readonly ICQRSProvider _cqrsProvider;
     private readonly Mock<IIndexingService> _mockIndexingService;
-   // private Mock<IClusterClient> _clusterClientMock;
     private const string ChainId = "AELF";
     private const string SenderName = "Test";
     private const string Address = "JRmBduh4nXWi1aXgdUsj5gJrzeZb2LxmrAbf7W99faZSvoAaE";
     private const string IndexName = "aelfagentgstateindex";
+
     private const string IndexId = "1";
-   // private SendEventCommandHandler _handler;
 
     public CqrsTests(ITestOutputHelper output)
     {
         _output = output;
-        //_clusterClientMock = new Mock<IClusterClient>();
-
-        _clusterClient = GetRequiredService<IClusterClient>();
         _mockIndexingService = new Mock<IIndexingService>();
-       // _clusterClientMock = new Mock<IClusterClient>();
-        /*
-         _groupAgentMock = new Mock<IStateGAgent<GroupAgentState>>();
-         _clusterClientMock.Setup(client => client.GetGrain<IPublishingGAgent>(It.IsAny<Guid>()))
-            .Returns(_publishingAgentMock.Object);
-        _clusterClientMock.Setup(client => client.GetGrain<IStateGAgent<GroupAgentState>>(It.IsAny<Guid>()))
-            .Returns(_groupAgentMock.Object);*/
-        _mockIndexingService.Setup(service => service.SaveOrUpdateIndexAsync(It.IsAny<string>(), It.IsAny<BaseStateIndex>()))
+        _mockIndexingService.Setup(service =>
+                service.SaveOrUpdateIndexAsync(It.IsAny<string>(), It.IsAny<BaseStateIndex>()))
             .Returns(Task.CompletedTask);
         _mockIndexingService.Setup(b => b.QueryIndexAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((string id, string indexName) => new BaseStateIndex { Id = IndexId.ToString(), Ctime = DateTime.Now, State = Address});
+            .ReturnsAsync((string id, string indexName) => new BaseStateIndex
+                { Id = IndexId.ToString(), Ctime = DateTime.Now, State = Address });
 
         var services = new ServiceCollection();
-        services.AddSingleton<IIndexingService>(_mockIndexingService.Object); 
+        services.AddSingleton<IIndexingService>(_mockIndexingService.Object);
         services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
         services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
         services.AddMediatR(typeof(SendEventCommandHandler).Assembly);
-       // services.AddSingleton<IGrainFactory>();
-        services.AddSingleton<ICQRSProvider,CQRSProvider>();
+        services.AddSingleton<ICQRSProvider, CQRSProvider>();
 
         var serviceProvider = services.BuildServiceProvider();
         _cqrsProvider = serviceProvider.GetRequiredService<ICQRSProvider>();
-       // _handler = new SendEventCommandHandler(_clusterClientMock.Object);
-
     }
 
     [Fact]
@@ -79,16 +60,21 @@ public class CqrsTests : AISmartApplicationTestBase
             MethodName = "Transfer",
         };
         var guid = Guid.NewGuid();
-        await _clusterClient.GetGrain<IAElfAgent>(guid).ExecuteTransactionAsync(createTransactionEvent);
-        var transaction = await _clusterClient.GetGrain<IAElfAgent>(guid).GetAElfAgentDto();
+
+        var _clusterClient = await Silo.CreateGrainAsync<AElfGAgent>(guid);
+        Silo.AddProbe<IAElfAgent>(_ => _clusterClient);
+
+        await _clusterClient.ExecuteTransactionAsync(createTransactionEvent);
+        var transaction = await _clusterClient.GetAElfAgentDto();
         _output.WriteLine("TransactionId: " + transaction.PendingTransactions.Count);
         //get grain
-        var grainResult = await _clusterClient.GetGrain<IAElfAgent>(guid).GetAElfAgentDto();
+        var grainResult = await _clusterClient.GetAElfAgentDto();
         grainResult.PendingTransactions.Count.ShouldBe(1);
         grainResult.PendingTransactions.FirstOrDefault().Value.ChainId.ShouldBe(createTransactionEvent.ChainId);
-        
+
         //get cqrs
-        var grainId =  _clusterClient.GetGrain<IAElfAgent>(guid).GetGrainId();
+        var grainId = _clusterClient.GetGrainId();
+
         var esResult = await _cqrsProvider.QueryAsync(IndexName, grainId.ToString());
         esResult.State.ShouldContain(Address);
         esResult.Id.ShouldBe(IndexId);
