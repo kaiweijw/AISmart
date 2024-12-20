@@ -2,10 +2,11 @@ using System.Threading.Tasks;
 using AISmart.Agents;
 using AISmart.CQRS.Dto;
 using AISmart.CQRS.Provider;
+using Volo.Abp.Application.Services;
 
 namespace AISmart.Service;
 
-public class CqrsService : ICqrsService
+public class CqrsService : ApplicationService,ICqrsService
 {
     private readonly ICQRSProvider _cqrsProvider;
     
