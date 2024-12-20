@@ -36,9 +36,11 @@ public class MicroAIService :  ApplicationService,IMicroAIService
     {
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
         var microAIGAgent = _clusterClient.GetGrain<IMicroAIGAgent>(Guid.NewGuid());
+        var telegramAgent = _clusterClient.GetGrain<IStateGAgent<TelegramGAgentState>>(Guid.NewGuid());
         await microAIGAgent.SetAgent("TestAI","You are a voter. Based on a proposal, provide a conclusion of agreement or disagreement and give reasons.");
 
         await groupAgent.Register(microAIGAgent);
+        await groupAgent.Register(telegramAgent);
         
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(PublishId);
         await publishingAgent.PublishTo(groupAgent);
