@@ -5,6 +5,7 @@ using Orleans;
 
 namespace AISmart.Agent;
 
+[GenerateSerializer]
 public class MicroAIGAgentState 
 {
     [Id(0)]  public  Guid Id { get; set; }

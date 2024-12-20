@@ -75,9 +75,16 @@ public class MicroAIGAgent : GAgentBase<MicroAIGAgentState, AIMessageGEvent>, IM
         await ConfirmEvents();
         await GrainFactory.GetGrain<IChatAgentGrain>(agentName).SetAgentAsync(agentResponsibility);
     }
+
+    public async Task<MicroAIGAgentState> GetAgentState()
+    {
+        return State;
+    }
 }
 
 public interface IMicroAIGAgent: IStateGAgent<MicroAIGAgentState>
 {
     Task SetAgent(string agentName, string agentResponsibility);
+    
+    Task<MicroAIGAgentState> GetAgentState();
 }
