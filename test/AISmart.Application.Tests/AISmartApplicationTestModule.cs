@@ -1,6 +1,9 @@
 using AISmart.AgentsNetwork;
 using System;
 using AISmart.CQRS.Handler;
+using System;
+using AISmart.AgentsNetwork;
+using AISmart.CQRS.Handler;
 using AISmart.Options;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +29,8 @@ public class AISmartApplicationTestModule : AbpModule
         var configuration = context.Services.GetConfiguration();
         context.Services.AddSingleton<IAgentNetworkManager>();
         Configure<ChatConfigOptions>(configuration.GetSection("Chat"));   
-        Configure<AgentNetworkConfigOptions>(configuration.GetSection("NetWork"));   
+        Configure<AgentNetworkConfigOptions>(configuration.GetSection("NetWork")); 
+        Configure<RagOptions>(configuration.GetSection("Rag"));   
         context.Services.AddSingleton<IElasticClient>(provider =>
         {
             var settings =new ConnectionSettings(new Uri("http://127.0.0.1:9200"))
@@ -34,7 +38,5 @@ public class AISmartApplicationTestModule : AbpModule
             return new ElasticClient(settings);
         });
         context.Services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
-        
-
     }
 }
