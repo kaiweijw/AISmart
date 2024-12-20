@@ -18,7 +18,6 @@ public class PumpFunGrain : Grain<PumpFunState>, IPumFunGrain
         _pumpFunProvider = pumpFunProvider;
     }
 
-
     public async Task SendMessageAsync(string replyId, string? replyMessage)
     {
         if (replyMessage != null)

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AISmart.Agent;
 using AISmart.Agents;
 using AISmart.Agents.Group;
+using AISmart.CQRS.Provider;
 using AISmart.Dto;
 using AISmart.Events;
 using AISmart.GAgent.Autogen;
@@ -16,17 +17,19 @@ namespace AISmart.Service;
 public class PumpFunChatService :  ApplicationService, IPumpFunChatService
 {
     private readonly IClusterClient _clusterClient;
+    private readonly ICQRSProvider _cqrsProvider;
+
     private static readonly Guid _publishId = Guid.NewGuid();
 
-    public PumpFunChatService(IClusterClient clusterClient)
+    // TODO:how to initiate
+    public PumpFunChatService(IClusterClient clusterClient, ICQRSProvider cqrsProvider)
     {
         _clusterClient = clusterClient;
+        _cqrsProvider = cqrsProvider;
     }
     
     public async Task ReceiveMessagesAsync(PumpFunInputDto inputDto)
     {
-        // To filter only messages that mention the bot, check if message.Entities.type == "mention".
-        // Group message auto-reply, just add the bot as a group admin.
         if (inputDto.RequestMessage != null)
         {
             var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(_publishId);
@@ -39,16 +42,14 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
         }
     }
 
-    // 单独提前初始化，不应该放在主业务里边
-    public async Task SetGroupsAsync(string chatId)
+    public async Task SetGroupsAsync(string chatId, string botName)
     {
-        // TODO agentId? zhifeng
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(GuidHelper.UniqGuid());
-        var pumpFunGAgent = _clusterClient.GetGrain<IStateGAgent<PumpFunGAgent>>(Guid.NewGuid());
+        var pumpFunGAgent = _clusterClient.GetGrain<IPumpFunGAgent>(Guid.NewGuid());
+        // TODO: the second param need?
+        await pumpFunGAgent.SetPumpFunConfig(chatId, botName);
         var autogenAgent=  _clusterClient.GetGrain<IAutogenGAgent>(Guid.NewGuid());
-        // TODO:新的方法，setChatId，在interface实现一个方法，把元数据都放到state里边，看最新的dev的telegramService
-        pumpFunGAgent
-        // TODO:
+        
         autogenAgent.RegisterAgentEvent(typeof(PumpFunGAgent), [typeof(PumpFunReceiveMessageEvent), typeof(PumpFunSendMessageEvent)]);
         
         await groupAgent.Register(autogenAgent);
@@ -58,18 +59,23 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
         await publishingAgent.PublishTo(groupAgent);
     }
     
-    public Task<PumFunResponseDto> SearchAnswerAsync(string replyId)
+    public async Task<PumFunResponseDto> SearchAnswerAsync(string replyId)
     {
         // TODO:get replyMessage by replyId, depends on CQRS
-        var content = "";
+        // 获取PumpFunGAgentState
+        var pumpFunGAgent = _clusterClient.GetGrain<IPumpFunGAgent>(Guid.NewGuid());
+        var grainId =  _clusterClient.GetGrain<IPumpFunGAgent>(guid).GetGrainId();
+        
+        var stateResult = await _cqrsProvider.QueryAsync("test", grainId.ToString());
+        var state = await pumpFunGAgent.GetStateAsync();
+        
         // TODO: store ReplyId-requestMessageId mapping in db, depends on CQRS integration
-        var requestMessageId = "";
         PumFunResponseDto answer = new PumFunResponseDto
         {
             ReplyId = replyId,
-            ReplyMessage = content
+            ReplyMessage = state.PendingMessages[replyId];
         };
 
-        return Task.FromResult(answer);
+        return await Task.FromResult(answer);
     }
 }

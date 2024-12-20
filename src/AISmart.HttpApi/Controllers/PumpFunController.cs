@@ -31,7 +31,7 @@ public class PumpFunController : AISmartController
         var replyId = Guid.NewGuid().ToString();
         var headers = Request.Headers;
         var token = headers["Pump-Fun-Api-Secret-Token"];
-        // TODO:token怎么使用
+        // TODO:jim
         _logger.LogInformation("Receive update message from telegram.{token}",token);
         _logger.LogInformation("Receive update message from telegram.{inputDto}",JsonConvert.SerializeObject(inputDto));
 
@@ -46,9 +46,9 @@ public class PumpFunController : AISmartController
     }
     
     [HttpPost("setGroup")]
-    public async Task SetGroupsAsync()
+    public async Task SetGroupsAsync(string chatId, string botName)
     {
-        await _pumpFunChatService.SetGroupsAsync();
+        await _pumpFunChatService.SetGroupsAsync(chatId, botName);
     }
     
     [HttpPost("search")]

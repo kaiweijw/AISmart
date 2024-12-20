@@ -44,45 +44,80 @@ public class PumpFunGAgent : GAgentBase<PumpFunGAgentState, PumpFunMessageGEvent
         _logger.LogInformation("PumpFunReceiveMessageEvent:" + JsonConvert.SerializeObject(@event));
        RaiseEvent(new PumpFunReceiveMessageGEvent
        {
-           // TODO:messageId&ChatId needed?
+           // TODO:jim
+           Id = Guid.Parse(@event.ReplyId),
+           ChatId = @event.ChatId,
            ReplyId = @event.ReplyId,
-           // ChatId = @event.ChatId,
            RequestMessage = @event.RequestMessage
        });
        await ConfirmEvents();
-       if (@event.ReplyId != null)
+       
+       await PublishAsync(new AutoGenCreatedEvent
        {
-           await PublishAsync(new AutoGenCreatedEvent
-           {
-               // TODO:EventId?ReplyId?
-               EventId = Guid.Parse(@event.ReplyId),
-               Content = $"I received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}. " +
-                         $"Please parse the message content, generate a response Based on the JSON Message, " +
-                         $"and then call the SendMessageEvent event of PumpFunGAgent"
-           });
-       }
+           // TODO:EventId?ReplyId?
+           EventId = Guid.Parse(@event.ReplyId),
+           Content = $"""
+             Received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}, The fields will be used in the final response expect "Message".
+             Please follow the process below.
+             1. parse the message content,the fields in the JSON may be used in the final response..
+             2. Please understand the content of the "Message" in the JSON format, process the response accordingly.
+             3. Must pass the final result to the PumpFunSendMessageEvent method of the PumpFunGAgent.
+             """
+       });
     }
     
     [EventHandler]
     public async Task HandleEventAsync(PumpFunSendMessageEvent @event)
     {
-        RaiseEvent(new PumpFunSendMessageGEvent()
+        if (@event.ReplyId != null)
         {
-            ReplyId = @event.ReplyId,
-            // TODO
-            // ChatId = @event.ChatId,
-            ReplyMessage = @event.ReplyMessage 
+            RaiseEvent(new PumpFunSendMessageGEvent()
+            {
+                // TODO:jim
+                Id = Guid.Parse(@event.ReplyId),
+                ChatId = @event.ChatId,
+                ReplyId = @event.ReplyId,
+                ReplyMessage = @event.ReplyMessage
+            });
+            await ConfirmEvents();
+
+            // TODO:jim Guid.Parse(@event.ReplyId)
+            await GrainFactory.GetGrain<IPumFunGrain>(Guid.Parse(@event.ReplyId))
+                .SendMessageAsync(@event.ReplyId, @event.ReplyMessage);
+        }
+    }
+    
+    public async Task SetPumpFunConfig(string chatId, string botName)
+    {
+        RaiseEvent(new SetPumpFunConfigEvent()
+        {
+            ChatId = chatId,
+            BotName = botName
         });
         await ConfirmEvents();
-        
-        await GrainFactory.GetGrain<IPumFunGrain>(Guid.NewGuid())
-            .SendMessageAsync(@event.ReplyId, @event.ReplyMessage);
     }
 
-    
+    public Task ExecuteTransactionAsync(PumpFunReceiveMessageGEvent gEventData)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<PumpFunGAgentState> GetPumpFunGAgentState()
+    {
+        PumpFunGAgentState pumpFunGAgentState = new PumpFunGAgentState();
+        pumpFunGAgentState.Id = State.Id;
+        pumpFunGAgentState.ChatId = State.ChatId;
+        pumpFunGAgentState.BotName = State.BotName;
+        return Task.FromResult(pumpFunGAgentState);
+    }
 }
 
-public interface IPumpFunGAgent
+public interface IPumpFunGAgent : IStateGAgent<PumpFunGAgentState>
 { 
-   
+    Task SetPumpFunConfig(string chatId, string botName);
+    
+    Task ExecuteTransactionAsync(PumpFunReceiveMessageGEvent gEventData);
+    
+    Task<PumpFunGAgentState> GetPumpFunGAgentState();
+    
 }
