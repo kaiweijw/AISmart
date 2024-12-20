@@ -38,12 +38,23 @@ public class TelegramController: AISmartController
         var token = headers["X-Telegram-Bot-Api-Secret-Token"];
         _logger.LogInformation("Receive update message from telegram.{specificHeader}",token);
         _logger.LogInformation("Receive update message from telegram.{message}",JsonConvert.SerializeObject(updateMessage));
-        await _microAiService.ReceiveMessagesAsync(updateMessage.Message.Text);
+        await _telegramService.ReceiveMessagesAsync(updateMessage,token);
     }
     
     [HttpPost("setGroup")]
     public async Task SetGroupsAsync()
     {
+        await _telegramService.SetGroupsAsync();
+    }
+    [HttpPost("setVoteGroup")]
+    public async Task SetVoteGroupAsync()
+    {
         await _microAiService.SetGroupsAsync();
+    }
+    
+    [HttpGet("messagesTest")]
+    public async Task TestMessages(string message)
+    {
+        await _microAiService.ReceiveMessagesAsync(message);
     }
 }

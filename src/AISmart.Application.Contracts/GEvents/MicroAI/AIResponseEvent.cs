@@ -3,10 +3,10 @@ using AISmart.Agents;
 using Orleans;
 
 namespace AISmart.GEvents.MicroAI;
-[Description("Receive a message from telegram.")]
+[Description("AI Response.")]
 [GenerateSerializer]
 public class AIResponseEvent : EventBase
 {
-    [Description("Details or results of the completed task.")]
+    [Description("AI Response Details.")]
     [Id(0)] public string Content { get; set; }
 }

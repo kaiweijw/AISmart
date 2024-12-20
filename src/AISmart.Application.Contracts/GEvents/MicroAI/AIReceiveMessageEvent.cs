@@ -1,11 +1,10 @@
 using System;
 using System.ComponentModel;
 using AISmart.Agents;
-using AISmart.GEvents.MicroAI;
 using Orleans;
 
-namespace AISmart.Events;
-[Description("Receive a message from telegram.")]
+namespace AISmart.GEvents.MicroAI;
+[Description("Receive a message for AI response .")]
 [GenerateSerializer]
 public class AIReceiveMessageEvent :  EventWithResponseBase<AIResponseEvent>
 {
