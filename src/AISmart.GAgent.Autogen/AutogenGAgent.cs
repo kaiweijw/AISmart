@@ -39,6 +39,12 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
         await grainManager.AddAgentEventsAsync(agent, eventTypes);
     }
 
+    public async Task RegisterAgentEvent(string agentName, string description, List<Type> eventTypes)
+    {
+        var grainManager = GrainFactory.GetGrain<IAgentDescriptionManager>(GetAgentDescriptionManagerId());
+        await grainManager.AddAgentEventsAsync(agentName, description, eventTypes);
+    }
+
     public override Task<string> GetDescriptionAsync()
     {
         throw new NotImplementedException();
@@ -177,7 +183,8 @@ public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IA
     {
         var grain = GrainFactory.GetGrain<IAutoGenExecutor>(Guid.NewGuid());
         await SubscribeStream(grain);
-        _ = grain.ExecuteTaskAsync(new ExecutorTaskInfo() { TaskId = taskId, History = history, AgentDescriptionManagerId = GetAgentDescriptionManagerId() });
+        _ = grain.ExecuteTaskAsync(new ExecutorTaskInfo()
+            { TaskId = taskId, History = history, AgentDescriptionManagerId = GetAgentDescriptionManagerId() });
     }
 
     private async Task SubscribeStream(IGrainWithGuidKey grain)

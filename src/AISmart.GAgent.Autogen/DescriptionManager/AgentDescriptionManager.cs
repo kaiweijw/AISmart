@@ -52,6 +52,33 @@ public class AgentDescriptionManager : Grain<AgentDescriptionManagerState>, IAge
         await WriteStateAsync();
     }
 
+    public async Task AddAgentEventsAsync(string agentName, string agentDescriptionStr, List<Type> eventTypes)
+    {
+        if (State.AgentDescription.TryGetValue(agentName, out var agentDescription) == false)
+        {
+            agentDescription = new AgentDescriptionInfo();
+            agentDescription.AgentName = agentName;
+            agentDescription.AgentDescription = agentDescriptionStr;
+
+            State.AgentDescription.Add(agentName, agentDescription);
+        }
+
+        foreach (var eventType in eventTypes)
+        {
+            var eventDescription = GetEventDescription(agentName, eventType);
+            if (eventDescription == null)
+            {
+                continue;
+            }
+
+            agentDescription.EventList.Add(eventDescription);
+        }
+
+        State.AutoGenAgentEventDescription = AssembleAllAgentDescription();
+
+        await WriteStateAsync();
+    }
+
     public async Task<ReadOnlyDictionary<string, AgentDescriptionInfo>> GetAgentDescription()
     {
         return new ReadOnlyDictionary<string, AgentDescriptionInfo>(State.AgentDescription);
