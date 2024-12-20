@@ -99,8 +99,9 @@ public class GAgentBaseTests : GAgentTestKitBase
         });
 
         await TestHelper.WaitUntilAsync(_ => CheckCount(1));
-        InMemoryLogConsistentStorage.Storage.Count.ShouldBe(1);
-        InMemoryLogConsistentStorage.Storage.First().Value.Count.ShouldBe(1);
+        Silo.TestLogConsistentStorage.Storage.Count.ShouldBe(1);
+        Silo.TestLogConsistentStorage.Storage.First().Value.Count.ShouldBe(1);
+        (await GetLatestVersionAsync()).ShouldBe(0);
 
         await Silo.DeactivateAsync(logViewGAgent);
         logViewGAgent = await Silo.CreateGrainAsync<LogViewAdaptorTestGAgent>(Guid.NewGuid());
@@ -112,15 +113,32 @@ public class GAgentBaseTests : GAgentTestKitBase
 
         await TestHelper.WaitUntilAsync(_ => CheckCount(2));
 
-        InMemoryLogConsistentStorage.Storage.Count.ShouldBe(1);
-        InMemoryLogConsistentStorage.Storage.First().Value.Count.ShouldBe(2);
+        Silo.TestLogConsistentStorage.Storage.Count.ShouldBe(1);
+        Silo.TestLogConsistentStorage.Storage.First().Value.Count.ShouldBe(2);
 
         var logViewGAgentState = await logViewGAgent.GetStateAsync();
         logViewGAgentState.Content.Count.ShouldBe(2);
+
+        (await GetLatestVersionAsync()).ShouldBe(1);
+
+        await publishingGAgent.PublishEventAsync(new NaiveTestEvent
+        {
+            Greeting = "Third event"
+        });
+
+        await TestHelper.WaitUntilAsync(_ => CheckCount(3));
+
+        (await GetLatestVersionAsync()).ShouldBe(2);
     }
 
     private async Task<bool> CheckCount(int expectedCount)
     {
-        return InMemoryLogConsistentStorage.Storage.Count == expectedCount;
+        return Silo.TestLogConsistentStorage.Storage.Count == expectedCount;
+    }
+
+    private async Task<int> GetLatestVersionAsync()
+    {
+        return await Silo.TestLogConsistentStorage.GetLastVersionAsync(string.Empty,
+            GrainId.Create(string.Empty, string.Empty));
     }
 }

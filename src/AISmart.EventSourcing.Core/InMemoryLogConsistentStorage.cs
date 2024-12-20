@@ -20,7 +20,7 @@ public class InMemoryLogConsistentStorage : ILogConsistentStorage
     /// <summary>
     /// collectionName -> List of log entries
     /// </summary>
-    public static readonly ConcurrentDictionary<string, List<LogEntry>> Storage = new();
+    public readonly ConcurrentDictionary<string, List<LogEntry>> Storage = new();
 
     public Task<IReadOnlyList<TLogEntry>> ReadAsync<TLogEntry>(string grainTypeName, GrainId grainId,
         int fromVersion, int maxCount)
