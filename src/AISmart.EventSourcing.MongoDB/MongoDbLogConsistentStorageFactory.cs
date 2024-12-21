@@ -9,6 +9,7 @@ public static class MongoDbLogConsistentStorageFactory
     public static MongoDbLogConsistentStorage Create(IServiceProvider serviceProvider, object name)
     {
         var options = serviceProvider.GetRequiredService<IOptionsMonitor<MongoDbStorageOptions>>();
-        return ActivatorUtilities.CreateInstance<MongoDbLogConsistentStorage>(serviceProvider, name, options);
+        return ActivatorUtilities.CreateInstance<MongoDbLogConsistentStorage>(serviceProvider, name,
+            options.Get(name as string));
     }
 }

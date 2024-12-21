@@ -1,8 +1,10 @@
 using System.Net;
 using AISmart.Dapr;
+using AISmart.EventSourcing.MongoDB.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 using Newtonsoft.Json;
 using Orleans.Configuration;
 using Orleans.Providers.MongoDB.Configuration;
@@ -78,7 +80,11 @@ public static class OrleansHostExtension
                         options.CounterUpdateIntervalMs =
                             configSection.GetValue<int>("DashboardCounterUpdateIntervalMs");
                     })
-                    .AddLogStorageBasedLogConsistencyProvider()
+                    .AddMongoDbStorageBasedLogConsistencyProvider("LogStorage", options =>
+                    {
+                        options.ClientSettings = MongoClientSettings.FromConnectionString(configSection.GetValue<string>("MongoDBClient"));
+                        options.Database = configSection.GetValue<string>("DataBase");
+                    })
                     .AddMongoDBGrainStorage("PubSubStore", options =>
                     {
                         // Config PubSubStore Storage for Persistent Stream 
