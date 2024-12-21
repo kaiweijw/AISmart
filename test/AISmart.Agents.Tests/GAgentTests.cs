@@ -116,4 +116,24 @@ public class GAgentTests : GAgentTestKitBase
             ReplyMessageId = "11"
         });
     }
+    
+    [Fact]
+    public async Task PumpFunReceiveMessageTest()
+    {
+        var guid = Guid.NewGuid();
+        var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
+        var pumpFunGAgent = await Silo.CreateGrainAsync<PumpFunGAgent>(guid);
+        await groupAgent.Register(pumpFunGAgent);
+        var txGrain = await Silo.CreateGrainAsync<PumpFunGrain>(guid);
+        Silo.AddProbe<IPumFunGrain>(_ => txGrain);
+        var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
+        await publishingAgent.PublishTo(groupAgent);
+        Silo.AddProbe<IPublishingGAgent>(_ => publishingAgent);
+        await publishingAgent.PublishEventAsync(new PumpFunReceiveMessageEvent()
+        {
+            ReplyId = "11",
+            ChatId = "12",
+            RequestMessage = "Test"
+        });
+    }
 }

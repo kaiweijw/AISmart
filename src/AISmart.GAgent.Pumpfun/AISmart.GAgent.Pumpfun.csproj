@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <PackageReference Include="AElf.Sdk.CSharp" />
+        <PackageReference Include="Microsoft.Orleans.EventSourcing" />
         <PackageReference Include="Volo.Abp.AutoMapper" />
     </ItemGroup>
 
