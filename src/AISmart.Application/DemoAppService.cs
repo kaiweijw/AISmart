@@ -84,7 +84,7 @@ public class DemoAppService : ApplicationService, IDemoAppService
             Content = "What is 4+3, and then generate the corresponding polygon?"
         });
 
-        await Task.Delay(10000 * 1000);
+        await Task.Delay(10000);
 
         return "aa";
     }

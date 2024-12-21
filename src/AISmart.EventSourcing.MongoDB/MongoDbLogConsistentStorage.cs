@@ -22,11 +22,11 @@ public class MongoDbLogConsistentStorage : ILogConsistentStorage, ILifecyclePart
     private bool _initialized;
     private readonly string _serviceId;
 
-    public MongoDbLogConsistentStorage(ILogger<MongoDbLogConsistentStorage> logger, string name,
-        IOptions<ClusterOptions> clusterOptions, IOptions<MongoDbStorageOptions> options)
+    public MongoDbLogConsistentStorage(string name, MongoDbStorageOptions options,
+        IOptions<ClusterOptions> clusterOptions, ILogger<MongoDbLogConsistentStorage> logger)
     {
         _name = name;
-        _mongoDbOptions = options.Value;
+        _mongoDbOptions = options;
         _serviceId = clusterOptions.Value.ServiceId;
         _logger = logger;
     }
@@ -76,7 +76,7 @@ public class MongoDbLogConsistentStorage : ILogConsistentStorage, ILifecyclePart
 
     private IMongoDatabase GetDatabase()
     {
-        return _client!.GetDatabase(new MongoUrl(_mongoDbOptions.ClientSettings.ToString()).DatabaseName);
+        return _client!.GetDatabase(_mongoDbOptions.Database);
     }
 
     public async Task<int> GetLastVersionAsync(string grainTypeName, GrainId grainId)
@@ -173,7 +173,7 @@ public class MongoDbLogConsistentStorage : ILogConsistentStorage, ILifecyclePart
     public void Participate(ISiloLifecycle observer)
     {
         var name = OptionFormattingUtilities.Name<MongoDbLogConsistentStorage>(_name);
-        observer.Subscribe(name, ServiceLifecycleStage.ApplicationServices, Init, Close);
+        observer.Subscribe(name, _mongoDbOptions.InitStage, Init, Close);
     }
 
     private Task Init(CancellationToken cancellationToken)

@@ -83,6 +83,7 @@
         <PackageVersion Include="Microsoft.Orleans.Client" Version="$(OrleansVerion)" />
         <PackageVersion Include="Microsoft.Orleans.Core.Abstractions" Version="$(OrleansVerion)" />
         <PackageVersion Include="Microsoft.Orleans.EventSourcing" Version="$(OrleansVerion)" />
+        <PackageVersion Include="Orleans.Streams.Kafka" Version="8.0.2" />
         <PackageVersion Include="Microsoft.Orleans.Reminders" Version="$(OrleansVerion)" />
         <PackageVersion Include="Microsoft.Orleans.Runtime" Version="$(OrleansVerion)" />
         <PackageVersion Include="Microsoft.Orleans.Sdk" Version="$(OrleansVerion)" />
