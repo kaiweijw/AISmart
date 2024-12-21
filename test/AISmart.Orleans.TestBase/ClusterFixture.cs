@@ -3,13 +3,19 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AISmart.Application.Grains;
+using AISmart.CQRS;
+using AISmart.CQRS.Handler;
+using AISmart.CQRS.Provider;
 using AISmart.Mock;
 using AISmart.Provider;
+using AISmart.Service;
 using AutoMapper;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Nest;
 using Orleans.Hosting;
 using Orleans.TestingHost;
 using Volo.Abp.AutoMapper;
@@ -74,7 +80,25 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 {
                     Mapper = sp.GetRequiredService<IMapper>()
                 });
+                //services.AddMediatR(typeof(TestSiloConfigurations).Assembly);
+
                 services.AddTransient<IMapperAccessor>(provider => provider.GetRequiredService<MapperAccessor>());
+                services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
+                services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
+                services.AddMediatR(typeof(SendEventCommandHandler).Assembly);
+
+                services.AddTransient<SaveStateCommandHandler>();
+                services.AddTransient<GetStateQueryHandler>();
+                services.AddTransient<SendEventCommandHandler>();
+                services.AddSingleton<IIndexingService, ElasticIndexingService>();
+
+                services.AddSingleton(typeof(ICQRSProvider), typeof(CQRSProvider));
+                var mockElasticClient = new Mock<IElasticClient>();
+                services.AddSingleton<IElasticClient>(mockElasticClient.Object);
+                var _mockIndexingService = new Mock<IIndexingService>();
+                services.AddSingleton<IIndexingService>(_mockIndexingService.Object); 
+                services.AddSingleton(typeof(ICqrsService), typeof(CqrsService));
+
             })
             .AddMemoryStreams("AISmart")
             .AddMemoryGrainStorage("PubSubStore")
