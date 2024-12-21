@@ -16,44 +16,25 @@ namespace AISmart.AuthServer;
 
 public class SignatureGrantHandler: ITokenExtensionGrant
 {
-    private ILogger<SignatureGrantHandler> _logger;
-    private readonly string _source = "AISmart";
-    private readonly string _V2 = "v2";
+    private ILogger<SignatureGrantHandler>? _logger;
 
     public string Name { get; } = "signature";
 
     public async Task<IActionResult> HandleAsync(ExtensionGrantContext context)
     {
-        var publicKeyVal = context.Request.GetParameter("pubkey").ToString();
-        var signatureVal = context.Request.GetParameter("signature").ToString();
+       
         var timestampVal = context.Request.GetParameter("timestamp").ToString();
-        var inviteFrom = context.Request.GetParameter("invite_from").ToString();
-        var inviteType = context.Request.GetParameter("invite_type").ToString();
-        var nickName = context.Request.GetParameter("nick_name").ToString();
+        var userName = context.Request.GetParameter("user_name").ToString();
+        var userId = context.Request.GetParameter("user_id").ToString();
         
-        var accountInfo = context.Request.GetParameter("accountInfo").ToString();
-        var source = context.Request.GetParameter("source").ToString();
-        var signTip = context.Request.GetParameter("signTip").ToString();
 
-        var invalidParamResult = CheckParams(publicKeyVal, signatureVal, timestampVal, accountInfo, source);
+        var invalidParamResult = CheckParams(timestampVal,userName);
         if (invalidParamResult != null)
         {
             return invalidParamResult;
         }
+        var timestamp = long.Parse(timestampVal!);
 
-        var publicKey = ByteArrayHelper.HexStringToByteArray(publicKeyVal);
-        var signature = ByteArrayHelper.HexStringToByteArray(signatureVal);
-        var timestamp = long.Parse(timestampVal);
-        var address = string.Empty;
-        if (!string.IsNullOrWhiteSpace(publicKeyVal))
-        {
-            address = Address.FromPublicKey(publicKey).ToBase58();
-        }
-
-        var caHash = string.Empty;
-        var caAddressMain = string.Empty;
-        var caAddressSide = new Dictionary<string, string>();
-        
         var time = DateTime.UnixEpoch.AddMilliseconds(timestamp);
         var timeRangeConfig = context.HttpContext.RequestServices.GetRequiredService<IOptionsSnapshot<TimeRangeOption>>()
             .Value;
@@ -66,34 +47,32 @@ public class SignatureGrantHandler: ITokenExtensionGrant
         }
         _logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<SignatureGrantHandler>>();
         var userManager = context.HttpContext.RequestServices.GetRequiredService<IdentityUserManager>();
-
-        var userName = address;
-        if (!string.IsNullOrWhiteSpace(caHash))
-        {
-            userName = caHash;
-        }
-        
-        var user = await userManager.FindByNameAsync(userName);
-        _logger.LogInformation("miniapp user login:loginUser:{userName},address:{address}, inviteFrom{A},inviteType:{B},nickName:{C}, userDto:{user}", 
-            userName,address,inviteFrom,inviteType,nickName,JsonConvert.SerializeObject(user));
+        var user = await userManager.FindByNameAsync(userName!);
+        _logger.LogInformation("AISmartAuthServer user login:loginUser:{userName}, userDto:{user}", 
+            userName,JsonConvert.SerializeObject(user));
 
         if (user == null)
         {
-            _logger.LogInformation("miniapp user login:loginUser:{user} is not exist", userName);
+            _logger.LogInformation("AISmartAuthServer user login:loginUser:{user} is not exist", userName);
 
-            var userId = Guid.NewGuid();
+            var userIdGuid = Guid.NewGuid();
 
-            var createUserResult = await CreateUserAsync(userManager, userId, address, caHash,caAddressMain,caAddressSide);
+            var createUserResult = await CreateUserAsync(userManager, userIdGuid,userName:userName);
             if (!createUserResult)
             {
                 return GetForbidResult(OpenIddictConstants.Errors.ServerError, "Create user failed.");
             }
 
-            user = await userManager.GetByIdAsync(userId);
+            user = await userManager.GetByIdAsync(userIdGuid);
         }
         else
         {
-            _logger.LogInformation("miniapp user login:loginUser:{user} is exist", userName);
+            _logger.LogInformation("AISmartAuthServer user login:loginUser:{user} is exist,userDto:{user}", userName,user);
+            if (userId != user.Id.ToString())
+            {
+                return GetForbidResult(OpenIddictConstants.Errors.InvalidRequest,
+                    $"The user_id and user_name must match.");
+            }
 
         }
         var signInManager = context.HttpContext.RequestServices.GetRequiredService<Microsoft.AspNetCore.Identity.SignInManager<IdentityUser>>();
@@ -120,33 +99,17 @@ public class SignatureGrantHandler: ITokenExtensionGrant
             }!));
     }
     
-    private ForbidResult? CheckParams(string publicKeyVal, string signatureVal, string timestampVal, string accoutInfo,
-        string source)
+    private static ForbidResult? CheckParams(string? timestampVal ,string? userName)
     {
         var errors = new List<string>();
-        if (string.IsNullOrWhiteSpace(source))
+        if (string.IsNullOrWhiteSpace(userName))
         {
             errors.Add("invalid parameter source.");
         }
 
-        if (source != _source && string.IsNullOrWhiteSpace(publicKeyVal))
-        {
-            errors.Add("invalid parameter pubkey.");
-        }
-
-        if (string.IsNullOrWhiteSpace(signatureVal))
-        {
-            errors.Add("invalid parameter signature.");
-        }
-
-        if (source != _source && string.IsNullOrWhiteSpace(timestampVal) || !long.TryParse(timestampVal, out var time) || time <= 0)
+        if (string.IsNullOrWhiteSpace(timestampVal) || !long.TryParse(timestampVal, out var time) || time <= 0)
         {
             errors.Add("invalid parameter timestamp.");
-        }
-
-        if (source == _source && string.IsNullOrWhiteSpace(accoutInfo))
-        {
-            errors.Add("invalid parameter account_info.");
         }
 
         if (errors.Count > 0)
@@ -176,12 +139,11 @@ public class SignatureGrantHandler: ITokenExtensionGrant
         return message;
     }
 
-    private async Task<bool> CreateUserAsync(IdentityUserManager userManager, Guid userId, string address,
-        string caHash,string caAddressMain,Dictionary<string, string> caAddressSide)
+    private async Task<bool> CreateUserAsync(IdentityUserManager userManager, Guid userId, 
+        string userName)
     {
         var result = false;
-        string userName = string.IsNullOrEmpty(caHash) ? address : caHash;
-        var user = new IdentityUser(userId, userName: userName, email: Guid.NewGuid().ToString("N") + "@nft-market.io");
+        var user = new IdentityUser(userId, userName: userName, email: userName+ "@ai-smart.io");
         var identityResult = await userManager.CreateAsync(user);
 
         if (identityResult.Succeeded)
