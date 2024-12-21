@@ -123,14 +123,18 @@ public abstract partial class GAgentBase<TState, TEvent>
             }
             else
             {
-                throw new InvalidOperationException(
-                    $"The event handler of {eventType.GetType()}'s return type needs to be inherit from EventBase.");
+                var errorMessage =
+                    $"The event handler of {eventType.GetType()}'s return type needs to be inherited from EventBase.";
+                Logger.LogError(errorMessage);
+                throw new InvalidOperationException(errorMessage);
             }
         }
         else
         {
-            throw new InvalidOperationException(
-                $"The event handler of {eventType.GetType()} needs to have a return value.");
+            var errorMessage =
+                $"The event handler of {eventType.GetType()} needs to have a return value.";
+            Logger.LogError(errorMessage);
+            throw new InvalidOperationException(errorMessage);
         }
     }
 }

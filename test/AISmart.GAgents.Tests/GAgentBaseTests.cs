@@ -65,6 +65,40 @@ public class GAgentBaseTests : GAgentTestKitBase
     }
 
     [Fact]
+    public async Task ResponseReturnTypeNotInheritedFromEventBaseTest()
+    {
+        var badEventHandlerTestGAgent = await Silo.CreateGrainAsync<FatalEventHandlerTestGAgent>(Guid.NewGuid());
+        var groupGAgent = await CreateGroupGAgentAsync(badEventHandlerTestGAgent);
+        var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
+
+        var exception = Should.Throw<InvalidOperationException>(async () =>
+        {
+            await publishingGAgent.PublishEventAsync(new ResponseTestEvent
+            {
+                Greeting = "Expecting an exception."
+            });
+        });
+        exception.Message.ShouldContain("return type needs to be inherited from EventBase.");
+    }
+    
+    [Fact]
+    public async Task ResponseEventNoResponseTypeTest()
+    {
+        var badEventHandlerTestGAgent = await Silo.CreateGrainAsync<FatalEventHandlerTestGAgent>(Guid.NewGuid());
+        var groupGAgent = await CreateGroupGAgentAsync(badEventHandlerTestGAgent);
+        var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
+
+        var exception = Should.Throw<InvalidOperationException>(async () =>
+        {
+            await publishingGAgent.PublishEventAsync(new AnotherResponseTestEvent
+            {
+                Greeting = "Expecting an exception."
+            });
+        });
+        exception.Message.ShouldContain("needs to have a return value.");
+    }
+
+    [Fact]
     public async Task RequestSubscribedEventListTest()
     {
         var eventHandlerTestGAgent = await Silo.CreateGrainAsync<EventHandlerTestGAgent>(Guid.NewGuid());
