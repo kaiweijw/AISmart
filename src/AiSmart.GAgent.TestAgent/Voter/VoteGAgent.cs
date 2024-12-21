@@ -48,12 +48,7 @@ public class VoteGAgent : MicroAIGAgent<VoterGEvent, VoteGEventResponse>, IVoter
 
             await PublishAsync(new SendMessageEvent
             {
-                Message = $"{State.AgentName}:{message}"
-            });
-
-            await PublishAsync(new AIReceiveMessageEvent
-            {
-                Message = $"{State.AgentName}:{message.Content}",
+                Message = $"{State.AgentName}:{message.Content}"
             });
         }
 

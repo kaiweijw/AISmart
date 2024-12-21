@@ -48,7 +48,7 @@ public class ConclusionGAgent : MicroAIGAgent<ConclusionGEvent, ConclusionGEvent
                 _logger.LogInformation("micro AI replyMessage:" + message.Content);
                 await PublishAsync(new SendMessageEvent
                 {
-                    Message = $"this is the conclusion:{message}"
+                    Message = $"this is the conclusion:{message.Content}"
                 });
             }
 
