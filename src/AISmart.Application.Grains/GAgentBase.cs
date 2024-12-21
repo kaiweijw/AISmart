@@ -442,6 +442,7 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         HandleStateChangedAsync();
         if (State is StateBase stateBase)
         {
+            //todo need optimize use kafka,ensure Es written successfully
             await CqrsProvider.PublishAsync(stateBase, this.GetGrainId().ToString());
         }
     }
