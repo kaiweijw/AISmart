@@ -433,13 +433,13 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
 
     }
 
-    protected virtual async void OnExtendedStateChangedAsync()
+    protected virtual async Task HandleStateChangedAsync()
     {
     }
 
     protected sealed override async void OnStateChanged()
     {
-        OnExtendedStateChangedAsync();
+        HandleStateChangedAsync();
         if (State is StateBase stateBase)
         {
             await CqrsProvider.PublishAsync(stateBase, this.GetGrainId().ToString());
