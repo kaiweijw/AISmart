@@ -4,6 +4,7 @@ using AISmart.CQRS;
 using AISmart.CQRS.Dto;
 using AISmart.CQRS.Handler;
 using AISmart.CQRS.Provider;
+using AISmart.GAgent.Core;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -38,6 +39,7 @@ public class CqrsProviderTest : AISmartApplicationTestBase
         services.AddMediatR(typeof(SaveStateCommandHandler).Assembly);
         services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
         services.AddMediatR(typeof(SendEventCommandHandler).Assembly);
+        services.AddSingleton<IEventDispatcher,CQRSProvider>();
         services.AddSingleton<ICQRSProvider,CQRSProvider>();
         services.AddSingleton<IGrainFactory>(_clusterClient);
         var serviceProvider = services.BuildServiceProvider();
