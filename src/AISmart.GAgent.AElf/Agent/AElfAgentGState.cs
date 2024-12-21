@@ -4,7 +4,6 @@ using AISmart.Agent.Event;
 using AISmart.Agent.GEvents;
 using Google.Protobuf;
 using Orleans;
-using Orleans.CodeGeneration;
 
 namespace AISmart.Agent;
 
