@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using AISmart.Agents;
+using AISmart.CQRS.Provider;
 using AISmart.Dapr;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.EventSourcing;
 using Orleans.Providers;
@@ -25,11 +27,13 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     protected readonly List<EventWrapperBaseAsyncObserver> Observers = new();
+    private ICQRSProvider CqrsProvider { get; set; }
 
     protected GAgentBase(ILogger logger, [PersistentState("subscribers")] IPersistentState<List<GrainId>>? subscribers = null)
     {
         Subscribers = subscribers;
         Logger = logger;
+        CqrsProvider = this.ServiceProvider.GetRequiredService<ICQRSProvider>();
     }
 
     public Task ActivateAsync()
@@ -424,7 +428,22 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
         else
         {
             throw new InvalidOperationException(
-                $"The event handler of {eventType.GetType()} needs to have a return value.");
+                $"The Cqevent handler of {eventType.GetType()} needs to have a return value.");
+        }
+
+    }
+
+    protected virtual async Task HandleStateChangedAsync()
+    {
+    }
+
+    protected sealed override async void OnStateChanged()
+    {
+        HandleStateChangedAsync();
+        if (State is StateBase stateBase)
+        {
+            //todo need optimize use kafka,ensure Es written successfully
+            await CqrsProvider.PublishAsync(stateBase, this.GetGrainId().ToString());
         }
     }
 }
