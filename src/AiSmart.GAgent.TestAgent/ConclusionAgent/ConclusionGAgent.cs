@@ -32,6 +32,7 @@ public class ConclusionGAgent : MicroAIGAgent<ConclusionGEvent, ConclusionGEvent
         {
             Message = new MicroAIMessage("user", @event.Message)
         });
+        
         RaiseEvent(new AIReplyMessageGEvent()
         {
             Message = new MicroAIMessage("user", @event.Message)
@@ -41,6 +42,9 @@ public class ConclusionGAgent : MicroAIGAgent<ConclusionGEvent, ConclusionGEvent
         ConclusionGEventResponse aiResponseEvent = new ConclusionGEventResponse();
         if (State.RecentMessages.Count >= _voteCount)
         {
+            RaiseEvent(new AIClearMessageGEvent());
+            await ConfirmEvents();
+
             var message = await GrainFactory.GetGrain<IChatAgentGrain>(State.AgentName)
                 .SendAsync(@event.Message, State.RecentMessages.ToList());
             if (message != null && !message.Content.IsNullOrEmpty())
@@ -51,8 +55,6 @@ public class ConclusionGAgent : MicroAIGAgent<ConclusionGEvent, ConclusionGEvent
                     Message = $"this is the conclusion:{message.Content}"
                 });
             }
-
-            list.Add(new AIClearMessageGEvent());
         }
 
         RaiseEvents(list);

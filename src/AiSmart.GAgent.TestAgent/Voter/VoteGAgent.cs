@@ -28,7 +28,7 @@ public class VoteGAgent : MicroAIGAgent<VoterGEvent, VoteGEventResponse>, IVoter
         {
             Message = new MicroAIMessage("user", @event.Message)
         });
-
+        
         VoteGEventResponse aiResponseEvent = new VoteGEventResponse();
         var message = await GrainFactory.GetGrain<IChatAgentGrain>(State.AgentName)
             .SendAsync(@event.Message, State.RecentMessages.ToList());
@@ -40,12 +40,12 @@ public class VoteGAgent : MicroAIGAgent<VoterGEvent, VoteGEventResponse>, IVoter
                 Message = message
             });
 
-            aiResponseEvent.Content = message.Content;
-            await PublishAsync(new ConclusionGEvent
+            aiResponseEvent.Content = "Done";
+            await PublishAsync(new ConclusionGEvent()
             {
-                Message = State.AgentName + ": " + message.Content
+                Message = message.Content
             });
-
+            
             await PublishAsync(new SendMessageEvent
             {
                 Message = $"{State.AgentName}:{message.Content}"

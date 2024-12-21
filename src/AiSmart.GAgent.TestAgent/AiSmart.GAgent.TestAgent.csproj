@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AISmart.Application.Contracts\AISmart.Application.Contracts.csproj" />
+      <ProjectReference Include="..\AISmart.GAgent.Autogen\AISmart.GAgent.Autogen.csproj" />
       <ProjectReference Include="..\AISmart.GAgent.MicroAI\AISmart.GAgent.MicroAI.csproj" />
     </ItemGroup>
 
