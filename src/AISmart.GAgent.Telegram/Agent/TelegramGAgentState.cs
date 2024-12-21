@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using AISmart.Agent.GEvents;
+using AISmart.Agents;
 using Orleans;
 
 namespace AISmart.Agent;
 
-public class TelegramGAgentState
+public class TelegramGAgentState : StateBase
 {
     [Id(0)] public Guid Id { get; set; } = Guid.NewGuid();
     

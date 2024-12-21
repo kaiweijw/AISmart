@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Orleans.Core;
+using Orleans.Storage;
 using Orleans.TestKit.Reminders;
 using Orleans.TestKit.Storage;
 
@@ -25,15 +26,17 @@ public sealed class TestGrainCreator
 
     private readonly IGrainRuntime _runtime;
     private readonly IReminderRegistry _reminderRegistry;
+    private readonly IGrainStorage _grainStorage;
 
     private readonly PropertyInfo _runtimeProperty;
 
     private readonly IServiceProvider _serviceProvider;
 
-    public TestGrainCreator(IGrainRuntime runtime, IReminderRegistry reminderRegistry, IServiceProvider serviceProvider)
+    public TestGrainCreator(IGrainRuntime runtime, IReminderRegistry reminderRegistry, IGrainStorage grainStorage, IServiceProvider serviceProvider)
     {
         _runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
         _reminderRegistry = reminderRegistry;
+        _grainStorage = grainStorage;
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(runtime));
         _contextProperty = typeof(Grain).GetProperty(GRAINCONTEXT_PROPERTYNAME, BindingFlags.Instance | BindingFlags.Public);
         _runtimeProperty = typeof(Grain).GetProperty(RUNTIME_PROPERTYNAME, BindingFlags.Instance | BindingFlags.NonPublic);
@@ -230,6 +233,12 @@ public sealed class TestGrainCreator
                 {
                     instances.Add(_runtime);
                     types.Add(typeof(IGrainRuntime));
+                }
+
+                if (parameter.ParameterType == typeof(IGrainStorage))
+                {
+                    instances.Add(_grainStorage);
+                    types.Add(typeof(IGrainStorage));
                 }
             }
         }

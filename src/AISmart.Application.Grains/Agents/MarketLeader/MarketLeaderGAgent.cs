@@ -3,6 +3,7 @@ using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.MarketLeader;
 using AISmart.Agents.MarketLeader.Events;
 using AISmart.Events;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
@@ -32,11 +33,5 @@ public class MarketLeaderGAgent : GAgentBase<MarketLeaderAgentState, MarketLeade
         {
             Content = "Done"
         };
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        GrainTracker.MarketLeaderAgents.Enqueue(this);
-        await base.OnActivateAsync(cancellationToken);
     }
 }
