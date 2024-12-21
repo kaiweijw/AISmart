@@ -34,7 +34,7 @@ public class LogViewAdaptorTestGAgent
 }
 
 [GenerateSerializer]
-public class LogViewAdaptorTestGState
+public class LogViewAdaptorTestGState : StateBase
 {
     [Id(0)] public Guid Id { get; set; }
 

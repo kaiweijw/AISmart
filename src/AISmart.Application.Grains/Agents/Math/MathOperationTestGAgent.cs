@@ -36,7 +36,7 @@ public class MathOperationGAgent : GAgentBase<MathOperationState, MathOperationE
 }
 
 [GenerateSerializer]
-public class MathOperationState
+public class MathOperationState : StateBase
 {
 }
 

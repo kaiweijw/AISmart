@@ -34,7 +34,7 @@ public class DrawOperationGAgent : GAgentBase<DrawOperationState, DrawOperateEve
 }
 
 [GenerateSerializer]
-public class DrawOperationState
+public class DrawOperationState : StateBase
 {
 }
 

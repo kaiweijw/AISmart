@@ -6,7 +6,7 @@ using Orleans.Storage;
 namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GenerateSerializer]
-public class NaiveTestGAgentState
+public class NaiveTestGAgentState : StateBase
 {
     [Id(0)]  public List<string> Content { get; set; }
 }

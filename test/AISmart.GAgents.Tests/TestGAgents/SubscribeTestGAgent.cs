@@ -6,7 +6,7 @@ using Orleans.Storage;
 namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GenerateSerializer]
-public class SubscribeTestGAgentState
+public class SubscribeTestGAgentState : StateBase
 {
     [Id(0)]  public Dictionary<Type, List<Type>> SubscriptionInfo { get; set; }
 }

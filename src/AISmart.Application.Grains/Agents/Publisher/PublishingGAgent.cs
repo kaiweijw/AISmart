@@ -9,7 +9,7 @@ using Orleans.Providers;
 namespace AISmart.Application.Grains.Agents.Publisher;
 
 [GenerateSerializer]
-public class PublishingAgentState
+public class PublishingAgentState : StateBase
 {
 }
 

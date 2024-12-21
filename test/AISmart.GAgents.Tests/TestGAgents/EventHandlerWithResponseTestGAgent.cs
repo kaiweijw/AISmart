@@ -7,7 +7,7 @@ using Orleans.Storage;
 namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GenerateSerializer]
-public class EventHandlerWithResponseTestGAgentState
+public class EventHandlerWithResponseTestGAgentState : StateBase
 {
     [Id(0)]  public List<string> Content { get; set; }
 }

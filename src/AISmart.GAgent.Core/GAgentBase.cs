@@ -14,7 +14,7 @@ namespace AISmart.GAgent.Core;
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateGAgent<TState>
-    where TState : class, new()
+    where TState : StateBase, new()
     where TEvent : GEventBase
 {
     protected IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
@@ -283,10 +283,8 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     protected sealed override async void OnStateChanged()
     {
         HandleStateChangedAsync();
-        if (State is StateBase stateBase)
-        {
-            //todo need optimize use kafka,ensure Es written successfully
-            await EventDispatcher.PublishAsync(stateBase, this.GetGrainId().ToString());
-        }
+
+        //TODO:  need optimize use kafka,ensure Es written successfully
+        await EventDispatcher.PublishAsync(State, this.GetGrainId().ToString());
     }
 }
