@@ -38,7 +38,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Author\" />
+        <Folder Include="Author\" />
     </ItemGroup>
 
 </Project>

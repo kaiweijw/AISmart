@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using AISmart.Agents;
+using AISmart.CQRS.Provider;
 using AISmart.Dapr;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -26,11 +27,13 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     protected readonly List<EventWrapperBaseAsyncObserver> Observers = new();
+    private ICQRSProvider CqrsProvider { get; set; }
 
     protected GAgentBase(ILogger logger)
     {
         Logger = logger;
         GrainStorage = ServiceProvider.GetRequiredService<IGrainStorage>();
+        CqrsProvider = this.ServiceProvider.GetRequiredService<ICQRSProvider>();
     }
 
     public Task ActivateAsync()
@@ -272,5 +275,19 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         await UpdateObserverList();
+    }
+    
+    protected virtual async Task HandleStateChangedAsync()
+    {
+    }
+
+    protected sealed override async void OnStateChanged()
+    {
+        HandleStateChangedAsync();
+        if (State is StateBase stateBase)
+        {
+            //todo need optimize use kafka,ensure Es written successfully
+            await CqrsProvider.PublishAsync(stateBase, this.GetGrainId().ToString());
+        }
     }
 }
