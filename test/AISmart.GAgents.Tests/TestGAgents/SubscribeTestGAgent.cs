@@ -1,11 +1,12 @@
 using AISmart.Agents;
-using AISmart.Application.Grains;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
+using Orleans.Storage;
 
-namespace AISmart.Grains.Tests.TestGAgents;
+namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GenerateSerializer]
-public class SubscribeTestGAgentState
+public class SubscribeTestGAgentState : StateBase
 {
     [Id(0)]  public Dictionary<Type, List<Type>> SubscriptionInfo { get; set; }
 }

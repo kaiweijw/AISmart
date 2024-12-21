@@ -5,7 +5,7 @@ using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Sender;
 using Orleans.TestKit;
 
-namespace AISmart.Grains.Tests;
+namespace AISmart.GGrains.Tests;
 
 public abstract class GAgentTestKitBase : TestKitBase
 {
@@ -29,8 +29,6 @@ public abstract class GAgentTestKitBase : TestKitBase
             await groupGAgent.Register(gAgent);
         }
 
-        //await groupGAgent.Register(groupGAgent);
-
         return groupGAgent;
     }
 
@@ -42,7 +40,6 @@ public abstract class GAgentTestKitBase : TestKitBase
         }
     }
 
-    [Obsolete("Use AddProbesByGrainId.")]
     protected void AddProbesByIdSpan(params IGAgent?[] gAgents)
     {
         var parameter = Expression.Parameter(typeof(IdSpan), "idSpan");

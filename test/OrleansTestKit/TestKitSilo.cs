@@ -18,6 +18,7 @@ using Orleans.Serialization;
 using Orleans.Serialization.Cloning;
 using Orleans.Serialization.Configuration;
 using Orleans.Serialization.Serializers;
+using Orleans.Storage;
 using Orleans.TestKit.Reminders;
 using Orleans.TestKit.Services;
 using Orleans.TestKit.Storage;
@@ -52,6 +53,7 @@ public sealed class TestKitSilo
         GrainFactory = new TestGrainFactory(Options);
         ServiceProvider = new TestServiceProvider(Options);
         StorageManager = new StorageManager(Options);
+        TestGrainStorage = new TestGrainStorage(StorageManager);
         TimerRegistry = new TestTimerRegistry();
         ReminderRegistry = new TestReminderRegistry();
         StreamProviderManager = new TestStreamProviderManager(ServiceProvider, Options);
@@ -61,7 +63,8 @@ public sealed class TestKitSilo
         var mockOptionsManager = new Mock<IOptions<TypeManifestOptions>>();
         mockOptionsManager.Setup(m => m.Value).Returns(new TypeManifestOptions());
         var codecProvider = new CodecProvider(ServiceProvider, mockOptionsManager.Object);
-        LogConsistencyProvider = new TestLogConsistencyProvider(ServiceProvider, TestLogConsistentStorage);
+        LogConsistencyProvider =
+            new TestLogConsistencyProvider(ServiceProvider, TestLogConsistentStorage, TestGrainStorage);
         ServiceProvider.AddKeyedService<ILogViewAdaptorFactory>("LogStorage", LogConsistencyProvider);
         ProtocolServices = new DefaultProtocolServices(new Mock<IGrainContext>().Object, NullLoggerFactory.Instance,
             new DeepCopier(codecProvider, new CopyContextPool(codecProvider)), null!);
@@ -72,14 +75,14 @@ public sealed class TestKitSilo
         GrainRuntime =
             new TestGrainRuntime(GrainFactory, TimerRegistry, ReminderRegistry, ServiceProvider, StorageManager);
         ServiceProvider.AddService<IGrainRuntime>(GrainRuntime);
-        _grainCreator = new TestGrainCreator(GrainRuntime, ReminderRegistry, ServiceProvider);
+        _grainCreator = new TestGrainCreator(GrainRuntime, ReminderRegistry, TestGrainStorage, ServiceProvider);
 
         ServiceProvider.AddService<IAElfNodeProvider>(new MockAElfNodeProvider());
         
         var manager = new AgentDescriptionManager();
         ServiceProvider.AddService(manager);
         ServiceProvider.AddService(new AutoGenExecutor(NullLogger<AutoGenExecutor>.Instance, GrainFactory, manager, new TestChatAgentProvider()));
-
+        ServiceProvider.AddService<IGrainStorage>(TestGrainStorage);
         var provider = new ServiceCollection()
             .AddSingleton<GrainTypeResolver>()
             .AddSingleton<IGrainTypeProvider, AttributeGrainTypeProvider>()
@@ -111,6 +114,8 @@ public sealed class TestKitSilo
 
     /// <summary>Gets the manager of all test silo storage.</summary>
     public StorageManager StorageManager { get; }
+
+    public TestGrainStorage TestGrainStorage { get; set; }
 
     /// <summary>Gets the manager of all test silo streams.</summary>
     public TestStreamProviderManager StreamProviderManager { get; }
@@ -156,7 +161,7 @@ public sealed class TestKitSilo
         await _grainLifecycle.TriggerStopAsync().ConfigureAwait(false);
 
         deactivationReason ??= new DeactivationReason(DeactivationReasonCode.ShuttingDown,
-            $"TestKit {nameof(TestKitSilo.DeactivateAsync)} called");
+            $"TestKit {nameof(DeactivateAsync)} called");
         await grain.OnDeactivateAsync(deactivationReason.Value, cancellationToken).ConfigureAwait(false);
     }
 

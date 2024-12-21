@@ -1,18 +1,17 @@
 using AISmart.Agents;
-using AISmart.Application.Grains;
-using AISmart.Grains.Tests.TestEvents;
+using AISmart.GAgent.Core;
+using AISmart.GAgents.Tests.TestEvents;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace AISmart.Grains.Tests.TestGAgents;
+namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GAgent]
 public class LogViewAdaptorTestGAgent
     : GAgentBase<LogViewAdaptorTestGState, LogViewAdaptorTestGEvent>
 {
-    public LogViewAdaptorTestGAgent() : base(NullLogger.Instance)
+    public LogViewAdaptorTestGAgent(ILogger logger) : base(logger)
     {
-        
     }
 
     public override Task<string> GetDescriptionAsync()
@@ -32,16 +31,10 @@ public class LogViewAdaptorTestGAgent
         });
         await ConfirmEvents();
     }
-
-    public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
-    {
-        State.Content.Clear();
-        return base.OnDeactivateAsync(reason, cancellationToken);
-    }
 }
 
 [GenerateSerializer]
-public class LogViewAdaptorTestGState
+public class LogViewAdaptorTestGState : StateBase
 {
     [Id(0)] public Guid Id { get; set; }
 

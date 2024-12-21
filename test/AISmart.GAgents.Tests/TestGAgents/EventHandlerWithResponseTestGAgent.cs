@@ -1,13 +1,13 @@
 using AISmart.Agents;
-using AISmart.Application.Grains;
-using AISmart.Grains.Tests.TestEvents;
+using AISmart.GAgent.Core;
+using AISmart.GAgents.Tests.TestEvents;
 using Microsoft.Extensions.Logging;
-using Orleans.Providers;
+using Orleans.Storage;
 
-namespace AISmart.Grains.Tests.TestGAgents;
+namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GenerateSerializer]
-public class EventHandlerWithResponseTestGAgentState
+public class EventHandlerWithResponseTestGAgentState : StateBase
 {
     [Id(0)]  public List<string> Content { get; set; }
 }

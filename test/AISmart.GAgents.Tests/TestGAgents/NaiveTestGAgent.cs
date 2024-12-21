@@ -1,11 +1,12 @@
 using AISmart.Agents;
-using AISmart.Application.Grains;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
+using Orleans.Storage;
 
-namespace AISmart.Grains.Tests.TestGAgents;
+namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GenerateSerializer]
-public class NaiveTestGAgentState
+public class NaiveTestGAgentState : StateBase
 {
     [Id(0)]  public List<string> Content { get; set; }
 }
