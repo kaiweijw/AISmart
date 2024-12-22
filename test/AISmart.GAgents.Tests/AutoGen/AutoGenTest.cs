@@ -5,7 +5,7 @@ using AISmart.Application.Grains.Agents.Math;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.GAgent.Autogen;
 using AISmart.GAgent.Autogen.Events;
-using AISmart.GGrains.Tests;
+using AISmart.GAgents.Tests;
 using AISmart.Sender;
 using Orleans.TestKit;
 

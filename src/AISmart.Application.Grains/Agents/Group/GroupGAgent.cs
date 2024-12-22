@@ -40,7 +40,7 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
         var agentGuid = this.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        foreach (var observer in Observers)
+        foreach (var observer in Observers.Keys)
         {
             await stream.SubscribeAsync(observer);
         }

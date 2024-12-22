@@ -3,7 +3,7 @@ using AISmart.Agent.Grains;
 using AISmart.Application.Grains.Agents.Group;
 using AISmart.Application.Grains.Agents.Publisher;
 using AISmart.Events;
-using AISmart.GGrains.Tests;
+using AISmart.GAgents.Tests;
 using AISmart.Grains;
 using AISmart.Sender;
 using Orleans.TestKit;

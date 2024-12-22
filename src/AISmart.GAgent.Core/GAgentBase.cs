@@ -22,9 +22,10 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     protected readonly ILogger Logger;
     protected readonly IGrainStorage GrainStorage;
 
-    // need to use persistent storage to store this
-
-    protected readonly List<EventWrapperBaseAsyncObserver> Observers = new();
+    /// <summary>
+    /// Observer -> HandleId
+    /// </summary>
+    protected readonly Dictionary<EventWrapperBaseAsyncObserver, Guid> Observers = new();
     private IEventDispatcher EventDispatcher { get; set; }
 
     protected GAgentBase(ILogger logger)
@@ -56,7 +57,21 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
 
     public async Task<bool> UnsubscribeFrom(IGAgent agent)
     {
-        return await RemoveSubscriptionsAsync(agent.GetPrimaryKey());
+        var agentGuid = agent.GetPrimaryKey();
+        if (await RemoveSubscriptionsAsync(agentGuid))
+        {
+            var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
+            var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
+            var handlers = await stream.GetAllSubscriptionHandles();
+            foreach (var handle in handlers.Where(h => Observers.ContainsValue(h.HandleId)))
+            {
+                await handle.UnsubscribeAsync();
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public async Task<bool> PublishTo(IGAgent agent)
@@ -189,9 +204,11 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
 
     private async Task SubscribeAsync(IAsyncStream<EventWrapperBase> stream)
     {
-        foreach (var observer in Observers)
+        foreach (var observer in Observers.Keys)
         {
-            await stream.SubscribeAsync(observer);
+            var handle = await stream.SubscribeAsync(observer);
+            var handleId = handle.HandleId;
+            Observers[observer] = handleId;
         }
     }
 

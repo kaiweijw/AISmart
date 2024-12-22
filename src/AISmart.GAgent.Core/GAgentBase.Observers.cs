@@ -45,7 +45,7 @@ public abstract partial class GAgentBase<TState, TEvent>
                 }
             });
 
-            Observers.Add(observer);
+            Observers.Add(observer, Guid.Empty);
         }
 
         return Task.CompletedTask;

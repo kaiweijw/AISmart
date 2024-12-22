@@ -33,77 +33,68 @@ public abstract partial class GAgentBase<TState, TEvent>
 
     protected async Task LoadSubscriptionsAsync()
     {
-        if (_subscriptions.State.IsNullOrEmpty())
-        {
-            await GrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscriptionsStateName, this.GetGrainId(),
-                _subscriptions);
-        }
+        await LoadStateAsync(_subscriptions, AISmartGAgentConstants.SubscriptionsStateName);
     }
 
     protected async Task<bool> AddSubscriptionsAsync(Guid guid, IAsyncStream<EventWrapperBase> stream)
     {
-        await LoadSubscriptionsAsync();
-        _subscriptions.State ??= [];
-        var streamIdentity = GetStreamIdentity(guid, stream);
-        var result = _subscriptions.State.TryAdd(guid, streamIdentity);
-        await GrainStorage.WriteStateAsync(AISmartGAgentConstants.SubscriptionsStateName, this.GetGrainId(),
-            _subscriptions);
-        return result;
+        return await AddStreamAsync(guid, stream, _subscriptions, AISmartGAgentConstants.SubscriptionsStateName);
     }
-    
+
     protected async Task<bool> RemoveSubscriptionsAsync(Guid guid)
     {
-        await LoadSubscriptionsAsync();
-        if (_subscriptions.State.IsNullOrEmpty())
-        {
-            return false;
-        }
-
-        if (!_subscriptions.State.Remove(guid))
-        {
-            return false;
-        }
-
-        await GrainStorage.WriteStateAsync(AISmartGAgentConstants.SubscriptionsStateName, this.GetGrainId(),
-            _subscriptions);
-        return true;
+        return await RemoveStreamAsync(guid, _subscriptions, AISmartGAgentConstants.SubscriptionsStateName);
     }
 
     protected async Task LoadPublishersAsync()
     {
-        if (_publishers.State.IsNullOrEmpty())
-        {
-            await GrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName, this.GetGrainId(),
-                _publishers);
-        }
+        await LoadStateAsync(_publishers, AISmartGAgentConstants.PublishersStateName);
     }
 
     protected async Task<bool> AddPublishersAsync(Guid guid, IAsyncStream<EventWrapperBase> stream)
     {
-        await LoadPublishersAsync();
-        _publishers.State ??= [];
-        var streamIdentity = GetStreamIdentity(guid, stream);
-        var result = _publishers.State.TryAdd(guid, streamIdentity);
-        await GrainStorage.WriteStateAsync(AISmartGAgentConstants.PublishersStateName, this.GetGrainId(),
-            _publishers);
-        return result;
+        return await AddStreamAsync(guid, stream, _publishers, AISmartGAgentConstants.PublishersStateName);
     }
 
     protected async Task<bool> RemovePublishersAsync(Guid guid)
     {
-        await LoadPublishersAsync();
-        if (_publishers.State.IsNullOrEmpty())
+        return await RemoveStreamAsync(guid, _publishers, AISmartGAgentConstants.PublishersStateName);
+    }
+
+    protected async Task LoadStateAsync(IGrainState<Dictionary<Guid, StreamIdentity>> state, string stateName)
+    {
+        if (state.State.IsNullOrEmpty())
+        {
+            await GrainStorage.ReadStateAsync(stateName, this.GetGrainId(), state);
+        }
+    }
+
+    private async Task<bool> AddStreamAsync(Guid guid, IAsyncStream<EventWrapperBase> stream,
+        IGrainState<Dictionary<Guid, StreamIdentity>> state, string stateName)
+    {
+        await LoadStateAsync(state, stateName);
+        state.State ??= [];
+        var streamIdentity = GetStreamIdentity(guid, stream);
+        var success = state.State.TryAdd(guid, streamIdentity);
+        await GrainStorage.WriteStateAsync(stateName, this.GetGrainId(), state);
+        return success;
+    }
+
+    private async Task<bool> RemoveStreamAsync(Guid guid, IGrainState<Dictionary<Guid, StreamIdentity>> state,
+        string stateName)
+    {
+        await LoadStateAsync(state, stateName);
+        if (state.State.IsNullOrEmpty())
         {
             return false;
         }
 
-        if (!_publishers.State.Remove(guid))
+        if (!state.State.Remove(guid))
         {
             return false;
         }
 
-        await GrainStorage.WriteStateAsync(AISmartGAgentConstants.PublishersStateName, this.GetGrainId(),
-            _publishers);
+        await GrainStorage.WriteStateAsync(stateName, this.GetGrainId(), state);
         return true;
     }
 

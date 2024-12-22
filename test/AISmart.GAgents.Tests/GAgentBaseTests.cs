@@ -4,7 +4,7 @@ using AISmart.GAgents.Tests.TestEvents;
 using AISmart.GAgents.Tests.TestGAgents;
 using Shouldly;
 
-namespace AISmart.GGrains.Tests;
+namespace AISmart.GAgents.Tests;
 
 [Trait("Category", "BVT")]
 public class GAgentBaseTests : GAgentTestKitBase
@@ -33,6 +33,26 @@ public class GAgentBaseTests : GAgentTestKitBase
         var state = await eventHandlerTestGAgent.GetStateAsync();
         state.Content.Count.ShouldBe(3);
         state.Content.ShouldContain("Hello world");
+    }
+
+    [Fact]
+    public async Task UnregisterTest()
+    {
+        var eventHandlerTestGAgent = await Silo.CreateGrainAsync<EventHandlerTestGAgent>(Guid.NewGuid());
+        var groupGAgent = await CreateGroupGAgentAsync(eventHandlerTestGAgent);
+        var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
+        await publishingGAgent.PublishEventAsync(new NaiveTestEvent
+        {
+            Greeting = "Hello world"
+        });
+        var state = await eventHandlerTestGAgent.GetStateAsync();
+        state.Content.Count.ShouldBe(3);
+        await groupGAgent.Unregister(eventHandlerTestGAgent);
+        await publishingGAgent.PublishEventAsync(new NaiveTestEvent
+        {
+            Greeting = "Hello world"
+        });
+        state.Content.Count.ShouldBe(3);
     }
 
     [Fact]
@@ -123,7 +143,8 @@ public class GAgentBaseTests : GAgentTestKitBase
     [Fact]
     public async Task LogViewAdaptorTest()
     {
-        var logViewGAgent = await Silo.CreateGrainAsync<LogViewAdaptorTestGAgent>(Guid.NewGuid());
+        var guid = Guid.NewGuid();
+        var logViewGAgent = await Silo.CreateGrainAsync<LogViewAdaptorTestGAgent>(guid);
         var groupGAgent = await CreateGroupGAgentAsync(logViewGAgent);
         var publishingGAgent = await CreatePublishingGAgentAsync(groupGAgent);
 
@@ -138,7 +159,7 @@ public class GAgentBaseTests : GAgentTestKitBase
         (await GetLatestVersionAsync()).ShouldBe(0);
 
         await Silo.DeactivateAsync(logViewGAgent);
-        logViewGAgent = await Silo.CreateGrainAsync<LogViewAdaptorTestGAgent>(Guid.NewGuid());
+        logViewGAgent = await Silo.CreateGrainAsync<LogViewAdaptorTestGAgent>(guid);
 
         await publishingGAgent.PublishEventAsync(new NaiveTestEvent
         {
@@ -168,8 +189,8 @@ public class GAgentBaseTests : GAgentTestKitBase
 
     private async Task<bool> CheckCount(int expectedCount)
     {
-        return Silo.TestLogConsistentStorage.Storage.Count == expectedCount
-            && Silo.TestLogConsistentStorage.Storage.Last().Value.Count != 0;
+        return Silo.TestLogConsistentStorage.Storage.Count == 1
+               && Silo.TestLogConsistentStorage.Storage.Last().Value.Count == expectedCount;
     }
 
     private async Task<bool> CheckCount(LogViewAdaptorTestGState state, int expectedCount)
