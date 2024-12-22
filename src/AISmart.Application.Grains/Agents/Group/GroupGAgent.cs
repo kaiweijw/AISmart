@@ -4,7 +4,6 @@ using AISmart.Dapr;
 using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
-using Orleans.Storage;
 
 namespace AISmart.Application.Grains.Agents.Group;
 
@@ -46,7 +45,7 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
             await stream.SubscribeAsync(observer);
         }
 
-        TryAddPublisher(agentGuid, stream);
+        await AddPublishersAsync(agentGuid, stream);
 
         State.RegisteredAgents = 0;
     }

@@ -66,7 +66,7 @@ public abstract partial class GAgentBase<TState, TEvent>
             //     and the parameter is not EventWrapperBase 
             //     and the parameter is inherited from EventBase
             ((methodInfo.GetCustomAttribute<EventHandlerAttribute>() != null ||
-              methodInfo.Name == nameof(HandleEventAsync)) &&
+              methodInfo.Name == AISmartGAgentConstants.EventHandlerDefaultMethodName) &&
              methodInfo.GetParameters()[0].ParameterType != typeof(EventWrapperBase) &&
              typeof(EventBase).IsAssignableFrom(methodInfo.GetParameters()[0].ParameterType))
             // Or the method has the AllEventHandlerAttribute and the parameter is EventWrapperBase

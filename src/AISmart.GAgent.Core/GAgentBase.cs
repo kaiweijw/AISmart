@@ -23,8 +23,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     protected readonly IGrainStorage GrainStorage;
 
     // need to use persistent storage to store this
-    private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _subscriptions = new();
-    private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
+
     protected readonly List<EventWrapperBaseAsyncObserver> Observers = new();
     private IEventDispatcher EventDispatcher { get; set; }
 
@@ -46,7 +45,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        if (!_subscriptions.TryAdd(agentGuid, stream))
+        if (!await AddSubscriptionsAsync(agentGuid, stream))
         {
             return false;
         }
@@ -55,41 +54,22 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         return true;
     }
 
-    public Task<bool> UnsubscribeFrom(IGAgent agent)
+    public async Task<bool> UnsubscribeFrom(IGAgent agent)
     {
-        var agentGuid = agent.GetPrimaryKey();
-        if (!_subscriptions.ContainsKey(agentGuid))
-        {
-            return Task.FromResult(false);
-        }
-
-        _subscriptions.Remove(agentGuid);
-        //TODO: Unsubscribe from stream
-        return Task.FromResult(true);
+        return await RemoveSubscriptionsAsync(agent.GetPrimaryKey());
     }
 
-    public Task<bool> PublishTo(IGAgent agent)
+    public async Task<bool> PublishTo(IGAgent agent)
     {
         var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        return Task.FromResult(TryAddPublisher(agentGuid, stream));
+        return await AddPublishersAsync(agentGuid, stream);
     }
 
-    protected bool TryAddPublisher(Guid agentGuid, IAsyncStream<EventWrapperBase> stream)
+    public async Task<bool> UnpublishFrom(IGAgent agent)
     {
-        return _publishers.TryAdd(agentGuid, stream);
-    }
-
-    public Task<bool> UnpublishFrom(IGAgent agent)
-    {
-        if (!_publishers.ContainsKey(agent.GetPrimaryKey()))
-        {
-            return Task.FromResult(false);
-        }
-
-        _publishers.Remove(agent.GetPrimaryKey());
-        return Task.FromResult(true);
+        return await RemovePublishersAsync(agent.GetPrimaryKey());
     }
 
     public async Task Register(IGAgent agent)
@@ -135,14 +115,17 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     [EventHandler]
     public async Task<SubscribedEventListEvent> HandleRequestAllSubscriptionsEventAsync(RequestAllSubscriptionsEvent request)
     {
-        if (_subscribers == null)
+        await LoadSubscribersAsync();
+
+        var gAgentList = _subscribers.State.Select(grainId => GrainFactory.GetGrain<IGAgent>(grainId)).ToList();
+
+        if (gAgentList.IsNullOrEmpty())
         {
             return new SubscribedEventListEvent
             {
                 GAgentType = GetType()
             };
         }
-        var gAgentList = _subscribers.State.Select(grainId => GrainFactory.GetGrain<IGAgent>(grainId)).ToList();
 
         if (gAgentList.Any(grain => grain == null))
         {
@@ -191,72 +174,18 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
 
     private async Task PublishAsync<T>(EventWrapper<T> eventWrapper) where T : EventBase
     {
-        if (_publishers.Count == 0)
+        await LoadPublishersAsync();
+        if (_publishers.State.Count == 0)
         {
             return;
         }
 
-        foreach (var publisher in _publishers.Select(kp => kp.Value))
+        foreach (var publisher in _publishers.State.Select(kp => kp.Value))
         {
-            await publisher.OnNextAsync(eventWrapper);
+            var stream = GetStream(publisher);
+            await stream.OnNextAsync(eventWrapper);
         }
     }
-
-    private async Task AckAsync(EventWrapper<TEvent> eventWrapper)
-    {
-        // var pubAgent = _clusterClient.GetGrain<IAgent<TState>>(eventWrapper.GrainId);
-        //
-        // try
-        // {
-        //     await ExecuteAsync(eventWrapper.Event);
-        // }
-        // catch (Exception e)
-        // {
-        //     Logger.LogError(e, "Error executing event");
-        // }
-        //
-        // await ((pubAgent as GAgent<TState,TEvent>)!).DoAckAsync(eventWrapper);
-    }
-
-    private async Task DoAckAsync(EventWrapper<TEvent> eventWrapper)
-    {
-        // eventWrapper.count ++;
-        //
-        // RaiseEvent(eventWrapper.Event);
-        // await ConfirmEvents();
-        //
-        // var stream = this.GetStreamProvider(CommonConstants.StreamProvider)
-        //     .GetStream<EventWrapperBase>(StreamId);
-        // var subscriptionHandles =  stream.GetAllSubscriptionHandles();
-        // // The count of current subscriptions (consumers).
-        // var subscriberCount = subscriptionHandles.Result.Count;
-        //
-        // if (eventWrapper.count == subscriberCount)
-        // {
-        //     await CompleteAsync(eventWrapper.Event);
-        // }
-    }
-
-
-
-
-    // Agent3 -> Agent2 -> Agent3 dependencies through messages
-    // strong typed messages
-    // 3 messages sub -> 2 messages pub -> 3 messages pub
-
-    // twitter and telegram as a agent
-    // twitter and telegram agent publish message
-    // market leader agent subscribe to twitter and telegram agent
-    // market leader agent publish message to agentA and agentB
-    // agentA (investment) and agentB (developer) subscribe to market leader agent
-    // market leader agent waits for agentA and agentB to complete
-    // market leader agent execute something
-    // market leader agent publish message to twitter and telegram agent
-
-    // variation 2
-    // agentB sends to agentC to do transaction on chain
-
-    // how does dependency work between agents? just pub/sub messages enough?
 
     private async Task SubscribeAsync(IAsyncStream<EventWrapperBase> stream)
     {
@@ -264,11 +193,6 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         {
             await stream.SubscribeAsync(observer);
         }
-    }
-
-    private async Task HandleEventAsync(EventWrapperBase item)
-    {
-        Logger.LogInformation("Received message: {@Message}", item);
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
