@@ -11,6 +11,7 @@
     <ItemGroup>
       <PackageReference Include="AutoGen.Core" />
       <PackageReference Include="AutoGen.OpenAI" />
+      <PackageReference Include="Newtonsoft.Json" />
       <PackageReference Include="Volo.Abp.Core" />
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />

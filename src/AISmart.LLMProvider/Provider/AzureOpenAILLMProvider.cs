@@ -1,6 +1,4 @@
-using AISmart.AIProvider;
 using AISmart.LLMProvider.Options;
-using AutoGen.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
@@ -21,17 +19,18 @@ public class AzureOpenAILLMProvider : ILLMProvider<ChatMessageContent>, ITransie
         _autogenOptions = options.Value;
     }
 
-    public Task<ChatMessageContent> SendAsync(string message)
+    public Task<ChatMessageContent?> SendAsync(string message)
     {
         return SendAsync(message, null, null);
     }
 
-    public Task<ChatMessageContent> SendAsync(string message, List<ChatMessageContent> history)
+    public Task<ChatMessageContent?> SendAsync(string message, List<ChatMessageContent>? history)
     {
         return SendAsync(message, history, null);
     }
 
-    public async Task<ChatMessageContent> SendAsync(string message, List<ChatMessageContent> history, string? description)
+    public async Task<ChatMessageContent?> SendAsync(string message, List<ChatMessageContent>? history,
+        string? description)
     { 
         _logger.LogInformation("AzureAIProvider SendAsync start, message: {message}", message);
         // Populate values from your OpenAI deployment
@@ -54,10 +53,5 @@ public class AzureOpenAILLMProvider : ILLMProvider<ChatMessageContent>, ITransie
             chatHistory,
             kernel: kernel);
         return result;
-    }
-
-    public void SetAgent(string agentName, string systemMessage, FunctionCallMiddleware middleware)
-    {
-        throw new NotImplementedException();
     }
 }

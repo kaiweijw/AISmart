@@ -1,5 +1,3 @@
-using AISmart.AIProvider;
-using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Modularity;
 
 namespace AISmart.LLMProvider;
