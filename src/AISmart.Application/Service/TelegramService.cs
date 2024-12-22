@@ -132,7 +132,7 @@ public class TelegramService :  ApplicationService,ITelegramService
 
         var conclusionAgent = _clusterClient.GetGrain<IConclusionGAgent>(Guid.NewGuid());
         await conclusionAgent.SetAgent("Conclusion",
-            "I'm a  Summarizer, When I collect 7 votes, I will summarize the 7 votes,and compile statistics..");
+            "you are a Summarizer, When you collect 7 votes, compile statistics on the voting and draw a conclusion..");
         await conclusionAgent.SetVoteCount(voterCount);
         await groupAgent.Register(conclusionAgent);
 
