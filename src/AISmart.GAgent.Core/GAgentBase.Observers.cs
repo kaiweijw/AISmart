@@ -24,6 +24,16 @@ public abstract partial class GAgentBase<TState, TEvent>
                 var eventId = (Guid)item.GetType().GetProperty(nameof(EventWrapper<object>.EventId))?.GetValue(item)!;
                 var eventType = item.GetType().GetProperty(nameof(EventWrapper<object>.Event))?.GetValue(item);
                 var parameter = eventHandlerMethod.GetParameters()[0];
+
+                var contextStorageGrainId = (GrainId)item.GetType().GetProperty(nameof(EventWrapper<object>.ContextGrainId))
+                    ?.GetValue(item)!;
+                var contextStorageGrain = GrainFactory.GetGrain<IContextStorageGrain>(contextStorageGrainId.GetGuidKey());
+                if (contextStorageGrain != null)
+                {
+                    var context = await contextStorageGrain.GetContext();
+                    (eventType! as EventBase)!.SetContext(context);
+                }
+
                 if (parameter.ParameterType == eventType!.GetType())
                 {
                     await HandleMethodInvocationAsync(eventHandlerMethod, parameter, eventType, eventId);
