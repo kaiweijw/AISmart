@@ -1,17 +1,8 @@
-using System.IO;
 using System.Threading.Tasks;
 using AISmart.Application;
-using AISmart.Authors;
-using AISmart.Dapr;
-using AISmart.Dto;
-using AISmart.Provider;
-using AISmart.Service;
-using AISmart.Telegram;
 using Asp.Versioning;
-using Dapr;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Volo.Abp;
 
 namespace AISmart.Controllers;
@@ -19,12 +10,12 @@ namespace AISmart.Controllers;
 [RemoteService]
 [Area("app")]
 [ControllerName("loadTest")]
-public class LoadTestController: AISmartController
+public class LoadTestController : AISmartController
 {
     private readonly ILogger<LoadTestController> _logger;
     private readonly IDemoAppService _demoAppService;
 
-    public LoadTestController(ILogger<LoadTestController> logger, 
+    public LoadTestController(ILogger<LoadTestController> logger,
         IDemoAppService demoAppService)
     {
         _logger = logger;
@@ -32,8 +23,8 @@ public class LoadTestController: AISmartController
     }
 
     [HttpGet("load-test")]
-    public async Task PostMessages(int aGAgentCount, int bGAgentCount, int cGAgentCount)
+    public async Task PostMessages(int mockAGAgentCount, int mockBGAgentCount, int mockCGAgentCount)
     {
-        await _demoAppService.AgentLoadTest( aGAgentCount,  bGAgentCount,  cGAgentCount);
+        await _demoAppService.AgentLoadTest(mockAGAgentCount, mockBGAgentCount, mockCGAgentCount);
     }
 }

@@ -66,7 +66,7 @@ public class DemoAppService : ApplicationService, IDemoAppService
         var investmentAgentState = await investmentAgent.GetStateAsync();
         return investmentAgentState.Content.First();
     }
-    
+
     public async Task<string> AutogenGAgentTest()
     {
         var groupGAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
@@ -93,25 +93,25 @@ public class DemoAppService : ApplicationService, IDemoAppService
 
         return "aa";
     }
-    
-    public async Task AgentLoadTest(int aGAgentCount, int bGAgentCount, int cGAgentCount)
+
+    public async Task AgentLoadTest(int mockAGAgentCount, int mockBGAgentCount, int mockCGAgentCount)
     {
         var groupGAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
-        
-        for (int i = 0; i < aGAgentCount; i++)
+
+        for (int i = 0; i < mockAGAgentCount; i++)
         {
             var aGAgent = _clusterClient.GetGrain<IStateGAgent<MockAGAgent>>(Guid.NewGuid());
             await groupGAgent.Register(aGAgent);
         }
-        
-        for (int i = 0; i < bGAgentCount; i++)
+
+        for (int i = 0; i < mockBGAgentCount; i++)
         {
             var bGAgent = _clusterClient.GetGrain<IStateGAgent<MockBGAgent>>(Guid.NewGuid());
             await groupGAgent.Register(bGAgent);
         }
-        
-        for (int i = 0; i < cGAgentCount; i++)
+
+        for (int i = 0; i < mockCGAgentCount; i++)
         {
             var cGAgent = _clusterClient.GetGrain<IStateGAgent<MockCGAgent>>(Guid.NewGuid());
             await groupGAgent.Register(cGAgent);
