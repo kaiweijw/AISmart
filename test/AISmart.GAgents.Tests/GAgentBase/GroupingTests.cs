@@ -7,7 +7,7 @@ using Shouldly;
 namespace AISmart.GAgents.Tests.GAgentBase;
 
 [Trait("Category", "BVT")]
-public class GroupGAgentTests : GAgentTestKitBase
+public class GroupingTests : GAgentTestKitBase
 {
     [Fact(DisplayName = "GroupGAgent should be initialized correctly.")]
     public async Task InitGroupGAgentTest()
@@ -203,6 +203,118 @@ public class GroupGAgentTests : GAgentTestKitBase
                 subscribers);
             subscribers.State.Count.ShouldBe(1);
             subscribers.State.First().ShouldBe(naiveTestGAgent.GetGrainId());
+        }
+    }
+
+    [Fact(DisplayName = "One gAgent should be unregistered correctly from multiple group.")]
+    public async Task MultipleGroupRegisterAndUnregisterOneGAgentTest()
+    {
+        // Arrange.
+        var naiveTestGAgent = await Silo.CreateGrainAsync<NaiveTestGAgent>(Guid.NewGuid());
+        var groupGAgent1 = await CreateGroupGAgentAsync(naiveTestGAgent);
+        var groupGAgent2 = await CreateGroupGAgentAsync(naiveTestGAgent);
+        var groupGAgent3 = await CreateGroupGAgentAsync(naiveTestGAgent);
+
+        // Act.
+        await groupGAgent1.UnregisterAsync(naiveTestGAgent);
+
+        // Assert: Check member's states from GrainStorage.
+        {
+            var subscriptions = new GrainState<Dictionary<Guid, StreamIdentity>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscriptionsStateName,
+                naiveTestGAgent.GetGrainId(),
+                subscriptions);
+            subscriptions.State.Count.ShouldBe(2);
+
+            var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
+                naiveTestGAgent.GetGrainId(),
+                publishers);
+            publishers.State.Count.ShouldBe(3);
+        }
+
+        // Assert: Check groupGAgent1's states from GrainStorage.
+        {
+            var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
+                groupGAgent1.GetGrainId(),
+                publishers);
+            publishers.State.Count.ShouldBe(1);
+            publishers.State.First().Value.Guid.ShouldBe(groupGAgent1.GetPrimaryKey());
+
+            var subscribers = new GrainState<List<GrainId>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscribersStateName,
+                groupGAgent1.GetGrainId(),
+                subscribers);
+            subscribers.State.Count.ShouldBe(0);
+        }
+
+        // Act.
+        await groupGAgent2.UnregisterAsync(naiveTestGAgent);
+
+        // Assert: Check member's states from GrainStorage.
+        {
+            var subscriptions = new GrainState<Dictionary<Guid, StreamIdentity>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscriptionsStateName,
+                naiveTestGAgent.GetGrainId(),
+                subscriptions);
+            subscriptions.State.Count.ShouldBe(1);
+
+            var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
+                naiveTestGAgent.GetGrainId(),
+                publishers);
+            publishers.State.Count.ShouldBe(2);
+        }
+
+        // Assert: Check groupGAgent2's states from GrainStorage.
+        {
+            var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
+                groupGAgent2.GetGrainId(),
+                publishers);
+            publishers.State.Count.ShouldBe(1);
+            publishers.State.First().Value.Guid.ShouldBe(groupGAgent2.GetPrimaryKey());
+
+            var subscribers = new GrainState<List<GrainId>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscribersStateName,
+                groupGAgent2.GetGrainId(),
+                subscribers);
+            subscribers.State.Count.ShouldBe(0);
+        }
+
+        // Act.
+        await groupGAgent3.UnregisterAsync(naiveTestGAgent);
+
+        // Assert: Check member's states from GrainStorage.
+        {
+            var subscriptions = new GrainState<Dictionary<Guid, StreamIdentity>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscriptionsStateName,
+                naiveTestGAgent.GetGrainId(),
+                subscriptions);
+            subscriptions.State.Count.ShouldBe(0);
+
+            var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
+                naiveTestGAgent.GetGrainId(),
+                publishers);
+            publishers.State.Count.ShouldBe(1);
+        }
+
+        // Assert: Check groupGAgent3's states from GrainStorage.
+        {
+            var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
+                groupGAgent3.GetGrainId(),
+                publishers);
+            publishers.State.Count.ShouldBe(1);
+            publishers.State.First().Value.Guid.ShouldBe(groupGAgent3.GetPrimaryKey());
+
+            var subscribers = new GrainState<List<GrainId>>();
+            await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscribersStateName,
+                groupGAgent3.GetGrainId(),
+                subscribers);
+            subscribers.State.Count.ShouldBe(0);
         }
     }
 }

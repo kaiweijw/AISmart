@@ -14,14 +14,30 @@ public class EventHandlingTests : GAgentTestKitBase
         // Arrange.
         var eventHandlerTestGAgent = await Silo.CreateGrainAsync<EventHandlerTestGAgent>(Guid.NewGuid());
 
-        // Act.
-        var subscribedEventList = await eventHandlerTestGAgent.GetAllSubscribedEventsAsync();
+        {
+            // Act.
+            var subscribedEventList = await eventHandlerTestGAgent.GetAllSubscribedEventsAsync();
 
-        // Assert.
-        subscribedEventList.ShouldNotBeNull();
-        subscribedEventList.Count.ShouldBe(3);
-        subscribedEventList.ShouldContain(typeof(NaiveTestEvent));
-        subscribedEventList.ShouldContain(typeof(EventWrapperBase));
+            // Assert.
+            subscribedEventList.ShouldNotBeNull();
+            subscribedEventList.Count.ShouldBe(3);
+            subscribedEventList.ShouldContain(typeof(NaiveTestEvent));
+            subscribedEventList.Count(e => e == typeof(NaiveTestEvent)).ShouldBe(2);
+            subscribedEventList.ShouldContain(typeof(EventWrapperBase));
+        }
+
+        {
+            // Act.
+            var subscribedEventList = await eventHandlerTestGAgent.GetAllSubscribedEventsAsync(true);
+
+            // Assert.
+            subscribedEventList.ShouldNotBeNull();
+            subscribedEventList.Count.ShouldBe(4);
+            subscribedEventList.ShouldContain(typeof(NaiveTestEvent));
+            subscribedEventList.Count(e => e == typeof(NaiveTestEvent)).ShouldBe(2);
+            subscribedEventList.ShouldContain(typeof(EventWrapperBase));
+            subscribedEventList.ShouldContain(typeof(RequestAllSubscriptionsEvent));
+        }
     }
 
     [Fact(DisplayName = "Event handler's register and unregister works.")]
