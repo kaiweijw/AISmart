@@ -5,7 +5,7 @@ on:
     branches:
       - "release/*"
 
-run-name: Deploy AiSmart on ${{ github.ref }} to Testnet from ${{ github.sha }})
+run-name: Deploy AiSmart on ${{ github.ref }} to Testnet from ${{ github.sha }}
 
 env:
   DOTNET_INSTALL_DIR: "./.dotnet"
@@ -27,9 +27,18 @@ jobs:
           ]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - name: Cache dotnet
+        id: cache-dotnet
+        uses: actions/cache@v4
         with:
-          dotnet-version: "8.0"
+          path: ${{ env.DOTNET_INSTALL_DIR }}
+          key: cache-sdk-dotnet-8
+          restore-keys: cache-sdk-dotnet-8
+      - name: Install dotnet
+        if: ${{ steps.cache-dotnet.outputs.cache-hit != 'true' }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0
       - name: Cache NuGet Packages
         id: nuget-packages
         uses: actions/cache@v4
