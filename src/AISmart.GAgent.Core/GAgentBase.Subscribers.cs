@@ -13,7 +13,7 @@ public abstract partial class GAgentBase<TState, TEvent>
     private readonly IGrainState<Dictionary<Guid, StreamIdentity>> _publishers =
         new GrainState<Dictionary<Guid, StreamIdentity>>();
 
-    protected async Task LoadSubscribersAsync()
+    private async Task LoadSubscribersAsync()
     {
         if (_subscribers.State.IsNullOrEmpty())
         {
@@ -22,7 +22,7 @@ public abstract partial class GAgentBase<TState, TEvent>
         }
     }
 
-    protected async Task AddSubscriberAsync(GrainId grainId)
+    private async Task AddSubscriberAsync(GrainId grainId)
     {
         await LoadSubscribersAsync();
         _subscribers.State ??= [];
@@ -30,50 +30,51 @@ public abstract partial class GAgentBase<TState, TEvent>
         await GrainStorage.WriteStateAsync(AISmartGAgentConstants.SubscribersStateName, this.GetGrainId(),
             _subscribers);
     }
-    
-    protected async Task RemoveSubscriberAsync(GrainId grainId)
+
+    private async Task RemoveSubscriberAsync(GrainId grainId)
     {
         await LoadSubscribersAsync();
         if (_subscribers.State.IsNullOrEmpty())
         {
             return;
         }
+
         _subscribers.State.Remove(grainId);
         await GrainStorage.WriteStateAsync(AISmartGAgentConstants.SubscribersStateName, this.GetGrainId(),
             _subscribers);
     }
 
-    protected async Task LoadSubscriptionsAsync()
+    private async Task LoadSubscriptionsAsync()
     {
         await LoadStateAsync(_subscriptions, AISmartGAgentConstants.SubscriptionsStateName);
     }
 
-    protected async Task<bool> AddSubscriptionsAsync(Guid streamGuid, IAsyncStream<EventWrapperBase> stream)
+    private async Task<bool> AddSubscriptionsAsync(Guid streamGuid, IAsyncStream<EventWrapperBase> stream)
     {
         return await AddStreamAsync(streamGuid, stream, _subscriptions, AISmartGAgentConstants.SubscriptionsStateName);
     }
 
-    protected async Task<bool> RemoveSubscriptionsAsync(Guid streamGuid)
+    private async Task<bool> RemoveSubscriptionsAsync(Guid streamGuid)
     {
         return await RemoveStreamAsync(streamGuid, _subscriptions, AISmartGAgentConstants.SubscriptionsStateName);
     }
 
-    protected async Task LoadPublishersAsync()
+    private async Task LoadPublishersAsync()
     {
         await LoadStateAsync(_publishers, AISmartGAgentConstants.PublishersStateName);
     }
 
-    protected async Task<bool> AddPublishersAsync(Guid streamGuid, IAsyncStream<EventWrapperBase> stream)
+    private async Task<bool> AddPublishersAsync(Guid streamGuid, IAsyncStream<EventWrapperBase> stream)
     {
         return await AddStreamAsync(streamGuid, stream, _publishers, AISmartGAgentConstants.PublishersStateName);
     }
 
-    protected async Task<bool> RemovePublishersAsync(Guid streamGuid)
+    private async Task<bool> RemovePublishersAsync(Guid streamGuid)
     {
         return await RemoveStreamAsync(streamGuid, _publishers, AISmartGAgentConstants.PublishersStateName);
     }
 
-    protected async Task LoadStateAsync(IGrainState<Dictionary<Guid, StreamIdentity>> state, string stateName)
+    private async Task LoadStateAsync(IGrainState<Dictionary<Guid, StreamIdentity>> state, string stateName)
     {
         if (state.State.IsNullOrEmpty())
         {

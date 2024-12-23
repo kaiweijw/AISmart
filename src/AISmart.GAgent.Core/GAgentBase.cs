@@ -74,9 +74,9 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         return false;
     }
 
-    public async Task<bool> PublishToAsync(IGAgent agent)
+    public async Task<bool> PublishToAsync(IGAgent anotherGAgent)
     {
-        var agentGuid = agent.GetPrimaryKey();
+        var agentGuid = anotherGAgent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
         return await AddPublishersAsync(agentGuid, stream);
@@ -216,9 +216,21 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
+        // This must be called first to initialize Observers field.
         await UpdateObserverList();
+
+        // Register to itself.
+        var agentGuid = this.GetPrimaryKey();
+        var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
+        var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
+        foreach (var observer in Observers.Keys)
+        {
+            await stream.SubscribeAsync(observer);
+        }
+
+        await AddPublishersAsync(agentGuid, stream);
     }
-    
+
     protected virtual async Task HandleStateChangedAsync()
     {
     }

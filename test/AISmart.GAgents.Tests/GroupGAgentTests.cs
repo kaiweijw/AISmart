@@ -49,8 +49,9 @@ public class GroupGAgentTests : GAgentTestKitBase
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
                 naiveTestGAgent.GetGrainId(),
                 publishers);
-            publishers.State.Count.ShouldBe(1);
-            publishers.State.First().Value.Guid.ShouldBe(groupGAgent.GetPrimaryKey());
+            publishers.State.Count.ShouldBe(2);
+            publishers.State.First().Value.Guid.ShouldBe(naiveTestGAgent.GetPrimaryKey());
+            publishers.State.Last().Value.Guid.ShouldBe(groupGAgent.GetPrimaryKey());
         }
 
         // Check group's states from GrainStorage.
@@ -91,7 +92,8 @@ public class GroupGAgentTests : GAgentTestKitBase
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
                 naiveTestGAgent.GetGrainId(),
                 publishers);
-            publishers.State.Count.ShouldBe(0);
+            // Only itself.
+            publishers.State.Count.ShouldBe(1);
         }
 
         // Check group's states from GrainStorage.
@@ -134,8 +136,9 @@ public class GroupGAgentTests : GAgentTestKitBase
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
                 gAgent.GetGrainId(),
                 publishers);
-            publishers.State.Count.ShouldBe(1);
-            publishers.State.First().Value.Guid.ShouldBe(groupGAgent.GetPrimaryKey());
+            publishers.State.Count.ShouldBe(2);
+            publishers.State.First().Value.Guid.ShouldBe(gAgent.GetPrimaryKey());
+            publishers.State.Last().Value.Guid.ShouldBe(groupGAgent.GetPrimaryKey());
         }
 
         // Check group's states from GrainStorage.
@@ -175,7 +178,7 @@ public class GroupGAgentTests : GAgentTestKitBase
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
                 naiveTestGAgent.GetGrainId(),
                 publishers);
-            publishers.State.Count.ShouldBe(3);
+            publishers.State.Count.ShouldBe(4);
         }
 
         // Check each group's states from GrainStorage.

@@ -35,18 +35,6 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         await base.OnActivateAsync(cancellationToken);
-        
-        // Register to itself.
-        var agentGuid = this.GetPrimaryKey();
-        var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
-        var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        foreach (var observer in Observers.Keys)
-        {
-            await stream.SubscribeAsync(observer);
-        }
-
-        await AddPublishersAsync(agentGuid, stream);
-
         State.RegisteredAgents = 0;
     }
 }

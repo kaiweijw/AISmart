@@ -20,7 +20,7 @@ public interface IGAgent : IGrainWithGuidKey
     Task<string> GetDescriptionAsync();
     Task<bool> SubscribeToAsync(IGAgent agent);
     Task<bool> UnsubscribeFromAsync(IGAgent agent);
-    Task<bool> PublishToAsync(IGAgent agent);
+    Task<bool> PublishToAsync(IGAgent anotherGAgent);
     Task<bool> UnpublishFromAsync(IGAgent agent);
     Task RegisterAsync(IGAgent agent);
     Task UnregisterAsync(IGAgent agent);
