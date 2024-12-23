@@ -1,8 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AISmart.Agents;
-using AISmart.Agents.A.Events;
-using AISmart.Agents.C;
-using AISmart.Agents.C.Events;
+using AISmart.Agents.MockB.Events;
+using AISmart.Agents.MockC;
 using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
@@ -14,8 +13,11 @@ namespace AISmart.Application.Grains.Agents.MockC;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class MockCGAgent : GAgentBase<MockCAgentState, MockCGEvent>
 {
-    public MockCGAgent(ILogger<MockCGAgent> logger) : base(logger)
+    private readonly IMockCGAgentCount _mockCGAgentCount;
+
+    public MockCGAgent(ILogger<MockCGAgent> logger, IMockCGAgentCount mockCGAgentCount) : base(logger)
     {
+        _mockCGAgentCount = mockCGAgentCount;
     }
 
     public override Task<string> GetDescriptionAsync()
@@ -33,7 +35,8 @@ public class MockCGAgent : GAgentBase<MockCAgentState, MockCGEvent>
     public async Task HandleEventAsync(MockCThreadCreatedEvent eventData)
     {
         Console.WriteLine($"{GetType()} ExecuteAsync: CAgent analyses content: {eventData.Content}");
+        await TryExecuteAsync(eventData);
 
-        State.Number += 1;
+        _mockCGAgentCount.CGAgentCount();
     }
 }

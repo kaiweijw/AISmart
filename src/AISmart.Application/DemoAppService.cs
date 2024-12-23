@@ -7,8 +7,12 @@ using AISmart.Agents.Developer;
 using AISmart.Agents.Group;
 using AISmart.Agents.Investment;
 using AISmart.Agents.MarketLeader;
+using AISmart.Agents.MockA.Events;
 using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
+using AISmart.Application.Grains.Agents.MockA;
+using AISmart.Application.Grains.Agents.MockB;
+using AISmart.Application.Grains.Agents.MockC;
 using AISmart.Application.Grains.Agents.Draw;
 using AISmart.Application.Grains.Agents.Math;
 using AISmart.GAgent.Autogen;
@@ -22,6 +26,7 @@ namespace AISmart.Application;
 public interface IDemoAppService
 {
     Task<string> PipelineDemoAsync(string content);
+    Task AgentLoadTest(int aGAgentCount, int bGAgentCount, int cGAgentCount);
 }
 
 public class DemoAppService : ApplicationService, IDemoAppService
@@ -87,5 +92,37 @@ public class DemoAppService : ApplicationService, IDemoAppService
         await Task.Delay(10000);
 
         return "aa";
+    }
+    
+    public async Task AgentLoadTest(int aGAgentCount, int bGAgentCount, int cGAgentCount)
+    {
+        var groupGAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
+        var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
+        
+        for (int i = 0; i < aGAgentCount; i++)
+        {
+            var aGAgent = _clusterClient.GetGrain<IStateGAgent<MockAGAgent>>(Guid.NewGuid());
+            await groupGAgent.Register(aGAgent);
+        }
+        
+        for (int i = 0; i < bGAgentCount; i++)
+        {
+            var bGAgent = _clusterClient.GetGrain<IStateGAgent<MockBGAgent>>(Guid.NewGuid());
+            await groupGAgent.Register(bGAgent);
+        }
+        
+        for (int i = 0; i < cGAgentCount; i++)
+        {
+            var cGAgent = _clusterClient.GetGrain<IStateGAgent<MockCGAgent>>(Guid.NewGuid());
+            await groupGAgent.Register(cGAgent);
+        }
+
+        await publishingAgent.PublishTo(groupGAgent);
+
+        await publishingAgent.PublishEventAsync(new MockAThreadCreatedEvent
+        {
+            Id = $"mock_A_thread_id",
+            Content = $"Testing iteration"
+        });
     }
 }

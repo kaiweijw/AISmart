@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace AISmart.Agents.C;
+namespace AISmart.Agents.MockC;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-public class CGEvent : GEventBase
+public class MockCGEvent : GEventBase
 {
     
 }

@@ -1,22 +1,23 @@
 using System.Diagnostics.CodeAnalysis;
 using AISmart.Agents;
-using AISmart.Agents.A.Events;
-using AISmart.Agents.B;
-using AISmart.Agents.B.Events;
-using AISmart.Agents.C.Events;
+using AISmart.Agents.MockB;
+using AISmart.Agents.MockB.Events;
 using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
-namespace AISmart.Application.Grains.Agents.B;
+namespace AISmart.Application.Grains.Agents.MockB;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-public class BGAgent : GAgentBase<BAgentState, BGEvent>
+public class MockBGAgent : GAgentBase<MockBAgentState, MockBGEvent>
 {
-    public BGAgent(ILogger<BGAgent> logger) : base(logger)
+    private readonly IMockBGAgentCount _mockBGAgentCount;
+
+    public MockBGAgent(ILogger<MockBGAgent> logger, IMockBGAgentCount mockBGAgentCount) : base(logger)
     {
+        _mockBGAgentCount = mockBGAgentCount;
     }
 
     public override Task<string> GetDescriptionAsync()
@@ -24,18 +25,16 @@ public class BGAgent : GAgentBase<BAgentState, BGEvent>
         return Task.FromResult("An agent to inform other agents when a A thread is published.");
     }
 
-    private Task TryExecuteAsync(BThreadCreatedEvent eventData)
+    private Task TryExecuteAsync(MockBThreadCreatedEvent eventData)
     {
         Logger.LogInformation("TryExecuteAsync: A Thread {AContent}", eventData.Content);
         return Task.CompletedTask;
     }
 
     [EventHandler]
-    public async Task HandleEventAsync(BThreadCreatedEvent eventData)
+    public async Task HandleEventAsync(MockBThreadCreatedEvent eventData)
     {
         Logger.LogInformation($"{GetType()} ExecuteAsync: BAgent analyses content: {eventData.Content}");
-
-        State.Number += 1;
 
         if (State.ThreadIds.IsNullOrEmpty())
         {
@@ -44,12 +43,14 @@ public class BGAgent : GAgentBase<BAgentState, BGEvent>
 
         State.ThreadIds.Add(eventData.Id);
 
-        var publishEvent = new CThreadCreatedEvent
+        var publishEvent = new MockCThreadCreatedEvent
         {
             Content = $"A Thread {eventData.Content} has been published."
         };
 
         await PublishAsync(publishEvent);
         await PublishAsync(new RequestAllSubscriptionsEvent());
+
+        _mockBGAgentCount.BGAgentCount();
     }
 }
