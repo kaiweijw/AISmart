@@ -41,7 +41,11 @@ public class ChatTestGAgent : GAgentBase<ChatTestGAgentState, MessageGEvent>
                 Message = eventData.Message
             }
             .WithContext("ChatId", eventData.ChatId)
-            .WithContext("GroupId", "Can't tell you."));
+            .WithContext("GroupId", "Can't tell you.")
+            .WithContext(new Dictionary<string, object?>
+            {
+                ["BotName"] = eventData.BotName
+            }));
     }
 
     public async Task HandleEventAsync(SendMessageTestEvent eventData)

@@ -30,7 +30,11 @@ public abstract class EventBase
 
     public EventBase WithContext(Dictionary<string, object?> context)
     {
-        _context = context;
+        foreach (var keyPair in context)
+        {
+            _context[keyPair.Key] = keyPair.Value;
+        }
+
         return this;
     }
     

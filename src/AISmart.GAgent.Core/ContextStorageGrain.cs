@@ -10,8 +10,8 @@ public sealed class ContextStorageState
 
 public interface IContextStorageGrain : IGrainWithGuidKey
 {
-    Task AddContextAsync(string key, object? value);
-
+    Task AddContext(string key, object? value);
+    Task AddContext(Dictionary<string, object?> context);
     Task<Dictionary<string, object?>> GetContext();
 }
 
@@ -26,7 +26,7 @@ public class ContextStorageGrain : Grain<ContextStorageState>, IContextStorageGr
         _context = context;
     }
 
-    public async Task AddContextAsync(string key, object? value)
+    public Task AddContext(string key, object? value)
     {
         if (_context.State.Context.IsNullOrEmpty())
         {
@@ -34,6 +34,24 @@ public class ContextStorageGrain : Grain<ContextStorageState>, IContextStorageGr
         }
 
         _context.State.Context[key] = value;
+        return Task.CompletedTask;
+    }
+
+    public Task AddContext(Dictionary<string, object?> context)
+    {
+        if (_context.State.Context.IsNullOrEmpty())
+        {
+            _context.State.Context = context;
+        }
+        else
+        {
+            foreach (var keyPair in context)
+            {
+                _context.State.Context[keyPair.Key] = keyPair.Value;
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     public Task<Dictionary<string, object?>> GetContext()

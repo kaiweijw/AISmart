@@ -213,10 +213,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
             : GrainFactory.GetGrain<IContextStorageGrain>(eventWrapper.ContextGrainId.Value);
         eventWrapper.ContextGrainId = contextStorageGrain.GetGrainId();
 
-        foreach (var keyPair in eventWrapper.Event.GetContext())
-        {
-            await contextStorageGrain.AddContextAsync(keyPair.Key, keyPair.Value);
-        }
+        await contextStorageGrain.AddContext(eventWrapper.Event.GetContext());
 
         var eventType = typeof(T);
         var properties = eventType.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -224,7 +221,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         {
             var propertyValue = property.GetValue(eventWrapper.Event);
             Logger.LogInformation($"Add Context: {property.Name} - {propertyValue}");
-            await contextStorageGrain.AddContextAsync($"{eventType}.{property.Name}", propertyValue);
+            await contextStorageGrain.AddContext($"{eventType}.{property.Name}", propertyValue);
         }
 
         foreach (var publisher in _publishers.State.Select(kp => kp.Value))
