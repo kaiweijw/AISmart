@@ -2,11 +2,11 @@ using System.ComponentModel;
 using AISmart.Agents;
 using AISmart.Agents.ImplementationAgent.Events;
 using AISmart.Agents.Investment;
-using AISmart.Dapr;
 using AISmart.Events;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
-using Orleans.Streams;
+using Orleans.Storage;
 
 namespace AISmart.Application.Grains.Agents.Investment;
 
@@ -48,11 +48,5 @@ public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEven
         {
             Content = "Done"
         };
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        GrainTracker.InvestmentAgents.Enqueue(this);
-        await base.OnActivateAsync(cancellationToken);
     }
 }

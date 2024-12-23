@@ -11,6 +11,7 @@ using AISmart.GAgent.Autogen.DescriptionManager;
 using AISmart.GAgent.Autogen.Event;
 using AISmart.GAgent.Autogen.Events;
 using AISmart.GAgent.Autogen.EventSourcingEvent;
+using AISmart.GAgent.Core;
 using AISmart.GEvents.Autogen;
 using AISmart.Provider;
 using AISmart.Rag;

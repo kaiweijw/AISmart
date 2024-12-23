@@ -1,3 +1,4 @@
+using AISmart.Agents;
 using AISmart.Agents.AutoGen;
 using AISmart.GAgent.Autogen.Common;
 using AISmart.GAgent.Autogen.EventSourcingEvent;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace AISmart.GAgent.Autogen.State;
 
 [GenerateSerializer]
-public class AutoGenAgentState
+public class AutoGenAgentState : StateBase
 {
     [Id(0)] public Dictionary<Guid, AutoGenAgentStateInfo> AutoGenStateDic =
         new Dictionary<Guid, AutoGenAgentStateInfo>();

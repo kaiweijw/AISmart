@@ -10,12 +10,8 @@
         <PackageReference Include="AutoGen.Core" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
         <PackageReference Include="Microsoft.Orleans.Sdk" />
-        <PackageReference Include="Microsoft.Orleans.Core.Abstractions" />
-        <PackageReference Include="Microsoft.Orleans.EventSourcing" />
-        <PackageReference Include="Microsoft.Orleans.Streaming" />
         <PackageReference Include="AElf.OpenTelemetry" />
         <PackageReference Include="Volo.Abp.AutoMapper" />
-        <PackageReference Include="Volo.Abp.Core" />
         <PackageReference Include="Volo.Abp.EventBus.Abstractions" />
     </ItemGroup>
 
@@ -23,7 +19,9 @@
         <ProjectReference Include="..\AISmart.Application.Contracts\AISmart.Application.Contracts.csproj" />
         <ProjectReference Include="..\AISmart.Domain.Grains\AISmart.Domain.Grains.csproj" />
         <ProjectReference Include="..\AISmart.Domain\AISmart.Domain.csproj" />
+        <ProjectReference Include="..\AISmart.GAgent.Core\AISmart.GAgent.Core.csproj" />
         <ProjectReference Include="..\AISmart.GAgent.Twitter\AISmart.GAgent.Twitter.csproj" />
+        <ProjectReference Include="..\AISmart.CQRS\AISmart.CQRS.csproj" />
     </ItemGroup>
 
     <ItemGroup>

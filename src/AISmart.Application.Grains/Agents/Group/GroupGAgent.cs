@@ -1,8 +1,10 @@
 using AISmart.Agents;
 using AISmart.Agents.Group;
 using AISmart.Dapr;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
+using Orleans.Storage;
 
 namespace AISmart.Application.Grains.Agents.Group;
 
@@ -10,9 +12,7 @@ namespace AISmart.Application.Grains.Agents.Group;
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
 {
-    public GroupGAgent(ILogger<GroupGAgent> logger,
-        [PersistentState("subscribers")] IPersistentState<List<GrainId>> subscribers) : base(logger,
-        subscribers)
+    public GroupGAgent(ILogger<GroupGAgent> logger) : base(logger)
     {
     }
 
@@ -47,6 +47,7 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
         }
 
         TryAddPublisher(agentGuid, stream);
-        GrainTracker.GroupAgents.Enqueue(this);
+
+        State.RegisteredAgents = 0;
     }
 }

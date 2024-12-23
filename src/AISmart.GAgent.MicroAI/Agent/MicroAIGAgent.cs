@@ -7,6 +7,7 @@ using AISmart.Agent.GEvents;
 using AISmart.Agents;
 using AISmart.Application.Grains;
 using AISmart.Events;
+using AISmart.GAgent.Core;
 using AISmart.GEvents.MicroAI;
 using AISmart.Grains;
 using Microsoft.Extensions.Logging;
