@@ -9,6 +9,7 @@ using AISmart.Agents;
 using AISmart.Application.Grains;
 using AISmart.Dapr;
 using AISmart.Dto;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Providers;

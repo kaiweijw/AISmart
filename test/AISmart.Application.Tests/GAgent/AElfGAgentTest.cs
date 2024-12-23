@@ -51,7 +51,7 @@ public class AElfGAgentTests : AISmartApplicationTestBase
             ChainId = chainId,
             TransactionId = "TransactionId2"
         });
-       await Task.Delay(200000);
+       //await Task.Delay(200000);
     }
 
 }
