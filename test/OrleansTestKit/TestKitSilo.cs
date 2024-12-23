@@ -79,9 +79,9 @@ public sealed class TestKitSilo
 
         ServiceProvider.AddService<IAElfNodeProvider>(new MockAElfNodeProvider());
         
-        var manager = new AgentDescriptionManager();
-        ServiceProvider.AddService(manager);
-        ServiceProvider.AddService(new AutoGenExecutor(NullLogger<AutoGenExecutor>.Instance, GrainFactory, manager, new TestChatAgentProvider()));
+        // var manager = new AgentDescriptionManager();
+        // ServiceProvider.AddService(manager);
+        // ServiceProvider.AddService(new AutoGenExecutor(NullLogger<AutoGenExecutor>.Instance, GrainFactory, manager, new TestChatAgentProvider()));
         ServiceProvider.AddService<IGrainStorage>(TestGrainStorage);
         var provider = new ServiceCollection()
             .AddSingleton<GrainTypeResolver>()
