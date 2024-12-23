@@ -4,7 +4,7 @@ using AISmart.GAgents.Tests.TestGAgents;
 using Orleans.Streams;
 using Shouldly;
 
-namespace AISmart.GAgents.Tests;
+namespace AISmart.GAgents.Tests.GAgentBase;
 
 [Trait("Category", "BVT")]
 public class GroupGAgentTests : GAgentTestKitBase

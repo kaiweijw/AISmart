@@ -2,10 +2,10 @@ using AISmart.GAgents.Tests.TestEvents;
 using AISmart.GAgents.Tests.TestGAgents;
 using Shouldly;
 
-namespace AISmart.GAgents.Tests;
+namespace AISmart.GAgents.Tests.GAgentBase;
 
 [Trait("Category", "BVT")]
-public class PublishingGAgentTests : GAgentTestKitBase
+public class PublishingTests : GAgentTestKitBase
 {
     [Fact(DisplayName = "Event can be published to group members.")]
     public async Task PublishToEventHandlerTest()
