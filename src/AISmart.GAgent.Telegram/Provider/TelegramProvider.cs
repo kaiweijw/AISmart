@@ -29,8 +29,8 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
     
     public async Task SendMessageAsync(string sendUser,string chatId, string message,ReplyParamDto? replyParam = null)
     {
-        String Token = GetAccount(sendUser);
-        string url = $"https://api.telegram.org/bot{Token}/sendMessage";
+      //  String Token = GetAccount(sendUser);
+        string url = $"https://api.telegram.org/bot{sendUser}/sendMessage";
         
         // Create a request object
         var sendMessageRequest = new MessageParamsRequest()
@@ -73,9 +73,9 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
     
     public async Task<string> GetUpdatesAsync(string sendUser)
     {
-        String Token = GetAccount(sendUser);
+      //  String Token = GetAccount(sendUser);
 
-        string url = $"https://api.telegram.org/bot{Token}/GetUpdates";
+        string url = $"https://api.telegram.org/bot{sendUser}/GetUpdates";
         try
         {
             // var telUpdate = await GetAsync<TelegramUpdateDto>(url);
@@ -98,15 +98,15 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
     }
     
     
-    public async Task SetWebhookAsync(string sendUser,string webhook, string secretToken)
+    public async Task SetWebhookAsync(string sendUser,string webhook, string token)
     {
-        String Token = GetAccount(sendUser);
-        string url = $"https://api.telegram.org/bot{Token}/setWebhook";
+       // String Token = GetAccount(sendUser);
+        string url = $"https://api.telegram.org/bot{token}/setWebhook";
 
         var parameters = new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string, string>("url", webhook),
-            new KeyValuePair<string, string>("secret_token", secretToken)
+            new KeyValuePair<string, string>("secret_token", sendUser)
         });
 
         try
@@ -155,19 +155,6 @@ public class TelegramProvider : ITelegramProvider,ISingletonDependency
         catch (HttpRequestException e)
         {
             _logger.LogError($"request error: {e.Message}");
-        }
-    }
-
-    public async Task ReceiveMessagesAsync(TelegramUpdateDto updateMessage)
-    {
-        // To filter only messages that mention the bot, check if message.Entities.type == "mention".
-        // Group message auto-reply, just add the bot as a group admin.
-        if (updateMessage.Message != null)
-        {
-            await SendMessageAsync("Test",updateMessage.Message.Chat.Id.ToString(), "hello test message",new ReplyParamDto
-            {
-                MessageId = updateMessage.Message.MessageId
-            });
         }
     }
 }
