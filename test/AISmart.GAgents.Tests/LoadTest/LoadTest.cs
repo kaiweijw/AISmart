@@ -42,7 +42,7 @@ public class LoadTest : GAgentTestKitBase
         await publishingAgent.PublishEventAsync(new MockAThreadCreatedEvent
         {
             Id = $"mock_A_thread_id",
-            Content = $"Testing iteration"
+            Content = $"Call mockAGAgent"
         });
     }
 }

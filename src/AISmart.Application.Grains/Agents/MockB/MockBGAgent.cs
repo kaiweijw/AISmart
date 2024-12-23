@@ -45,11 +45,11 @@ public class MockBGAgent : GAgentBase<MockBAgentState, MockBGEvent>
 
         var publishEvent = new MockCThreadCreatedEvent
         {
-            Content = $"A Thread {eventData.Content} has been published."
+            Id = $"mock_C_thread_id",
+            Content = $"Call mockCGAgent"
         };
 
         await PublishAsync(publishEvent);
-        await PublishAsync(new RequestAllSubscriptionsEvent());
 
         _mockBGAgentCount.BGAgentCount();
     }
