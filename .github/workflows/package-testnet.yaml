@@ -38,7 +38,7 @@ jobs:
           cache-name: nuget-package-cache
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-${{ env.cache-name }}
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ matrix.servicename }}
 
       - name: List NuGet Packages
         if: ${{ steps.nuget-packages.outputs.cache-hit == 'true' }}
