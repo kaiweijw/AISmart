@@ -6,6 +6,8 @@ using AISmart.Application.Grains;
 using AISmart.CQRS;
 using AISmart.CQRS.Handler;
 using AISmart.CQRS.Provider;
+using AISmart.EventSourcing.Core.Hosting;
+using AISmart.GAgent.Core;
 using AISmart.Mock;
 using AISmart.Provider;
 using AISmart.Service;
@@ -17,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Nest;
 using Orleans.Hosting;
+using Orleans.Storage;
 using Orleans.TestingHost;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.DependencyInjection;
@@ -92,13 +95,13 @@ public class ClusterFixture : IDisposable, ISingletonDependency
                 services.AddTransient<SendEventCommandHandler>();
                 services.AddSingleton<IIndexingService, ElasticIndexingService>();
 
+                services.AddSingleton(typeof(IEventDispatcher), typeof(CQRSProvider));
                 services.AddSingleton(typeof(ICQRSProvider), typeof(CQRSProvider));
                 var mockElasticClient = new Mock<IElasticClient>();
-                services.AddSingleton<IElasticClient>(mockElasticClient.Object);
+                services.AddSingleton(mockElasticClient.Object);
                 var _mockIndexingService = new Mock<IIndexingService>();
-                services.AddSingleton<IIndexingService>(_mockIndexingService.Object); 
+                services.AddSingleton(_mockIndexingService.Object); 
                 services.AddSingleton(typeof(ICqrsService), typeof(CqrsService));
-
             })
             .AddMemoryStreams("AISmart")
             .AddMemoryGrainStorage("PubSubStore")

@@ -10,16 +10,10 @@ using AISmart.Agents.Investment;
 using AISmart.Agents.MarketLeader;
 using AISmart.Agents.X;
 using AISmart.Agents.X.Events;
-using AISmart.Application.Grains;
-using AISmart.Application.Grains.Agents.Developer;
-using AISmart.Application.Grains.Agents.Group;
-using AISmart.Application.Grains.Agents.MarketLeader;
-using AISmart.Application.Grains.Agents.X;
 using AISmart.Sender;
 using Microsoft.IdentityModel.Tokens;
 using Orleans;
 using Orleans.TestingHost.Utils;
-using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -66,6 +60,42 @@ namespace AISmart.Samples
             return Task.CompletedTask;
         }
 
+        // TODO: Re-impl this test case.
+        // [Fact]
+        // public async Task XThreadCreatedEvent_Executed_Test()
+        // {
+        //     const string content = "BTC REACHED 100k WOOHOOOO!";
+        //
+        //     var xThreadCreatedEvent = new XThreadCreatedEvent
+        //     {
+        //         Id = "mock_x_thread_id",
+        //         Content = content
+        //     };
+        //
+        //     await _publishingGAgent.PublishEventAsync(xThreadCreatedEvent);
+        //
+        //     var investmentAgent = GrainTracker.InvestmentAgents.First();
+        //     var investmentAgentState = await investmentAgent.GetStateAsync();
+        //     
+        //     var developerAgent = GrainTracker.DeveloperAgents.First();
+        //     var developerAgentState = await developerAgent.GetStateAsync();
+        //
+        //     await TestingUtils.WaitUntilAsync(_ => CheckState(developerAgentState), TimeSpan.FromSeconds(20));
+        //     await TestingUtils.WaitUntilAsync(_ => CheckState(investmentAgentState), TimeSpan.FromSeconds(20));
+        //     
+        //     developerAgentState.Content.Count.ShouldBe(1);
+        //     investmentAgentState.Content.Count.ShouldBe(1);
+        // }
+        //
+        // private async Task<bool> CheckState(InvestmentAgentState state)
+        // {
+        //     return !state.Content.IsNullOrEmpty();
+        // }
+        //
+        // private async Task<bool> CheckState(DeveloperAgentState state)
+        // {
+        //     return !state.Content.IsNullOrEmpty();
+        // }
         [Fact]
         public async Task XThreadCreatedEvent_Executed_Test()
         {

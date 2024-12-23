@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using AISmart.Agents;
 using AISmart.Application.Grains;
+using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Providers;
@@ -35,7 +36,7 @@ public class MathOperationGAgent : GAgentBase<MathOperationState, MathOperationE
 }
 
 [GenerateSerializer]
-public class MathOperationState
+public class MathOperationState : StateBase
 {
 }
 

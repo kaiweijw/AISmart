@@ -1,13 +1,12 @@
 using System.Threading.Tasks;
 using AISmart.Agents;
 using AISmart.CQRS.Dto;
+using AISmart.GAgent.Core;
 
 namespace AISmart.CQRS.Provider;
 
-public interface ICQRSProvider
+public interface ICQRSProvider : IEventDispatcher
 {
-    Task PublishAsync(StateBase state, string id);
-    
     Task<BaseStateIndex> QueryAsync(string index, string id);
     
     Task SendEventCommandAsync(EventBase eventBase);

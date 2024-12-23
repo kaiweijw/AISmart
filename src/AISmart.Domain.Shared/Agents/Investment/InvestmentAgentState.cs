@@ -4,7 +4,7 @@ using Orleans;
 namespace AISmart.Agents.Investment;
 
 [GenerateSerializer]
-public class InvestmentAgentState
+public class InvestmentAgentState : StateBase
 {
     [Id(0)]  public List<string> Content { get; set; }
 }
