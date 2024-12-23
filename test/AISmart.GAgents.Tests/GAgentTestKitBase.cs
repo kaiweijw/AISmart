@@ -2,12 +2,13 @@ using System.Linq.Expressions;
 using AISmart.Agents;
 using AISmart.Application.Grains.Agents.Group;
 using AISmart.Application.Grains.Agents.Publisher;
+using AISmart.GAgent.Core;
 using AISmart.Sender;
 using Orleans.TestKit;
 
 namespace AISmart.GAgents.Tests;
 
-public abstract class GAgentTestKitBase : TestKitBase
+public abstract class GAgentTestKitBase : TestKitBase, IAsyncLifetime
 {
     protected async Task<PublishingGAgent> CreatePublishingGAgentAsync(params IGAgent[] gAgentsToPublish)
     {
@@ -56,5 +57,16 @@ public abstract class GAgentTestKitBase : TestKitBase
 
         var lambda = Expression.Lambda<Func<IdSpan, IGAgent>>(body, parameter).Compile();
         Silo.AddProbe(lambda);
+    }
+
+    public async Task InitializeAsync()
+    {
+        var contextStorageGrain = await Silo.CreateGrainAsync<ContextStorageGrain>(Guid.NewGuid());
+        Silo.AddProbe<IContextStorageGrain>(_ => contextStorageGrain);
+    }
+
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
     }
 }
