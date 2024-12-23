@@ -9,7 +9,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace AISmart.LLMProvider.Provider;
 
-public class OpenAILLMProvider : ILLMProvider<IMessage>, ITransientDependency
+public class OpenAILLMProvider : ILLMProvider<OpenAIMessage>, ITransientDependency
 {
     private readonly ILogger<OpenAIChatAgent> _logger;
     private readonly OpenAIOptions _openAiOptions;
@@ -20,17 +20,17 @@ public class OpenAILLMProvider : ILLMProvider<IMessage>, ITransientDependency
         _openAiOptions = options.Value;
     }
 
-    public async Task<IMessage?> SendAsync(string message)
+    public async Task<OpenAIMessage?> SendAsync(string message)
     {
         return await SendAsync(message, null, null);
     }
 
-    public async Task<IMessage?> SendAsync(string message, List<IMessage>? history)
+    public async Task<OpenAIMessage?> SendAsync(string message, List<OpenAIMessage>? history)
     {
         return await SendAsync(message, history, null);
     }
 
-    public async Task<IMessage?> SendAsync(string message, List<IMessage>? chatHistory, string? description)
+    public async Task<OpenAIMessage?> SendAsync(string message, List<OpenAIMessage>? chatHistory, string? description)
     { 
         // Your OpenAI API key
         string apiKey = _openAiOptions.ApiKey;
@@ -64,7 +64,9 @@ public class OpenAILLMProvider : ILLMProvider<IMessage>, ITransientDependency
                 response.EnsureSuccessStatusCode();
                 string responseContent = await response.Content.ReadAsStringAsync();
                 dynamic jsonResponse = JsonConvert.DeserializeObject(responseContent);
-                return Task.FromResult(jsonResponse.choices[0].message.content);
+                OpenAIMessage returnMessage = new OpenAIMessage();
+                returnMessage.content = jsonResponse.choices[0].message.content;
+                return returnMessage;
             }
             catch (Exception ex)
             {

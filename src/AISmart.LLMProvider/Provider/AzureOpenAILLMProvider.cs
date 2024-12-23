@@ -7,7 +7,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace AISmart.LLMProvider.Provider;
 
-public class AzureOpenAILLMProvider : ILLMProvider<ChatMessageContent>, ITransientDependency
+public class AzureOpenAILLMProvider : ILLMProvider<AzureOpenAIMessage>, ITransientDependency
 {
     private readonly ILogger<AzureOpenAILLMProvider> _logger;
 
@@ -19,17 +19,17 @@ public class AzureOpenAILLMProvider : ILLMProvider<ChatMessageContent>, ITransie
         _autogenOptions = options.Value;
     }
 
-    public Task<ChatMessageContent?> SendAsync(string message)
+    public Task<AzureOpenAIMessage?> SendAsync(string message)
     {
         return SendAsync(message, null, null);
     }
 
-    public Task<ChatMessageContent?> SendAsync(string message, List<ChatMessageContent>? history)
+    public Task<AzureOpenAIMessage?> SendAsync(string message, List<AzureOpenAIMessage>? history)
     {
         return SendAsync(message, history, null);
     }
 
-    public async Task<ChatMessageContent?> SendAsync(string message, List<ChatMessageContent>? history,
+    public async Task<AzureOpenAIMessage?> SendAsync(string message, List<AzureOpenAIMessage>? history,
         string? description)
     { 
         _logger.LogInformation("AzureAIProvider SendAsync start, message: {message}", message);
@@ -45,7 +45,13 @@ public class AzureOpenAILLMProvider : ILLMProvider<ChatMessageContent>, ITransie
         Kernel kernel = builder.Build();
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
+        // 此处需要做一层history的转换
         ChatHistory chatHistory = new ChatHistory();
+        foreach (var temp in history)
+        {
+            chatHistory.AddMessage(temp.content);
+        }
+       
         chatHistory.AddRange(history);
         
         // Get the response from the AI
