@@ -41,6 +41,9 @@
         <None Update="ConfigFile\singleGroupGAgent.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="ConfigFile\singleNetWork.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>
