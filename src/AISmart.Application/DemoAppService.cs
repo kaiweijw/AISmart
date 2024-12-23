@@ -102,22 +102,22 @@ public class DemoAppService : ApplicationService, IDemoAppService
         for (int i = 0; i < mockAGAgentCount; i++)
         {
             var aGAgent = _clusterClient.GetGrain<IStateGAgent<MockAGAgent>>(Guid.NewGuid());
-            await groupGAgent.Register(aGAgent);
+            await groupGAgent.RegisterAsync(aGAgent);
         }
 
         for (int i = 0; i < mockBGAgentCount; i++)
         {
             var bGAgent = _clusterClient.GetGrain<IStateGAgent<MockBGAgent>>(Guid.NewGuid());
-            await groupGAgent.Register(bGAgent);
+            await groupGAgent.RegisterAsync(bGAgent);
         }
 
         for (int i = 0; i < mockCGAgentCount; i++)
         {
             var cGAgent = _clusterClient.GetGrain<IStateGAgent<MockCGAgent>>(Guid.NewGuid());
-            await groupGAgent.Register(cGAgent);
+            await groupGAgent.RegisterAsync(cGAgent);
         }
 
-        await publishingAgent.PublishTo(groupGAgent);
+        await publishingAgent.PublishToAsync(groupGAgent);
 
         await publishingAgent.PublishEventAsync(new MockAThreadCreatedEvent
         {
