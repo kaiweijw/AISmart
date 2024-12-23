@@ -25,7 +25,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     /// <summary>
     /// Observer -> StreamId -> HandleId
     /// </summary>
-    protected readonly Dictionary<EventWrapperBaseAsyncObserver, Dictionary<StreamId, Guid>> Observers = new();
+    private readonly Dictionary<EventWrapperBaseAsyncObserver, Dictionary<StreamId, Guid>> Observers = new();
 
     private IEventDispatcher EventDispatcher { get; set; }
 
@@ -226,7 +226,18 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         }
     }
 
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    public sealed override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        await BaseOnActivateAsync(cancellationToken);
+        await OnGAgentActivateAsync(cancellationToken);
+    }
+
+    protected virtual async Task OnGAgentActivateAsync(CancellationToken cancellationToken)
+    {
+        // Derived classes can override this method.
+    }
+
+    private async Task BaseOnActivateAsync(CancellationToken cancellationToken)
     {
         // This must be called first to initialize Observers field.
         await UpdateObserverList();

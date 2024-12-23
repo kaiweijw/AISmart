@@ -32,9 +32,8 @@ public class GroupGAgent : GAgentBase<GroupAgentState, GroupGEvent>
         return Task.CompletedTask;
     }
     
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    protected override async Task OnGAgentActivateAsync(CancellationToken cancellationToken)
     {
-        await base.OnActivateAsync(cancellationToken);
         State.RegisteredAgents = 0;
     }
 }
