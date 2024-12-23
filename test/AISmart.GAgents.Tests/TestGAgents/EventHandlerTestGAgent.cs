@@ -15,7 +15,7 @@ public class EventHandlerTestGAgentState : StateBase
 public class EventHandlerTestGEvent : GEventBase;
 
 [GAgent]
-public class EventHandlerTestGAgent : GAgentBase<EventHandlerTestGAgentState, EventHandlerTestGEvent>
+public class EventHandlerTestGAgent : EventHandler<EventHandlerTestGAgentState, EventHandlerTestGEvent>
 {
     public EventHandlerTestGAgent(ILogger logger) : base(logger)
     {

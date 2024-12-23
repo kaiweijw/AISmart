@@ -13,7 +13,7 @@ namespace AISmart.GAgent.Core;
 [GAgent]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateGAgent<TState>
+public abstract partial class EventHandler<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateGAgent<TState>
     where TState : StateBase, new()
     where TEvent : GEventBase
 {
@@ -28,7 +28,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     protected readonly Dictionary<EventWrapperBaseAsyncObserver, Guid> Observers = new();
     private IEventDispatcher EventDispatcher { get; set; }
 
-    protected GAgentBase(ILogger logger)
+    protected EventHandler(ILogger logger)
     {
         Logger = logger;
         GrainStorage = ServiceProvider.GetRequiredService<IGrainStorage>();

@@ -24,7 +24,7 @@ namespace AISmart.GAgent.Autogen;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class AutogenGAgent : GAgentBase<AutoGenAgentState, AutogenEventBase>, IAutogenGAgent
+public class AutogenGAgent : EventHandler<AutoGenAgentState, AutogenEventBase>, IAutogenGAgent
 {
     private IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
 

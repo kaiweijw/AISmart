@@ -12,9 +12,10 @@ public class GroupGAgentTests : GAgentTestKitBase
     [Fact(DisplayName = "GroupGAgent should be initialized correctly.")]
     public async Task InitGroupGAgentTest()
     {
+        // Arrange & Act.
         var groupGAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
 
-        // GroupGAgent itself will be the publisher.
+        // Assert: GroupGAgent itself will be the publisher.
         var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
         await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
             groupGAgent.GetGrainId(),
@@ -22,7 +23,7 @@ public class GroupGAgentTests : GAgentTestKitBase
         publishers.State.Count.ShouldBe(1);
         publishers.State.First().Value.Guid.ShouldBe(groupGAgent.GetPrimaryKey());
 
-        // Subscribers should be empty because no member is registered.
+        // Assert: Subscribers should be empty because no member is registered.
         var subscribers = new GrainState<List<GrainId>>();
         await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscribersStateName,
             groupGAgent.GetGrainId(),
@@ -33,10 +34,11 @@ public class GroupGAgentTests : GAgentTestKitBase
     [Fact(DisplayName = "Each gAgent's states should be saved correctly after register.")]
     public async Task RegisterTest()
     {
+        // Arrange & Act.
         var naiveTestGAgent = await Silo.CreateGrainAsync<NaiveTestGAgent>(Guid.NewGuid());
         var groupGAgent = await CreateGroupGAgentAsync(naiveTestGAgent);
 
-        // Check member's states from GrainStorage.
+        // Assert: Check group member's states from GrainStorage.
         {
             var subscriptions = new GrainState<Dictionary<Guid, StreamIdentity>>();
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscriptionsStateName,
@@ -54,7 +56,7 @@ public class GroupGAgentTests : GAgentTestKitBase
             publishers.State.Last().Value.Guid.ShouldBe(groupGAgent.GetPrimaryKey());
         }
 
-        // Check group's states from GrainStorage.
+        // Assert: Check group's states from GrainStorage.
         {
             var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
@@ -75,12 +77,14 @@ public class GroupGAgentTests : GAgentTestKitBase
     [Fact(DisplayName = "Each gAgent's states should be saved correctly after unregister.")]
     public async Task UnregisterTest()
     {
+        // Arrange.
         var naiveTestGAgent = await Silo.CreateGrainAsync<NaiveTestGAgent>(Guid.NewGuid());
         var groupGAgent = await CreateGroupGAgentAsync(naiveTestGAgent);
 
+        // Act.
         await groupGAgent.UnregisterAsync(naiveTestGAgent);
 
-        // Check member's states from GrainStorage.
+        // Assert: Check member's states from GrainStorage.
         {
             var subscriptions = new GrainState<Dictionary<Guid, StreamIdentity>>();
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscriptionsStateName,
@@ -96,7 +100,7 @@ public class GroupGAgentTests : GAgentTestKitBase
             publishers.State.Count.ShouldBe(1);
         }
 
-        // Check group's states from GrainStorage.
+        // Assert: Check group's states from GrainStorage.
         {
             var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
@@ -117,12 +121,13 @@ public class GroupGAgentTests : GAgentTestKitBase
     [Fact(DisplayName = "Multiple gAgents should be registered correctly to one group.")]
     public async Task OneGroupRegisterMultipleGAgentsTest()
     {
+        // Arrange & Act.
         var naiveTestGAgent1 = await Silo.CreateGrainAsync<NaiveTestGAgent>(Guid.NewGuid());
         var naiveTestGAgent2 = await Silo.CreateGrainAsync<NaiveTestGAgent>(Guid.NewGuid());
         var naiveTestGAgent3 = await Silo.CreateGrainAsync<NaiveTestGAgent>(Guid.NewGuid());
         var groupGAgent = await CreateGroupGAgentAsync(naiveTestGAgent1, naiveTestGAgent2, naiveTestGAgent3);
 
-        // Check each member's states from GrainStorage.
+        // Assert: Check each member's states from GrainStorage.
         foreach (var gAgent in new List<NaiveTestGAgent> { naiveTestGAgent1, naiveTestGAgent2, naiveTestGAgent3 })
         {
             var subscriptions = new GrainState<Dictionary<Guid, StreamIdentity>>();
@@ -141,7 +146,7 @@ public class GroupGAgentTests : GAgentTestKitBase
             publishers.State.Last().Value.Guid.ShouldBe(groupGAgent.GetPrimaryKey());
         }
 
-        // Check group's states from GrainStorage.
+        // Assert: Check group's states from GrainStorage.
         {
             var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.PublishersStateName,
@@ -161,12 +166,13 @@ public class GroupGAgentTests : GAgentTestKitBase
     [Fact(DisplayName = "One gAgent should be registered correctly to multiple group.")]
     public async Task MultipleGroupRegisterOneGAgentTest()
     {
+        // Arrange & Act.
         var naiveTestGAgent = await Silo.CreateGrainAsync<NaiveTestGAgent>(Guid.NewGuid());
         var groupGAgent1 = await CreateGroupGAgentAsync(naiveTestGAgent);
         var groupGAgent2 = await CreateGroupGAgentAsync(naiveTestGAgent);
         var groupGAgent3 = await CreateGroupGAgentAsync(naiveTestGAgent);
 
-        // Check member's states from GrainStorage.
+        // Assert: Check member's states from GrainStorage.
         {
             var subscriptions = new GrainState<Dictionary<Guid, StreamIdentity>>();
             await Silo.TestGrainStorage.ReadStateAsync(AISmartGAgentConstants.SubscriptionsStateName,
@@ -181,7 +187,7 @@ public class GroupGAgentTests : GAgentTestKitBase
             publishers.State.Count.ShouldBe(4);
         }
 
-        // Check each group's states from GrainStorage.
+        // Assert: Check each group's states from GrainStorage.
         foreach (var groupGAgent in new List<GroupGAgent> { groupGAgent1, groupGAgent2, groupGAgent3 })
         {
             var publishers = new GrainState<Dictionary<Guid, StreamIdentity>>();

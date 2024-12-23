@@ -3,7 +3,7 @@ using Orleans.Streams;
 
 namespace AISmart.GAgent.Core;
 
-public abstract partial class GAgentBase<TState, TEvent>
+public abstract partial class EventHandler<TState, TEvent>
 {
     private readonly IGrainState<List<GrainId>> _subscribers = new GrainState<List<GrainId>>();
 

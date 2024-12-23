@@ -17,7 +17,7 @@ public class NaiveTestGEvent : GEventBase
 }
 
 [GAgent]
-public class NaiveTestGAgent : GAgentBase<NaiveTestGAgentState, NaiveTestGEvent>
+public class NaiveTestGAgent : EventHandler<NaiveTestGAgentState, NaiveTestGEvent>
 {
     public NaiveTestGAgent(ILogger logger) : base(logger)
     {
