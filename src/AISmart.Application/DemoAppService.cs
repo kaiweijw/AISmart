@@ -50,12 +50,12 @@ public class DemoAppService : ApplicationService, IDemoAppService
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
 
-        await groupAgent.Register(xAgent);
-        await groupAgent.Register(marketLeaderAgent);
-        await groupAgent.Register(developerAgent);
-        await groupAgent.Register(investmentAgent);
+        await groupAgent.RegisterAsync(xAgent);
+        await groupAgent.RegisterAsync(marketLeaderAgent);
+        await groupAgent.RegisterAsync(developerAgent);
+        await groupAgent.RegisterAsync(investmentAgent);
 
-        await publishingAgent.PublishTo(groupAgent);
+        await publishingAgent.PublishToAsync(groupAgent);
 
         await publishingAgent.PublishEventAsync(new XThreadCreatedEvent
         {
@@ -78,10 +78,10 @@ public class DemoAppService : ApplicationService, IDemoAppService
         autogenGAgent.RegisterAgentEvent(typeof(DrawOperationGAgent), [typeof(DrawTriangleEvent)]);
         autogenGAgent.RegisterAgentEvent(typeof(MathOperationGAgent), [typeof(AddNumberEvent), typeof(SubNumberEvent)]);
 
-        await groupGAgent.Register(autogenGAgent);
-        await groupGAgent.Register(drawGAgent);
-        await groupGAgent.Register(mathGAgent);
-        await groupGAgent.Register(publishingGAgent);
+        await groupGAgent.RegisterAsync(autogenGAgent);
+        await groupGAgent.RegisterAsync(drawGAgent);
+        await groupGAgent.RegisterAsync(mathGAgent);
+        await groupGAgent.RegisterAsync(publishingGAgent);
         // await groupGAgent.Register(groupGAgent);
 
         await publishingGAgent.PublishEventAsync(new AutoGenCreatedEvent
