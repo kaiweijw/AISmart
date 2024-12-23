@@ -47,7 +47,6 @@ public class PumpFunGAgent : GAgentBase<PumpFunGAgentState, PumpFunMessageGEvent
        await PublishAsync(new AutoGenCreatedEvent
        {
            EventId = Guid.NewGuid(),
-           // TODO:jim ReplyId&&Jeffery
            Content = $"""
              Received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}, The fields will be used in the final response except "RequestMessage".
              Please follow the process below.
