@@ -34,25 +34,22 @@ public class BGAgent : GAgentBase<BAgentState, BGEvent>
     public async Task HandleEventAsync(BThreadCreatedEvent eventData)
     {
         Logger.LogInformation($"{GetType()} ExecuteAsync: BAgent analyses content: {eventData.Content}");
-        
-        for (int i = 0; i < 100; i++)
-        {
-            State.Number += 1;
-            
-            if (State.ThreadIds.IsNullOrEmpty())
-            {
-                State.ThreadIds = new List<string>();
-            }
-        
-            State.ThreadIds.Add(eventData.Id);
 
-            var publishEvent = new CThreadCreatedEvent
-            {
-                Content = $"A Thread {eventData.Content} has been published."
-            };
-            
-            await PublishAsync(publishEvent);
-            await PublishAsync(new RequestAllSubscriptionsEvent());
+        State.Number += 1;
+
+        if (State.ThreadIds.IsNullOrEmpty())
+        {
+            State.ThreadIds = new List<string>();
         }
+
+        State.ThreadIds.Add(eventData.Id);
+
+        var publishEvent = new CThreadCreatedEvent
+        {
+            Content = $"A Thread {eventData.Content} has been published."
+        };
+
+        await PublishAsync(publishEvent);
+        await PublishAsync(new RequestAllSubscriptionsEvent());
     }
 }

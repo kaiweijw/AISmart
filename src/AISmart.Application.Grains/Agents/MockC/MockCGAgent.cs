@@ -7,14 +7,14 @@ using AISmart.GAgent.Core;
 using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 
-namespace AISmart.Application.Grains.Agents.C;
+namespace AISmart.Application.Grains.Agents.MockC;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-public class CGAgent : GAgentBase<CAgentState, CGEvent>
+public class MockCGAgent : GAgentBase<MockCAgentState, MockCGEvent>
 {
-    public CGAgent(ILogger<CGAgent> logger) : base(logger)
+    public MockCGAgent(ILogger<MockCGAgent> logger) : base(logger)
     {
     }
 
@@ -23,20 +23,17 @@ public class CGAgent : GAgentBase<CAgentState, CGEvent>
         return Task.FromResult("An agent to inform other agents when a A thread is published.");
     }
 
-    private Task TryExecuteAsync(CThreadCreatedEvent eventData)
+    private Task TryExecuteAsync(MockCThreadCreatedEvent eventData)
     {
         Logger.LogInformation("TryExecuteAsync: A Thread {AContent}", eventData.Content);
         return Task.CompletedTask;
     }
 
     [EventHandler]
-    public async Task HandleEventAsync(CThreadCreatedEvent eventData)
+    public async Task HandleEventAsync(MockCThreadCreatedEvent eventData)
     {
         Console.WriteLine($"{GetType()} ExecuteAsync: CAgent analyses content: {eventData.Content}");
 
-        for (int i = 0; i < 100; i++)
-        {
-            State.Number += 1;
-        }
+        State.Number += 1;
     }
 }
