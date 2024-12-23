@@ -1,17 +1,15 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using AISmart.Agents;
 using AISmart.Dapr;
 using AISmart.GAgent.Autogen.Common;
+using AISmart.GAgent.Autogen.DescriptionManager;
 using AISmart.GAgent.Autogen.Event;
 using AISmart.GAgent.Autogen.Events;
 using AISmart.GAgent.Autogen.Exceptions;
 using AISmart.GEvents.Autogen;
-using AISmart.Sender;
 using AutoGen.Core;
 using Microsoft.Extensions.Logging;
-using Orleans.Runtime;
 using Orleans.Streams;
 
 namespace AISmart.GAgent.Autogen;
@@ -19,22 +17,17 @@ namespace AISmart.GAgent.Autogen;
 public class AutoGenExecutor : Grain, IAutoGenExecutor
 {
     private IStreamProvider StreamProvider => this.GetStreamProvider(CommonConstants.StreamProvider);
-    private readonly AgentDescriptionManager _agentDescriptionManager;
     private readonly IChatAgentProvider _chatAgentProvider;
-    private readonly IGrainFactory _clusterClient;
     private readonly ILogger<AutoGenExecutor> _logger;
-    private readonly Guid _publishGrainId = Guid.NewGuid();
     private const string AgentName = "admin";
     private const string FinishFlag = "complete";
     private const string BreakFlag = "break";
     private Guid _taskId;
+    private IAgentDescriptionManager _descriptionManager;
 
-    public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IGrainFactory clusterClient,
-        AgentDescriptionManager agentDescriptionManager, IChatAgentProvider chatAgentProvider)
+    public AutoGenExecutor(ILogger<AutoGenExecutor> logger, IChatAgentProvider chatAgentProvider)
     {
         _logger = logger;
-        _clusterClient = clusterClient;
-        _agentDescriptionManager = agentDescriptionManager;
         _chatAgentProvider = chatAgentProvider;
     }
 
@@ -61,8 +54,11 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         _logger.LogDebug(
             $"[AutoGenExecutor] receive task:{taskInfo.TaskId.ToString()}");
         _taskId = taskInfo.TaskId;
+        _descriptionManager = GrainFactory.GetGrain<IAgentDescriptionManager>(taskInfo.AgentDescriptionManagerId);
+        
         var history = ConvertMessage(taskInfo.History);
-        _chatAgentProvider.SetAgent(AgentName, GetAgentResponsibility(), GetMiddleware());
+        var responsibility = await GetAgentResponsibility();
+        _chatAgentProvider.SetAgent(AgentName, responsibility, GetMiddleware());
         var response = await _chatAgentProvider.SendAsync(AgentName, "What should be done next?", history);
         if (response == null)
         {
@@ -176,12 +172,14 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
         return new FunctionCallMiddleware(groupChatContract, groupChatFunctionMap);
     }
 
-    private string GetAgentResponsibility()
+    private async Task<string> GetAgentResponsibility()
     {
+        var description = await _descriptionManager.GetAutoGenEventDescriptionAsync();
+
         return $$"""
                  You are a manager who solves user problems by organizing agents,
-                 - The following is a JSON-formatted description of all proxies, including the events each proxy can handle and the parameters for each event:
-                 {{_agentDescriptionManager.GetAutoGenEventDescription()}}
+                 - The following is a JSON-formatted description of all agents, including the events each proxy can handle and the parameters for each event:
+                 {{description}}
                  JSON explanation:
                  "AgentName":Agent's name
                  "AgentDescription":Agent's responsibilities
@@ -207,8 +205,17 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
 
                  The workflow is as follows:
                  - You take the problem from user.
-                 - Split the task into different events, and use the output of the previous event combined with the user's request to determine the execution of the next event.
-                 - Based on the event's response, reorganize the next request in line with the user's intent until the user's issue is resolved.
+                 - If an agent can handle the message,, please do not modify the data.
+                    For Example:
+                        If the voting agent can handle tasks related to voting. If the input is "Do you prefer swimming or working out?", the data should be passed to the voting agent in its entirety.the voting agent should not receive "I prefer swimming.".
+                        
+                 - Split the task into different events, and use the output of the previous event combined with the user's request to determine the execution of the next event. 
+                 - Based on the event's response, reorganize the next request in line with the user's intent.
+                 - If the event has already been clearly processed, then this event should not be called again in the next step and if there is no next event, it will terminate.
+                 For Example: 
+                     If event response:"The VoteEvent of VoteAgent has been processed, the response of VoteEvent is: {}. The input for the next request may depend on the JSON data in the response."
+                     "{}" means that the VoteEvent has already been completed and no return value, so the next step cannot call the VoteEvent again. If there are no other events to process afterward, then it will terminate.
+                    
                  - If the above events cannot meet the user's task execution needs, you can generate results based on the events to drive the continuation of the process.
                  - The response for each event will be added to the conversation in JSON format.
                    You need to analyze the response information to decide whether to proceed to the next round. 
@@ -253,7 +260,7 @@ public class AutoGenExecutor : Grain, IAutoGenExecutor
     [Function]
     public async Task<string> HandleEventAsync(string agentName, string eventName, string parameters)
     {
-        var descriptionDic = _agentDescriptionManager.GetAgentDescription();
+        var descriptionDic = await _descriptionManager.GetAgentDescription();
         if (descriptionDic.TryGetValue(agentName, out var eventDescription) == false)
         {
             throw new AutogenException($"Event name:{agentName} not exist");
