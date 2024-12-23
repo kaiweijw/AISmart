@@ -6,6 +6,8 @@ using AISmart.Agents;
 using AISmart.Agents.AutoGen;
 using AISmart.Application.Grains;
 using AISmart.Events;
+using AISmart.GEvents.NLP;
+using AISmart.GAgent.Core;
 using AISmart.Grains;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -60,18 +62,18 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
             NeedReplyBotName = State.BotName
         });
         await ConfirmEvents();
-        await PublishAsync(new AutoGenCreatedEvent
-        {
-            EventId = Guid.NewGuid(),
-            Content =
-                $"""
-                 Received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}, The fields in the will be used in the final response except "Message".
-                 Please follow the process below.
-                 1. parse the message content,the fields in the JSON may be used in the final response..
-                 2. Please understand the content of the "Message" in the JSON format, process the response accordingly.
-                 3. Must pass the final result to the SendMessageEvent method of the TelegramGAgent.
-                 """
-        });
+//         await PublishAsync(new AutoGenCreatedEvent
+//         {
+//             EventId = Guid.NewGuid(),
+//             Content =
+//                 $"""
+//                  Received a JSON-formatted message:{JsonConvert.SerializeObject(@event)}, The fields in the will be used in the final response except "Message".
+//                  Please follow the process below.
+//                  1. parse the message content,the fields in the JSON may be used in the final response..
+//                  2. Please understand the content of the "Message" in the JSON format, process the response accordingly.
+//                  """
+//         });
+        await PublishAsync(new NLPGEvent() { Content = @event.Message });
         _logger.LogDebug("Publish AutoGenCreatedEvent for Telegram Message ID: " + @event.MessageId);
     }
 
@@ -97,5 +99,5 @@ public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, IT
 
 public interface ITelegramGAgent : IStateGAgent<TelegramGAgentState>
 {
-   Task SetTelegramConfig(string chatId,string botName);
+    Task SetTelegramConfig(string chatId, string botName);
 }

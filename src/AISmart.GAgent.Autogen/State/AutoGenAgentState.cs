@@ -1,3 +1,4 @@
+using AISmart.Agents;
 using AISmart.Agents.AutoGen;
 using AISmart.GAgent.Autogen.Common;
 using AISmart.GAgent.Autogen.EventSourcingEvent;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace AISmart.GAgent.Autogen.State;
 
 [GenerateSerializer]
-public class AutoGenAgentState
+public class AutoGenAgentState : StateBase
 {
     [Id(0)] public Dictionary<Guid, AutoGenAgentStateInfo> AutoGenStateDic =
         new Dictionary<Guid, AutoGenAgentStateInfo>();
@@ -40,6 +41,16 @@ public class AutoGenAgentState
         if (EventToTaskDic.TryGetValue(eventId, out var requestInfo))
         {
             return AutoGenStateDic[requestInfo.TaskId];
+        }
+
+        return null;
+    }
+
+    public AutoGenAgentStateInfo? GetStateInfoByTaskId(Guid taskId)
+    {
+        if (AutoGenStateDic.TryGetValue(taskId, out var stateInfo))
+        {
+            return stateInfo;
         }
 
         return null;
@@ -115,6 +126,13 @@ public class AutoGenAgentState
 
     public void Apply(PublishEvent @event)
     {
+        var state = GetStateInfo(@event.TaskId);
+        if (state == null)
+        {
+            return;
+        }
+
+        state.RaiseEventCount += 1;
         StartEvent(@event.TaskId, @event.AgentName, @event.EventName, @event.EventId);
     }
 
@@ -192,6 +210,7 @@ public class AutoGenAgentStateInfo
     [Id(4)] public string CurrentCallInfo { get; set; }
     [Id(5)] public string Summary { get; set; }
     [Id(6)] public string BreakReason { get; set; }
+    [Id(7)] public int RaiseEventCount { get; set; }
 }
 
 [GenerateSerializer]

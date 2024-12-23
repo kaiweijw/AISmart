@@ -1,8 +1,10 @@
 using System.Net;
 using AISmart.Dapr;
+using AISmart.EventSourcing.MongoDB.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 using Newtonsoft.Json;
 using Orleans.Configuration;
 using Orleans.Providers.MongoDB.Configuration;
@@ -78,7 +80,7 @@ public static class OrleansHostExtension
                         options.CounterUpdateIntervalMs =
                             configSection.GetValue<int>("DashboardCounterUpdateIntervalMs");
                     })
-                    .AddLogStorageBasedLogConsistencyProvider()
+
                     .AddMongoDBGrainStorage("PubSubStore", options =>
                     {
                         // Config PubSubStore Storage for Persistent Stream 
@@ -86,33 +88,50 @@ public static class OrleansHostExtension
                         options.DatabaseName = configSection.GetValue<string>("DataBase");
                     })
                     .ConfigureLogging(logging => { logging.SetMinimumLevel(LogLevel.Debug).AddConsole(); });
-                    var provider = configuration.GetSection("OrleansStream:Provider").Get<string>();
-                    if (provider == "Kafka" )
-                    {
-                        siloBuilder.AddKafka("AISmart")
-                            .WithOptions(options =>
-                            {
-                                options.BrokerList = configuration.GetSection("OrleansStream:Brokers").Get<List<string>>();
-                                options.ConsumerGroupId = "AISmart";
-                                options.ConsumeMode = ConsumeMode.LastCommittedMessage;
 
-                                var partitions = configuration.GetSection("OrleansStream:Partitions").Get<int>();
-                                var replicationFactor = configuration.GetSection("OrleansStream:ReplicationFactor").Get<short>();
-                                options.AddTopic(CommonConstants.StreamNamespace, new TopicCreationConfig
-                                {
-                                    AutoCreate = true,
-                                    Partitions = partitions,
-                                    ReplicationFactor = replicationFactor
-                                });
-                            })
-                            .AddJson()
-                            .AddLoggingTracker()
-                            .Build();
-                    }
-                    else
+                var eventSourcingProvider = configuration.GetSection("OrleansEventSourcing:Provider").Get<string>();
+                if (string.Equals("mongodb", eventSourcingProvider, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    siloBuilder.AddMongoDbStorageBasedLogConsistencyProvider("LogStorage", options =>
                     {
-                        siloBuilder.AddMemoryStreams("AISmart");
-                    }
+                        options.ClientSettings =
+                            MongoClientSettings.FromConnectionString(configSection.GetValue<string>("MongoDBClient"));
+                        options.Database = configSection.GetValue<string>("DataBase");
+                    });
+                }
+                else
+                {
+                    siloBuilder.AddLogStorageBasedLogConsistencyProvider("LogStorage");
+                }
+
+                var streamProvider = configuration.GetSection("OrleansStream:Provider").Get<string>();
+                if (streamProvider == "Kafka")
+                {
+                    siloBuilder.AddKafka("AISmart")
+                        .WithOptions(options =>
+                        {
+                            options.BrokerList = configuration.GetSection("OrleansStream:Brokers").Get<List<string>>();
+                            options.ConsumerGroupId = "AISmart";
+                            options.ConsumeMode = ConsumeMode.LastCommittedMessage;
+
+                            var partitions = configuration.GetSection("OrleansStream:Partitions").Get<int>();
+                            var replicationFactor =
+                                configuration.GetSection("OrleansStream:ReplicationFactor").Get<short>();
+                            options.AddTopic(CommonConstants.StreamNamespace, new TopicCreationConfig
+                            {
+                                AutoCreate = true,
+                                Partitions = partitions,
+                                ReplicationFactor = replicationFactor
+                            });
+                        })
+                        .AddJson()
+                        .AddLoggingTracker()
+                        .Build();
+                }
+                else
+                {
+                    siloBuilder.AddMemoryStreams("AISmart");
+                }
             })
             .UseConsoleLifetime();
     }

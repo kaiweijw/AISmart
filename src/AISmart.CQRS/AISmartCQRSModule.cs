@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using AISmart.CQRS.Handler;
 using AISmart.CQRS.Provider;
+using AISmart.GAgent.Core;
 using Elasticsearch.Net;
 using MediatR;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +23,8 @@ public class AISmartCQRSModule : AbpModule
             context.Services.AddMediatR(typeof(GetStateQueryHandler).Assembly);
             context.Services.AddMediatR(typeof(SendEventCommandHandler).Assembly);
             context.Services.AddSingleton<IIndexingService, ElasticIndexingService>();
-            context.Services.AddSingleton<ICQRSProvider,CQRSProvider>();
+            context.Services.AddSingleton<IEventDispatcher, CQRSProvider>();
+            context.Services.AddSingleton<ICQRSProvider, CQRSProvider>();
             context.Services.AddTransient<SaveStateCommandHandler>();
             context.Services.AddTransient<GetStateQueryHandler>();
             context.Services.AddTransient<SendEventCommandHandler>();

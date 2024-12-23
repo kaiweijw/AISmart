@@ -1,4 +1,5 @@
 ﻿using AISmart.Application.Grains;
+using AiSmart.GAgent.TestAgent;
 using AISmart.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Account;
@@ -21,10 +22,11 @@ namespace AISmart;
     typeof(AbpAspNetCoreMvcDaprModule),
     typeof(AIApplicationGrainsModule),
     typeof(AISmartSimpleRagModule),
-    typeof(AIApplicationGrainsModule),
     typeof(AISmartGAgentAElfModule),
     typeof(AISmartGAgentTelegramModule),
-    typeof(AISmartGAgentTwitterModule)
+    typeof(AISmartGAgentTwitterModule),
+    typeof(AISmartGAgentMicroAIModule),
+    typeof(AISmartGAgentTestAgentModule)
 )]
 public class AISmartApplicationModule : AbpModule
 {
@@ -34,6 +36,7 @@ public class AISmartApplicationModule : AbpModule
         {
             options.AddMaps<AISmartApplicationModule>();
         });
+        
         var configuration = context.Services.GetConfiguration();
         Configure<RagOptions>(configuration.GetSection("Rag"));
     }

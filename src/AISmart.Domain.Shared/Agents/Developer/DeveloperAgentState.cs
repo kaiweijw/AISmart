@@ -4,7 +4,7 @@ using Orleans;
 namespace AISmart.Agents.Developer;
 
 [GenerateSerializer]
-public class DeveloperAgentState
+public class DeveloperAgentState : StateBase
 {
     [Id(0)]  public List<string> Content { get; set; }
 }

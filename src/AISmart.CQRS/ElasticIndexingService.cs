@@ -8,10 +8,11 @@ namespace AISmart.CQRS;
 public class ElasticIndexingService : IIndexingService
 {
     private readonly IElasticClient _elasticClient;
-    private readonly ILogger Logger;
+    private readonly ILogger<ElasticIndexingService> _logger;
 
-    public ElasticIndexingService(IElasticClient elasticClient)
+    public ElasticIndexingService(ILogger<ElasticIndexingService> logger, IElasticClient elasticClient)
     {
+        _logger = logger;
         _elasticClient = elasticClient;
     }
 
@@ -28,11 +29,11 @@ public class ElasticIndexingService : IIndexingService
         );
         if (!createIndexResponse.IsValid)
         {
-            Logger.LogError("Error creating index {error}", createIndexResponse.ServerError?.Error);
+            _logger.LogError("Error creating index {error}", createIndexResponse.ServerError?.Error);
         }
         else
         {
-            Logger.LogError("Index created successfully. {indexName}", indexName);
+            _logger.LogError("Index created successfully. {indexName}", indexName);
         }
     }
 
