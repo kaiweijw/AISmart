@@ -27,7 +27,6 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     private readonly Dictionary<Guid, IAsyncStream<EventWrapperBase>> _publishers = new();
     protected readonly List<EventWrapperBaseAsyncObserver> Observers = new();
     private IEventDispatcher EventDispatcher { get; set; }
-    private ICQRSProvider CqrsProvider { get; set; }
 
     protected GAgentBase(ILogger logger)
     {

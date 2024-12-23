@@ -3,7 +3,7 @@ using Orleans;
 
 namespace AISmart.Grains;
 
-public interface IPumFunGrain : IGrainWithGuidKey
+public interface IPumpFunGrain : IGrainWithGuidKey
 {
     public Task SendMessageAsync(string replyId, string? replyMessage);
    

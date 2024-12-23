@@ -10,7 +10,7 @@ using Orleans.Providers;
 namespace AISmart.Agent.Grains;
 
 [StorageProvider(ProviderName = "PubSubStore")]
-public class PumpFunGrain : Grain<PumpFunState>, IPumFunGrain
+public class PumpFunGrain : Grain<PumpFunState>, IPumpFunGrain
 {
     public readonly IPumpFunProvider PumpFunProvider;
     

@@ -23,7 +23,6 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
     private readonly ICQRSProvider _cqrsProvider;
     private readonly ILogger<PumpFunChatService> _logger;
 
-    // TODO:how to initiate
     public PumpFunChatService(IClusterClient clusterClient, ICQRSProvider cqrsProvider, ILogger<PumpFunChatService> logger)
     {
         _clusterClient = clusterClient;
@@ -36,8 +35,10 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
         _logger.LogInformation("ReceiveMessagesAsync agentId:" + inputDto.AgentId);
         if (inputDto is { RequestMessage: not null, AgentId: not null })
         {
+            _logger.LogInformation("ReceiveMessagesAsync2 agentId:" + inputDto.AgentId);
             var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.Parse(inputDto.AgentId));
 
+            _logger.LogInformation("ReceiveMessagesAsync3 agentId:" + inputDto.AgentId);
             await  publishingAgent.PublishEventAsync(new PumpFunReceiveMessageEvent
             {
                 ReplyId = inputDto.ReplyId,
@@ -52,16 +53,18 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
         Guid groupAgentId = Guid.NewGuid();
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(groupAgentId);
         var pumpFunGAgent = _clusterClient.GetGrain<IPumpFunGAgent>(Guid.NewGuid());
+        _logger.LogInformation("SetGroupsAsync2, chatId:{chatId}", chatId);
         await pumpFunGAgent.SetPumpFunConfig(chatId);
         var autogenAgent=  _clusterClient.GetGrain<IAutogenGAgent>(Guid.NewGuid());
         
-        _logger.LogInformation("SetGroupsAsync, chatId:{chatId}", chatId);
+        _logger.LogInformation("SetGroupsAsync3, chatId:{chatId}", chatId);
         autogenAgent.RegisterAgentEvent(typeof(PumpFunGAgent), [typeof(PumpFunReceiveMessageEvent), typeof(PumpFunSendMessageEvent)]);
         
         await groupAgent.Register(autogenAgent);
         await groupAgent.Register(pumpFunGAgent);
         
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(groupAgentId);
+        _logger.LogInformation("SetGroupsAsync3, groupAgentId:{groupAgentId}", JsonConvert.SerializeObject(publishingAgent));
         await publishingAgent.PublishTo(groupAgent);
 
         return groupAgentId.ToString();
@@ -73,14 +76,15 @@ public class PumpFunChatService :  ApplicationService, IPumpFunChatService
         var grainId =  _clusterClient.GetGrain<IPumpFunGAgent>(Guid.Parse(replyId)).GetGrainId();
         // get PumpFunGAgentState
         var stateResult = await _cqrsProvider.QueryAsync("pumpfungagentstateindex", grainId.ToString());
+        _logger.LogInformation("SearchAnswerAsync, stateResult:{stateResult}", JsonConvert.SerializeObject(stateResult));
         var state = stateResult.State;
         PumpFunGAgentState? pumpFunGAgentState = JsonConvert.DeserializeObject<PumpFunGAgentState>(state);
         PumFunResponseDto answer = new PumFunResponseDto
         {
             ReplyId = pumpFunGAgentState.responseMessage[replyId].ReplyId,
-            ReplyMessage = pumpFunGAgentState.responseMessage[replyId].ReplyMessage;
+            ReplyMessage = pumpFunGAgentState.responseMessage[replyId].ReplyMessage
         };
-
+        _logger.LogInformation("SearchAnswerAsync3, replyId:{replyId}", replyId);
         return await Task.FromResult(answer);
     }
 }

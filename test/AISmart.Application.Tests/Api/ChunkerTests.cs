@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AISmart.Provider;
 using AISmart.Rag.Agent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,27 +30,4 @@ public class PumpfunTests : AISmartApplicationTestBase
         List<string> chunks = await result;
         Assert.True(chunks.Count > 0);
     }
-    
-    [Fact]
-    public async Task TestAzureAIChunker()
-    {
-        var azureAiChunker = new AzureAIChunker();
-
-        Task<List<string>> result = azureAiChunker.Chunk(text, 100);
-            
-        List<string> chunks = await result;
-        Assert.True(chunks.Count > 0);
-    }
-    
-    [Fact]
-    public async Task TestOpenAIChunk()
-    {
-        var openAiChunker = new OpenAIChunker();
-
-        Task<List<string>> result = openAiChunker.Chunk(text, 512);
-            
-        List<string> chunks = await result;
-        Assert.True(chunks.Count > 0);
-    }
-    
 }

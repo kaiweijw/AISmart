@@ -7,6 +7,7 @@ using AISmart.Agents;
 using AISmart.Agents.AutoGen;
 using AISmart.Application.Grains;
 using AISmart.Events;
+using AISmart.GAgent.Core;
 using AISmart.Grains;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -42,6 +43,7 @@ public class PumpFunGAgent : GAgentBase<PumpFunGAgentState, PumpFunMessageGEvent
        });
        await ConfirmEvents();
        
+       _logger.LogInformation("PumpFunReceiveMessageEvent2:" + JsonConvert.SerializeObject(@event));
        await PublishAsync(new AutoGenCreatedEvent
        {
            EventId = Guid.NewGuid(),
@@ -68,8 +70,8 @@ public class PumpFunGAgent : GAgentBase<PumpFunGAgentState, PumpFunMessageGEvent
                 ReplyMessage = @event.ReplyMessage
             });
             await ConfirmEvents();
-
-            await GrainFactory.GetGrain<IPumFunGrain>(Guid.NewGuid())
+            _logger.LogInformation("PumpFunSendMessageEvent2:" + JsonConvert.SerializeObject(@event));
+            await GrainFactory.GetGrain<IPumpFunGrain>(Guid.NewGuid())
                 .SendMessageAsync(@event.ReplyId, @event.ReplyMessage);
         }
     }
@@ -82,6 +84,7 @@ public class PumpFunGAgent : GAgentBase<PumpFunGAgentState, PumpFunMessageGEvent
             ChatId = chatId
         });
         await ConfirmEvents();
+        _logger.LogInformation("PumpFunGAgent SetPumpFunConfig2, chatId:" + chatId);
     }
 
     public Task<PumpFunGAgentState> GetPumpFunGAgentState()

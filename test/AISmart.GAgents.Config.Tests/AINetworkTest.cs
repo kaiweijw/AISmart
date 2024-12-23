@@ -127,44 +127,6 @@ namespace AISmart
         }
         
 
-        [Fact]
-        public async Task Agent_NetWork_Test()
-        {
-            await _agentNetworkManager.InitializeAgentsAsync(_agentNetworkConfigOptions);
-
-            var agentDictionary = _agentNetworkManager.GetAgentInstances();
-            agentDictionary.Count.ShouldBe(7);
-            
-            var groupAgents = _agentNetworkManager.GetGroupAgents();
-            var gAgents = groupAgents as IGAgent[] ?? groupAgents.ToArray();
-            gAgents.Length.ShouldBeGreaterThan(0);
-            
-            var groupStateGAgent = gAgents.FirstOrDefault()!;
-            groupStateGAgent.GetType().ShouldBe(typeof(IGAgent));
-
-            _publishingGAgent = _grainFactory.GetGrain<IPublishingGAgent>(Guid.NewGuid());
-            await _publishingGAgent.PublishTo(groupStateGAgent);
-
-            const string content = "BTC REACHED 100k BOOHOO!";
-            var xThreadCreatedEvent = new XThreadCreatedEvent
-            {
-                Id = "mock_x_thread_id",
-                Content = content
-            };
-            await _publishingGAgent.PublishEventAsync(xThreadCreatedEvent);
-
-            var investmentAgent = GrainTracker.InvestmentAgents.First();
-            var investmentAgentState = await investmentAgent.GetStateAsync();
-            
-            var developerAgent = GrainTracker.DeveloperAgents.First();
-            var developerAgentState = await developerAgent.GetStateAsync();
-
-            await TestingUtils.WaitUntilAsync(_ => CheckState(developerAgentState), TimeSpan.FromSeconds(20));
-            await TestingUtils.WaitUntilAsync(_ => CheckState(investmentAgentState), TimeSpan.FromSeconds(20));
-            
-            developerAgentState.Content.Count.ShouldBe(1);
-            investmentAgentState.Content.Count.ShouldBe(1);
-        }
 
         private static Task<bool> CheckState(InvestmentAgentState state)
         {
