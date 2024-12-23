@@ -67,14 +67,14 @@ public class TelegramService :  ApplicationService,ITelegramService
         autogenAgent.RegisterAgentEvent(typeof(InvestmentGAgent), [typeof(InvestmentEvent)]);
         autogenAgent.RegisterAgentEvent(typeof(MarketLeaderGAgent), [typeof(SocialEvent)]);
         
-        await groupAgent.Register(telegramAgent);
-        await groupAgent.Register(autogenAgent);
-        await groupAgent.Register(developerAgent);
-        await groupAgent.Register(investmentAgent);
-        await groupAgent.Register(marketLeaderAgent);
+        await groupAgent.RegisterAsync(telegramAgent);
+        await groupAgent.RegisterAsync(autogenAgent);
+        await groupAgent.RegisterAsync(developerAgent);
+        await groupAgent.RegisterAsync(investmentAgent);
+        await groupAgent.RegisterAsync(marketLeaderAgent);
         
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(PublishId);
-        await publishingAgent.PublishTo(groupAgent);
+        await publishingAgent.PublishToAsync(groupAgent);
 
         await publishingAgent.PublishEventAsync(new RequestAllSubscriptionsEvent());
     }

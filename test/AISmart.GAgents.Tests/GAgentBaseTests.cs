@@ -1,5 +1,4 @@
 using AISmart.Agents;
-using AISmart.GAgents.Tests;
 using AISmart.GAgents.Tests.TestEvents;
 using AISmart.GAgents.Tests.TestGAgents;
 using Shouldly;
@@ -47,12 +46,18 @@ public class GAgentBaseTests : GAgentTestKitBase
         });
         var state = await eventHandlerTestGAgent.GetStateAsync();
         state.Content.Count.ShouldBe(3);
-        await groupGAgent.Unregister(eventHandlerTestGAgent);
+        await groupGAgent.UnregisterAsync(eventHandlerTestGAgent);
         await publishingGAgent.PublishEventAsync(new NaiveTestEvent
         {
             Greeting = "Hello world"
         });
         state.Content.Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task RegisterMultipleGroupTest()
+    {
+        
     }
 
     [Fact]

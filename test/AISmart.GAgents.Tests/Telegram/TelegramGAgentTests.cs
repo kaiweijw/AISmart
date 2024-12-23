@@ -18,11 +18,11 @@ public class TelegramGAgentTests : GAgentTestKitBase
         var guid = Guid.NewGuid();
         var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
         var telegramGAgent = await Silo.CreateGrainAsync<TelegramGAgent>(guid);
-        await groupAgent.Register(telegramGAgent);
+        await groupAgent.RegisterAsync(telegramGAgent);
         var txGrain = await Silo.CreateGrainAsync<TelegramGrain>(guid);
         Silo.AddProbe<ITelegramGrain>(_ => txGrain);
         var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
-        await publishingAgent.PublishTo(groupAgent);
+        await publishingAgent.PublishToAsync(groupAgent);
         Silo.AddProbe<IPublishingGAgent>(_ => publishingAgent);
         await publishingAgent.PublishEventAsync(new ReceiveMessageEvent
         {
@@ -39,11 +39,11 @@ public class TelegramGAgentTests : GAgentTestKitBase
         var guid = Guid.NewGuid();
         var groupAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
         var telegramGAgent = await Silo.CreateGrainAsync<TelegramGAgent>(guid);
-        await groupAgent.Register(telegramGAgent);
+        await groupAgent.RegisterAsync(telegramGAgent);
         var txGrain = await Silo.CreateGrainAsync<TelegramGrain>(guid);
         Silo.AddProbe<ITelegramGrain>(_ => txGrain);
         var publishingAgent = await Silo.CreateGrainAsync<PublishingGAgent>(guid);
-        await publishingAgent.PublishTo(groupAgent);
+        await publishingAgent.PublishToAsync(groupAgent);
         Silo.AddProbe<IPublishingGAgent>(_ => publishingAgent);
         await publishingAgent.PublishEventAsync(new SendMessageEvent
         {

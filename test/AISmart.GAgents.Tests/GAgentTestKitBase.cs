@@ -15,7 +15,7 @@ public abstract class GAgentTestKitBase : TestKitBase
         Silo.AddProbe<IPublishingGAgent>(_ => publishingGAgent);
         foreach (var gAgent in gAgentsToPublish)
         {
-            await publishingGAgent.PublishTo(gAgent);
+            await publishingGAgent.PublishToAsync(gAgent);
         }
 
         return publishingGAgent;
@@ -26,7 +26,7 @@ public abstract class GAgentTestKitBase : TestKitBase
         var groupGAgent = await Silo.CreateGrainAsync<GroupGAgent>(Guid.NewGuid());
         foreach (var gAgent in gAgentsToRegister)
         {
-            await groupGAgent.Register(gAgent);
+            await groupGAgent.RegisterAsync(gAgent);
         }
 
         return groupGAgent;

@@ -41,7 +41,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         return Task.CompletedTask;
     }
 
-    public async Task<bool> SubscribeTo(IGAgent agent)
+    public async Task<bool> SubscribeToAsync(IGAgent agent)
     {
         var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
@@ -55,7 +55,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         return true;
     }
 
-    public async Task<bool> UnsubscribeFrom(IGAgent agent)
+    public async Task<bool> UnsubscribeFromAsync(IGAgent agent)
     {
         var agentGuid = agent.GetPrimaryKey();
         if (await RemoveSubscriptionsAsync(agentGuid))
@@ -74,7 +74,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         return false;
     }
 
-    public async Task<bool> PublishTo(IGAgent agent)
+    public async Task<bool> PublishToAsync(IGAgent agent)
     {
         var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
@@ -82,15 +82,15 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         return await AddPublishersAsync(agentGuid, stream);
     }
 
-    public async Task<bool> UnpublishFrom(IGAgent agent)
+    public async Task<bool> UnpublishFromAsync(IGAgent agent)
     {
         return await RemovePublishersAsync(agent.GetPrimaryKey());
     }
 
-    public async Task Register(IGAgent agent)
+    public async Task RegisterAsync(IGAgent agent)
     {
-        var success = await agent.SubscribeTo(this);
-        success = await agent.PublishTo(this) | success;
+        var success = await agent.SubscribeToAsync(this);
+        success = await agent.PublishToAsync(this) | success;
 
         if (!success)
         {
@@ -104,15 +104,17 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
         await OnRegisterAgentAsync(guid);
     }
 
-    public async Task Unregister(IGAgent agent)
+    public async Task UnregisterAsync(IGAgent agent)
     {
-        var success = await agent.UnsubscribeFrom(this);
-        success = await agent.UnpublishFrom(this) | success;
+        var success = await agent.UnsubscribeFromAsync(this);
+        success = await agent.UnpublishFromAsync(this) | success;
 
         if (!success)
         {
             return;
         }
+
+        await RemoveSubscriberAsync(agent.GetGrainId());
 
         await OnUnregisterAgentAsync(agent.GetPrimaryKey());
     }
