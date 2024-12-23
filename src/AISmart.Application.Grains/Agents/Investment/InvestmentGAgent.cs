@@ -13,7 +13,7 @@ namespace AISmart.Application.Grains.Agents.Investment;
 [Description("Investment department,")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class InvestmentGAgent : EventHandler<InvestmentAgentState, InvestmentGEvent>, IInvestmentStateGAgent<InvestmentAgentState>
+public class InvestmentGAgent : GAgentBase<InvestmentAgentState, InvestmentGEvent>, IInvestmentStateGAgent<InvestmentAgentState>
 {
     public InvestmentGAgent(ILogger<InvestmentGAgent> logger) : base(logger)
     {

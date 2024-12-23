@@ -13,7 +13,7 @@ namespace AISmart.GAgent.Core;
 [GAgent]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public abstract partial class EventHandler<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateGAgent<TState>
+public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent>, IStateGAgent<TState>
     where TState : StateBase, new()
     where TEvent : GEventBase
 {
@@ -28,7 +28,7 @@ public abstract partial class EventHandler<TState, TEvent> : JournaledGrain<TSta
     protected readonly Dictionary<EventWrapperBaseAsyncObserver, Guid> Observers = new();
     private IEventDispatcher EventDispatcher { get; set; }
 
-    protected EventHandler(ILogger logger)
+    protected GAgentBase(ILogger logger)
     {
         Logger = logger;
         GrainStorage = ServiceProvider.GetRequiredService<IGrainStorage>();
@@ -74,9 +74,9 @@ public abstract partial class EventHandler<TState, TEvent> : JournaledGrain<TSta
         return false;
     }
 
-    public async Task<bool> PublishToAsync(IGAgent anotherGAgent)
+    public async Task<bool> PublishToAsync(IGAgent agent)
     {
-        var agentGuid = anotherGAgent.GetPrimaryKey();
+        var agentGuid = agent.GetPrimaryKey();
         var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
         var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
         return await AddPublishersAsync(agentGuid, stream);
@@ -216,21 +216,9 @@ public abstract partial class EventHandler<TState, TEvent> : JournaledGrain<TSta
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        // This must be called first to initialize Observers field.
         await UpdateObserverList();
-
-        // Register to itself.
-        var agentGuid = this.GetPrimaryKey();
-        var streamId = StreamId.Create(CommonConstants.StreamNamespace, agentGuid);
-        var stream = StreamProvider.GetStream<EventWrapperBase>(streamId);
-        foreach (var observer in Observers.Keys)
-        {
-            await stream.SubscribeAsync(observer);
-        }
-
-        await AddPublishersAsync(agentGuid, stream);
     }
-
+    
     protected virtual async Task HandleStateChangedAsync()
     {
     }

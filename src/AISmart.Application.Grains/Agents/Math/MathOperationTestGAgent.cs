@@ -14,7 +14,7 @@ namespace AISmart.Application.Grains.Agents.Math;
 [Description("i can add two integer")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class MathOperationGAgent : EventHandler<MathOperationState, MathOperationEvent>
+public class MathOperationGAgent : GAgentBase<MathOperationState, MathOperationEvent>
 {
     public MathOperationGAgent(ILogger<MathOperationGAgent> logger) : base(logger)
     {

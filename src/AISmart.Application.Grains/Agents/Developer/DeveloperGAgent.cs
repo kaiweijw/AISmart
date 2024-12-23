@@ -11,7 +11,7 @@ namespace AISmart.Application.Grains.Agents.Developer;
 [Description("R&D department, and I can handle development-related tasks.")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class DeveloperGAgent : EventHandler<DeveloperAgentState, DeveloperGEvent>
+public class DeveloperGAgent : GAgentBase<DeveloperAgentState, DeveloperGEvent>
 {
     public DeveloperGAgent(ILogger<DeveloperGAgent> logger) : base(logger)
     {

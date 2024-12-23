@@ -8,7 +8,7 @@ namespace AISmart.GAgents.Tests.TestGAgents;
 
 [GAgent]
 public class LogViewAdaptorTestGAgent
-    : EventHandler<LogViewAdaptorTestGState, LogViewAdaptorTestGEvent>
+    : GAgentBase<LogViewAdaptorTestGState, LogViewAdaptorTestGEvent>
 {
     public LogViewAdaptorTestGAgent(ILogger logger) : base(logger)
     {

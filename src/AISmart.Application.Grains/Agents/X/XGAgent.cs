@@ -13,7 +13,7 @@ namespace AISmart.Application.Grains.Agents.X;
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-public class XGAgent : EventHandler<XAgentState, XGEvent>
+public class XGAgent : GAgentBase<XAgentState, XGEvent>
 {
     public XGAgent(ILogger<XGAgent> logger) : base(logger)
     {

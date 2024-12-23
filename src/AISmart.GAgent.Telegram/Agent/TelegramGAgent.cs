@@ -17,7 +17,7 @@ namespace AISmart.Agent;
 [Description("Handle telegram")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class TelegramGAgent : EventHandler<TelegramGAgentState, MessageGEvent>, ITelegramGAgent
+public class TelegramGAgent : GAgentBase<TelegramGAgentState, MessageGEvent>, ITelegramGAgent
 {
     private readonly ILogger<TelegramGAgent> _logger;
 

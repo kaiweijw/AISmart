@@ -12,7 +12,7 @@ namespace AISmart.Application.Grains.Agents.Draw;
 [Description("I can draw a polygon")]
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class DrawOperationGAgent : EventHandler<DrawOperationState, DrawOperateEvent>
+public class DrawOperationGAgent : GAgentBase<DrawOperationState, DrawOperateEvent>
 {
     public DrawOperationGAgent(ILogger<DrawOperationGAgent> logger) : base(logger)
     {

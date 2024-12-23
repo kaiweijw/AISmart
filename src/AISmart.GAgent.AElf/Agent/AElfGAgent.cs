@@ -19,7 +19,7 @@ namespace AISmart.Agent;
 
 [StorageProvider(ProviderName = "PubSubStore")]
 [LogConsistencyProvider(ProviderName = "LogStorage")]
-public class AElfGAgent : EventHandler<AElfAgentGState, TransactionGEvent>, IAElfAgent
+public class AElfGAgent : GAgentBase<AElfAgentGState, TransactionGEvent>, IAElfAgent
 {
     public AElfGAgent(ILogger<AElfGAgent> logger) : base(logger)
     {

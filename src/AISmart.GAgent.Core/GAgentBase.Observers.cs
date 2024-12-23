@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AISmart.GAgent.Core;
 
-public abstract partial class EventHandler<TState, TEvent>
+public abstract partial class GAgentBase<TState, TEvent>
 {
     private Task UpdateObserverList()
     {
