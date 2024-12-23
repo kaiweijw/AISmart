@@ -437,22 +437,16 @@ public abstract class GAgentBase<TState, TEvent> : JournaledGrain<TState, TEvent
     {
     }
 
-    protected sealed override async void OnStateChanged()
+    protected sealed override void OnStateChanged()
     {
-        var task = Task.Run(async () =>
+        InternalOnStateChangedAsync().ContinueWith(task =>
         {
-            try
+            if (task.Exception != null)
             {
-                await InternalOnStateChangedAsync();
+                Logger.LogError(task.Exception, "InternalOnStateChangedAsync operation failed");
             }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error in method InternalOnStateChangedAsync");
-            }
-        });
-        await task;
+        }, TaskContinuationOptions.OnlyOnFaulted);
     }
-    
     private async Task InternalOnStateChangedAsync()
     {
         await HandleStateChangedAsync();
