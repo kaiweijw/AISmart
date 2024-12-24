@@ -189,10 +189,10 @@ public class TelegramService :  ApplicationService,ITelegramService
         var telegramAgent = _clusterClient.GetGrain<ITelegramGAgent>(Guid.NewGuid());
         await telegramAgent.SetTelegramConfig( registerTelegramDto.BotName,registerTelegramDto.Token);
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(groupId);
-        await groupAgent.Register(telegramAgent);
-        await groupAgent.Register(socialAgent);
+        await groupAgent.RegisterAsync(telegramAgent);
+        await groupAgent.RegisterAsync(socialAgent);
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(groupId);
-        await publishingAgent.PublishTo(groupAgent);
+        await publishingAgent.PublishToAsync(groupAgent);
     }
     
 }
