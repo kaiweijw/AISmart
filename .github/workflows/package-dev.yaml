@@ -1,4 +1,4 @@
-name: Package Testnet
+name: Package Dev
 
 on:
   push:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   publish:
-    runs-on: aismart-runner
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         servicename:
