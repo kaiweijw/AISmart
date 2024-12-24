@@ -100,7 +100,7 @@ public class TelegramService :  ApplicationService,ITelegramService
         var groupId = GuidUtil.StringToGuid("Test");
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
         var telegramAgent = _clusterClient.GetGrain<ITelegramGAgent>(Guid.NewGuid());
-        await telegramAgent.SetTelegramConfig("-1002473003637", "Test","");
+        await telegramAgent.SetTelegramConfig( "Test","");
         var developerAgent = _clusterClient.GetGrain<IStateGAgent<DeveloperAgentState>>(Guid.NewGuid());
         var investmentAgent = _clusterClient.GetGrain<IStateGAgent<InvestmentAgentState>>(Guid.NewGuid());
         var marketLeaderAgent = _clusterClient.GetGrain<IStateGAgent<MarketLeaderAgentState>>(Guid.NewGuid());
@@ -127,7 +127,7 @@ public class TelegramService :  ApplicationService,ITelegramService
         var groupId = GuidUtil.StringToGuid("Test");
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
         var telegramAgent = _clusterClient.GetGrain<ITelegramGAgent>(Guid.NewGuid());
-        await telegramAgent.SetTelegramConfig("-1002473003637", "Test","");
+        await telegramAgent.SetTelegramConfig( "Test","");
         await groupAgent.Register(telegramAgent);
 
         // var autogenAgent = _clusterClient.GetGrain<IAutogenGAgent>(Guid.NewGuid());
@@ -187,7 +187,7 @@ public class TelegramService :  ApplicationService,ITelegramService
         var socialAgent=  _clusterClient.GetGrain<ISocialGAgent>(Guid.NewGuid());
         await socialAgent.SetAgent(registerTelegramDto.BotName, "You need to answer all the questions you know.");
         var telegramAgent = _clusterClient.GetGrain<ITelegramGAgent>(Guid.NewGuid());
-        await telegramAgent.SetTelegramConfig("-1002473003637", registerTelegramDto.BotName,registerTelegramDto.Token);
+        await telegramAgent.SetTelegramConfig( registerTelegramDto.BotName,registerTelegramDto.Token);
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(groupId);
         await groupAgent.Register(telegramAgent);
         await groupAgent.Register(socialAgent);

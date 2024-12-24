@@ -12,8 +12,6 @@ public class TelegramGAgentState : StateBase
     
     [Id(1)] public Dictionary<string, ReceiveMessageGEvent> PendingMessages { get; set; } = new Dictionary<string, ReceiveMessageGEvent>();
     
-    [Id(2)] public string ChatId { get; set; }
-    
     [Id(3)] public string BotName { get; set; } 
     
     [Id(4)] public string Token { get; set; } 
@@ -32,7 +30,6 @@ public class TelegramGAgentState : StateBase
     
     public void Apply(SetTelegramConfigEvent setTelegramConfigEvent)
     {
-        ChatId = setTelegramConfigEvent.ChatId;
         BotName = setTelegramConfigEvent.BotName;
         Token = setTelegramConfigEvent.Token;
     }
