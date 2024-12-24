@@ -110,14 +110,14 @@ public class TelegramService :  ApplicationService,ITelegramService
         autogenAgent.RegisterAgentEvent(typeof(InvestmentGAgent), [typeof(InvestmentEvent)]);
         autogenAgent.RegisterAgentEvent(typeof(MarketLeaderGAgent), [typeof(SocialEvent)]);
         
-        await groupAgent.Register(telegramAgent);
-        await groupAgent.Register(autogenAgent);
-        await groupAgent.Register(developerAgent);
-        await groupAgent.Register(investmentAgent);
-        await groupAgent.Register(marketLeaderAgent);
+        await groupAgent.RegisterAsync(telegramAgent);
+        await groupAgent.RegisterAsync(autogenAgent);
+        await groupAgent.RegisterAsync(developerAgent);
+        await groupAgent.RegisterAsync(investmentAgent);
+        await groupAgent.RegisterAsync(marketLeaderAgent);
         
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(groupId);
-        await publishingAgent.PublishTo(groupAgent);
+        await publishingAgent.PublishToAsync(groupAgent);
 
         await publishingAgent.PublishEventAsync(new RequestAllSubscriptionsEvent());
     }
@@ -128,7 +128,7 @@ public class TelegramService :  ApplicationService,ITelegramService
         var groupAgent = _clusterClient.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
         var telegramAgent = _clusterClient.GetGrain<ITelegramGAgent>(Guid.NewGuid());
         await telegramAgent.SetTelegramConfig( "Test","");
-        await groupAgent.Register(telegramAgent);
+        await groupAgent.RegisterAsync(telegramAgent);
 
         // var autogenAgent = _clusterClient.GetGrain<IAutogenGAgent>(Guid.NewGuid());
         // await groupAgent.Register(autogenAgent);
@@ -148,7 +148,7 @@ public class TelegramService :  ApplicationService,ITelegramService
             var voteAgent = _clusterClient.GetGrain<IVoterGAgent>(Guid.NewGuid());
             await voteAgent.SetAgent($"Vote:{i}",
                 $"You are a voter,and {descriptions[i]}. Based on a proposal, provide a conclusion of agreement or disagreement and give reasons.");
-            await groupAgent.Register(voteAgent);
+            await groupAgent.RegisterAsync(voteAgent);
         }
         
         // var chatAgent = _clusterClient.GetGrain<IChatGAgent>(Guid.NewGuid());
@@ -167,16 +167,16 @@ public class TelegramService :  ApplicationService,ITelegramService
                              If the user's input is unrelated to making choices, please return "Error".
                              """;
         await nlpAgent.SetAgent("NlpAgent", nlpDescription);
-        await groupAgent.Register(nlpAgent);
+        await groupAgent.RegisterAsync(nlpAgent);
 
         var conclusionAgent = _clusterClient.GetGrain<IConclusionGAgent>(Guid.NewGuid());
         await conclusionAgent.SetAgent("Conclusion",
             "you are a Summarizer, When you collect 7 votes, compile statistics on the voting and draw a conclusion..");
         await conclusionAgent.SetVoteCount(voterCount);
-        await groupAgent.Register(conclusionAgent);
+        await groupAgent.RegisterAsync(conclusionAgent);
 
         var publishingAgent = _clusterClient.GetGrain<IPublishingGAgent>(groupId);
-        await publishingAgent.PublishTo(groupAgent);
+        await publishingAgent.PublishToAsync(groupAgent);
 
         await publishingAgent.PublishEventAsync(new RequestAllSubscriptionsEvent());
     }

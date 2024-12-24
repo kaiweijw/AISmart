@@ -45,13 +45,13 @@ namespace AISmart.Samples
             _investmentStateGAgent = _grainFactory.GetGrain<IStateGAgent<InvestmentAgentState>>(Guid.NewGuid());
             _groupStateGAgent = _grainFactory.GetGrain<IStateGAgent<GroupAgentState>>(Guid.NewGuid());
             
-            await _groupStateGAgent.Register(_xStateGAgent);
-            await _groupStateGAgent.Register(_marketLeaderStateGAgent);
-            await _groupStateGAgent.Register(_developerStateGAgent);
-            await _groupStateGAgent.Register(_investmentStateGAgent);
+            await _groupStateGAgent.RegisterAsync(_xStateGAgent);
+            await _groupStateGAgent.RegisterAsync(_marketLeaderStateGAgent);
+            await _groupStateGAgent.RegisterAsync(_developerStateGAgent);
+            await _groupStateGAgent.RegisterAsync(_investmentStateGAgent);
 
             _publishingGAgent = _clusterClient.GetGrain<IPublishingGAgent>(Guid.NewGuid());
-            await _publishingGAgent.PublishTo(_groupStateGAgent);
+            await _publishingGAgent.PublishToAsync(_groupStateGAgent);
         }
 
         public Task DisposeAsync()

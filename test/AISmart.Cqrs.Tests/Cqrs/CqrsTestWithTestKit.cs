@@ -4,7 +4,7 @@ using AISmart.CQRS;
 using AISmart.CQRS.Dto;
 using AISmart.CQRS.Handler;
 using AISmart.CQRS.Provider;
-using AISmart.GGrains.Tests;
+using AISmart.GAgents.Tests;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -15,7 +15,7 @@ using Orleans.TestKit;
 
 namespace AISmart.GAgent;
 
-public class CqrsTests : GAgentTestKitBase
+public class CqrsTestWithTestKit : GAgentTestKitBase
 {
    private readonly ITestOutputHelper _output;
     private readonly ICQRSProvider _cqrsProvider;
@@ -27,7 +27,7 @@ public class CqrsTests : GAgentTestKitBase
 
     private const string IndexId = "1";
 
-    public CqrsTests(ITestOutputHelper output)
+    public CqrsTestWithTestKit(ITestOutputHelper output)
     {
         _output = output;
         _mockIndexingService = new Mock<IIndexingService>();
