@@ -18,4 +18,8 @@
         <PackageReference Include="Microsoft.SemanticKernel.Core" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Agent\" />
+    </ItemGroup>
+
 </Project>
