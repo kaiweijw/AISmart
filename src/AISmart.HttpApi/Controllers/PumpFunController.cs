@@ -15,6 +15,7 @@ namespace AISmart.Controllers;
 [RemoteService]
 [Area("app")]
 [ControllerName("pumpfun")]
+[Route("api")]
 public class PumpFunController : AISmartController
 {
     private readonly ILogger<PumpFunController> _logger;
@@ -26,7 +27,7 @@ public class PumpFunController : AISmartController
         _pumpFunChatService = pumpFunChatService;
     }
     
-    [HttpPost("setPumpFunGroup")]
+    [HttpPost("setConfig")]
     public async Task<string> SetGroupsAsync(string chatId)
     {
         _logger.LogInformation("PumpFunController SetGroupsAsync, chatId:{chatId}, botName:{botName}", chatId);
