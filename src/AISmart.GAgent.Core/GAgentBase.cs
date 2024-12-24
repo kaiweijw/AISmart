@@ -193,7 +193,7 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     protected async Task<Guid> PublishAsync<T>(T @event) where T : EventBase
     {
         var eventId = Guid.NewGuid();
-        var eventWrapper = new EventWrapper<T>(@event, eventId, this.GetPrimaryKey());
+        var eventWrapper = new EventWrapper<T>(@event, eventId, this.GetPrimaryKey(), GetContextStorageGrainId());
 
         await PublishAsync(eventWrapper);
 
@@ -203,25 +203,20 @@ public abstract partial class GAgentBase<TState, TEvent> : JournaledGrain<TState
     private async Task PublishAsync<T>(EventWrapper<T> eventWrapper) where T : EventBase
     {
         await LoadPublishersAsync();
+
         if (_publishers.State.Count == 0)
         {
             return;
         }
 
-        var contextStorageGrain = eventWrapper.ContextGrainId == null
-            ? GrainFactory.GetGrain<IContextStorageGrain>(Guid.NewGuid())
-            : GrainFactory.GetGrain<IContextStorageGrain>(eventWrapper.ContextGrainId.Value);
-        eventWrapper.ContextGrainId = contextStorageGrain.GetGrainId();
-
-        await contextStorageGrain.AddContext(eventWrapper.Event.GetContext());
-
-        var eventType = typeof(T);
-        var properties = eventType.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        foreach (var property in properties)
+        var eventContext = eventWrapper.Event.GetContext();
+        if (!eventContext.IsNullOrEmpty())
         {
-            var propertyValue = property.GetValue(eventWrapper.Event);
-            Logger.LogInformation($"Add Context: {property.Name} - {propertyValue}");
-            await contextStorageGrain.AddContext($"{eventType}.{property.Name}", propertyValue);
+            var contextStorageGrain = eventWrapper.ContextStorageGrainId == null
+                ? GrainFactory.GetGrain<IContextStorageGrain>(Guid.NewGuid())
+                : GrainFactory.GetGrain<IContextStorageGrain>(eventWrapper.ContextStorageGrainId.Value.GetGuidKey());
+            eventWrapper.ContextStorageGrainId = contextStorageGrain.GetGrainId();
+            await contextStorageGrain.AddContext(eventContext);
         }
 
         foreach (var publisher in _publishers.State.Select(kp => kp.Value))
